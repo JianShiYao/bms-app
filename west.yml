@@ -17,7 +17,7 @@ manifest:
       revision: v4.4.0
       import:
         # 只拉取本项目需要的模块，避免拉取全部 HAL，加快 west update。
-        # native_sim 阶段其实无需 hal_stm32；第二步 STM32F405 板会用到。
+        # QEMU(mps2/an386) 仿真阶段其实无需 hal_stm32；第二步 STM32F405 板会用到。
         name-allowlist:
           - cmsis
           - cmsis_6

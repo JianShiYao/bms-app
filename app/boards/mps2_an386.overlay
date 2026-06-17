@@ -1,0 +1,14 @@
+/*
+ * mps2/an386 devicetree overlay
+ *
+ * QEMU(MPS2 AN386, Cortex-M4F) 上没有 BMS 需要的真实 ADC/CAN/GPIO 外设，
+ * BMS 模块在此 board 下使用桩数据，因此本 overlay 暂为空。
+ * 第二步在 STM32F405 板的 overlay 中接入真实节点：
+ *   - adc / 专用 AFE 芯片节点
+ *   - can1（对外通信）
+ *   - gpio：接触器、均衡开关
+ */
+
+/ {
+	/* 占位：后续可在此定义 bms 相关的虚拟节点 */
+};

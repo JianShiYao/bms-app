@@ -1,0 +1,10 @@
+# 将本仓库注册为 Zephyr 模块，仅用于暴露 out-of-tree 的 board / dts / 驱动根目录。
+# 这样 `west build -b bms_f405 app` 才能发现 boards/enervenue/bms_f405。
+name: bms-app
+build:
+  settings:
+    board_root: .
+    dts_root: .
+    # drivers 接入后可补：
+    # cmake: drivers
+    # kconfig: drivers/Kconfig

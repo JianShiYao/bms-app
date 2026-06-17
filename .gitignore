@@ -6,7 +6,10 @@ twister-out/
 twister-out.*/
 
 # 由 west update 拉取的依赖（不入本仓库）
-/zephyr/
+# 注意：本仓库自带 zephyr/module.yml（模块注册文件，必须入库），
+# 故忽略 zephyr 目录内容但放行 module.yml。
+/zephyr/*
+!/zephyr/module.yml
 /modules/
 /tools/
 /bootloader/
@@ -20,6 +23,9 @@ twister-out.*/
 *.hex
 *.map
 *.lst
+
+# Claude Code 运行期临时文件
+.claude/scheduled_tasks.lock
 
 # 编辑器/IDE
 .vscode/
