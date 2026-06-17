@@ -89,6 +89,31 @@ west twister -T tests -p mps2/an386 -c
 west build -b bms_f405 app
 ```
 
+## 六、代码格式化与提交检查
+
+代码风格沿用 **Zephyr 官方 clang-format**（配置见仓库根 `.clang-format`）。
+
+**克隆后首次** 需激活本地 git 提交钩子（`core.hooksPath` 是仓库本地配置，不随提交携带）：
+
+```powershell
+# 在本仓库目录下执行一次
+git config core.hooksPath scripts/hooks
+```
+
+激活后，每次 `git commit` 会自动检查本次暂存的 `app/`、`drivers/`、`tests/` 下
+`.c/.h` 是否符合格式；不符合则拒绝提交。
+
+```powershell
+# 本地一键格式化（修正所有文件）
+powershell -ExecutionPolicy Bypass -File scripts\format.ps1
+# 只检查不修改（CI / 手动验证用）
+powershell -ExecutionPolicy Bypass -File scripts\format.ps1 -Check
+# 应急跳过钩子（不推荐）
+git commit --no-verify
+```
+
+> 行尾由 `.gitattributes` 统一为 LF，确保 Windows 与 Linux/CI 一致。
+
 ## 架构
 
 详见 [docs/architecture.md](docs/architecture.md)。设计文档见 `docs/superpowers/specs/`。

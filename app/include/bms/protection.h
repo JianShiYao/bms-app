@@ -12,10 +12,10 @@ extern "C" {
 
 /** 保护阈值（桩默认值，后续按电芯规格表配置/Kconfig 化） */
 struct bms_prot_limits {
-	int32_t cell_ov_mv;     /**< 单体过压阈值 mV */
-	int32_t cell_uv_mv;     /**< 单体欠压阈值 mV */
-	int32_t over_current_ma;/**< 过流阈值 mA（绝对值） */
-	int32_t over_temp_dci;  /**< 过温阈值 0.1℃ */
+	int32_t cell_ov_mv;      /**< 单体过压阈值 mV */
+	int32_t cell_uv_mv;      /**< 单体欠压阈值 mV */
+	int32_t over_current_ma; /**< 过流阈值 mA（绝对值） */
+	int32_t over_temp_dci;   /**< 过温阈值 0.1℃ */
 };
 
 /**
@@ -31,8 +31,7 @@ int bms_protection_init(void);
  * @param out    输出保护事件（含期望接触器状态）
  * @return 0 成功，负值为 errno。
  */
-int bms_protection_evaluate(const struct bms_cell_meas *meas,
-			    const struct bms_prot_limits *limits,
+int bms_protection_evaluate(const struct bms_cell_meas *meas, const struct bms_prot_limits *limits,
 			    struct bms_prot_evt *out);
 
 /** 获取默认阈值（桩） */

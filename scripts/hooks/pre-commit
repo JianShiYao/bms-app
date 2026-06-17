@@ -1,0 +1,40 @@
+#!/bin/sh
+# pre-commit: reject the commit if any staged C/H file is not clang-formatted.
+# Checks ONLY staged files under app/ drivers/ tests/ (fast, relevant).
+# Bypass in emergencies with:  git commit --no-verify
+#
+# Enable once per clone:  git config core.hooksPath scripts/hooks
+
+# Locate clang-format: PATH first, then the workspace venv.
+CF="$(command -v clang-format 2>/dev/null)"
+if [ -z "$CF" ]; then
+    CF="/d/__00_WorkSpace/__06_Study/bms-workspace/.venv/Scripts/clang-format.exe"
+fi
+if [ ! -x "$CF" ] && ! command -v "$CF" >/dev/null 2>&1; then
+    echo "pre-commit: clang-format not found (PATH or venv). Skipping format check." >&2
+    exit 0
+fi
+
+# Staged, added/copied/modified .c/.h files in project dirs.
+files=$(git diff --cached --name-only --diff-filter=ACM \
+        | grep -E '^(app|drivers|tests)/.*\.(c|h)$')
+
+[ -z "$files" ] && exit 0
+
+fail=0
+for f in $files; do
+    # --dry-run --Werror: exits non-zero if the file would be reformatted.
+    if ! "$CF" --dry-run --Werror --style=file "$f"; then
+        fail=1
+    fi
+done
+
+if [ "$fail" -ne 0 ]; then
+    echo ""
+    echo "pre-commit: formatting violations above. Fix with:"
+    echo "    powershell -ExecutionPolicy Bypass -File scripts/format.ps1"
+    echo "then 'git add' the files and commit again (or use --no-verify to bypass)."
+    exit 1
+fi
+
+exit 0

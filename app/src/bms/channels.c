@@ -6,24 +6,15 @@
  */
 #include "bms/channels.h"
 
-ZBUS_CHAN_DEFINE(chan_cell_meas,        /* name */
-		 struct bms_cell_meas,  /* type */
-		 NULL,                  /* validator */
-		 NULL,                  /* user data */
-		 ZBUS_OBSERVERS_EMPTY,  /* observers（由模块动态添加） */
-		 ZBUS_MSG_INIT(0)       /* 初始值 */
+ZBUS_CHAN_DEFINE(chan_cell_meas,       /* name */
+		 struct bms_cell_meas, /* type */
+		 NULL,                 /* validator */
+		 NULL,                 /* user data */
+		 ZBUS_OBSERVERS_EMPTY, /* observers（由模块动态添加） */
+		 ZBUS_MSG_INIT(0)      /* 初始值 */
 );
 
-ZBUS_CHAN_DEFINE(chan_soc,
-		 struct bms_soc,
-		 NULL, NULL,
-		 ZBUS_OBSERVERS_EMPTY,
-		 ZBUS_MSG_INIT(0)
-);
+ZBUS_CHAN_DEFINE(chan_soc, struct bms_soc, NULL, NULL, ZBUS_OBSERVERS_EMPTY, ZBUS_MSG_INIT(0));
 
-ZBUS_CHAN_DEFINE(chan_prot_state,
-		 struct bms_prot_evt,
-		 NULL, NULL,
-		 ZBUS_OBSERVERS_EMPTY,
-		 ZBUS_MSG_INIT(0)
-);
+ZBUS_CHAN_DEFINE(chan_prot_state, struct bms_prot_evt, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
+		 ZBUS_MSG_INIT(0));

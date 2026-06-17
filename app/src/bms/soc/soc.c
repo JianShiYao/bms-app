@@ -38,8 +38,7 @@ int bms_soc_estimate(const struct bms_cell_meas *meas, struct bms_soc *out)
 	int32_t avg_mv = (int32_t)(sum_mv / BMS_CELL_COUNT);
 
 	/* 线性映射到 0..1000 ‰ 并夹紧 */
-	int32_t permille = (avg_mv - SOC_EMPTY_MV) * 1000 /
-			   (SOC_FULL_MV - SOC_EMPTY_MV);
+	int32_t permille = (avg_mv - SOC_EMPTY_MV) * 1000 / (SOC_FULL_MV - SOC_EMPTY_MV);
 	if (permille < 0) {
 		permille = 0;
 	} else if (permille > 1000) {
@@ -48,7 +47,7 @@ int bms_soc_estimate(const struct bms_cell_meas *meas, struct bms_soc *out)
 
 	out->timestamp_ms = meas->timestamp_ms;
 	out->soc_permille = (uint16_t)permille;
-	out->soh_permille = 1000;   /* TODO: 真实 SOH 估算 */
+	out->soh_permille = 1000; /* TODO: 真实 SOH 估算 */
 
 	return 0;
 }
@@ -72,14 +71,12 @@ static void soc_thread(void *p1, void *p2, void *p3)
 		}
 		if (bms_soc_estimate(&meas, &soc) == 0) {
 			zbus_chan_pub(&chan_soc, &soc, K_MSEC(50));
-			LOG_DBG("SOC=%u.%u%%", soc.soc_permille / 10,
-				soc.soc_permille % 10);
+			LOG_DBG("SOC=%u.%u%%", soc.soc_permille / 10, soc.soc_permille % 10);
 		}
 	}
 }
 
-K_THREAD_DEFINE(bms_soc_tid, SOC_THREAD_STACK, soc_thread,
-		NULL, NULL, NULL, SOC_THREAD_PRIO, 0, 0);
+K_THREAD_DEFINE(bms_soc_tid, SOC_THREAD_STACK, soc_thread, NULL, NULL, NULL, SOC_THREAD_PRIO, 0, 0);
 
 int bms_soc_init(void)
 {

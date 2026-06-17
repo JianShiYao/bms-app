@@ -26,8 +26,8 @@ int bms_balancing_init(void);
  * @param mask_len   mask_out 字节数
  * @return 0 成功，负值为 errno。
  */
-int bms_balancing_compute(const struct bms_cell_meas *meas, int32_t delta_mv,
-			  uint8_t *mask_out, size_t mask_len);
+int bms_balancing_compute(const struct bms_cell_meas *meas, int32_t delta_mv, uint8_t *mask_out,
+			  size_t mask_len);
 
 #ifdef __cplusplus
 }

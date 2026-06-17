@@ -14,9 +14,9 @@
 extern "C" {
 #endif
 
-ZBUS_CHAN_DECLARE(chan_cell_meas);   /**< struct bms_cell_meas，afe 发布 */
-ZBUS_CHAN_DECLARE(chan_soc);         /**< struct bms_soc，soc 发布 */
-ZBUS_CHAN_DECLARE(chan_prot_state);  /**< struct bms_prot_evt，protection 发布 */
+ZBUS_CHAN_DECLARE(chan_cell_meas);  /**< struct bms_cell_meas，afe 发布 */
+ZBUS_CHAN_DECLARE(chan_soc);        /**< struct bms_soc，soc 发布 */
+ZBUS_CHAN_DECLARE(chan_prot_state); /**< struct bms_prot_evt，protection 发布 */
 
 #ifdef __cplusplus
 }

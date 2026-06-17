@@ -16,7 +16,7 @@
 LOG_MODULE_REGISTER(bms_protection, LOG_LEVEL_INF);
 
 #define PROT_THREAD_STACK 1024
-#define PROT_THREAD_PRIO  4    /* 安全相关，优先级高于其它模块 */
+#define PROT_THREAD_PRIO  4 /* 安全相关，优先级高于其它模块 */
 
 ZBUS_SUBSCRIBER_DEFINE(prot_sub, 8);
 ZBUS_CHAN_ADD_OBS(chan_cell_meas, prot_sub, 2);
@@ -34,8 +34,7 @@ void bms_protection_default_limits(struct bms_prot_limits *limits)
 	limits->over_temp_dci = 600;     /* 60.0℃ 过温 */
 }
 
-int bms_protection_evaluate(const struct bms_cell_meas *meas,
-			    const struct bms_prot_limits *limits,
+int bms_protection_evaluate(const struct bms_cell_meas *meas, const struct bms_prot_limits *limits,
 			    struct bms_prot_evt *out)
 {
 	if (meas == NULL || limits == NULL || out == NULL) {
@@ -76,8 +75,8 @@ int bms_protection_evaluate(const struct bms_cell_meas *meas,
 
 decide:
 	/* 失效安全：仅 NORMAL 才闭合接触器 */
-	out->contactor = (out->state == BMS_PROT_NORMAL) ?
-				 BMS_CONTACTOR_CLOSED : BMS_CONTACTOR_OPEN;
+	out->contactor =
+		(out->state == BMS_PROT_NORMAL) ? BMS_CONTACTOR_CLOSED : BMS_CONTACTOR_OPEN;
 	return 0;
 }
 
@@ -96,7 +95,7 @@ static void prot_thread(void *p1, void *p2, void *p3)
 
 	while (zbus_sub_wait(&prot_sub, &chan, K_FOREVER) == 0) {
 		if (chan != &chan_cell_meas) {
-			continue;   /* chan_soc 暂未参与判定，预留 */
+			continue; /* chan_soc 暂未参与判定，预留 */
 		}
 		if (zbus_chan_read(&chan_cell_meas, &meas, K_MSEC(50)) != 0) {
 			continue;
@@ -104,16 +103,16 @@ static void prot_thread(void *p1, void *p2, void *p3)
 		if (bms_protection_evaluate(&meas, &limits, &evt) == 0) {
 			/* TODO: 此处驱动接触器/MOS GPIO（按 evt.contactor） */
 			if (evt.state != BMS_PROT_NORMAL) {
-				LOG_WRN("protection state=%d cell=%d -> contactor OPEN",
-					evt.state, evt.cell_index);
+				LOG_WRN("protection state=%d cell=%d -> contactor OPEN", evt.state,
+					evt.cell_index);
 			}
 			zbus_chan_pub(&chan_prot_state, &evt, K_MSEC(50));
 		}
 	}
 }
 
-K_THREAD_DEFINE(bms_prot_tid, PROT_THREAD_STACK, prot_thread,
-		NULL, NULL, NULL, PROT_THREAD_PRIO, 0, 0);
+K_THREAD_DEFINE(bms_prot_tid, PROT_THREAD_STACK, prot_thread, NULL, NULL, NULL, PROT_THREAD_PRIO, 0,
+		0);
 
 int bms_protection_init(void)
 {

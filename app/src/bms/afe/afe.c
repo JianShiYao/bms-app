@@ -26,11 +26,11 @@ int bms_afe_sample(struct bms_cell_meas *out)
 
 	/* TODO: 替换为真实 ADC / AFE 芯片读取。以下为 native_sim 桩数据。 */
 	for (int i = 0; i < BMS_CELL_COUNT; i++) {
-		out->cell_mv[i] = 3700 + (i % 5) * 5;   /* ~3.70V 附近 */
+		out->cell_mv[i] = 3700 + (i % 5) * 5; /* ~3.70V 附近 */
 	}
-	out->pack_current_ma = 1000;                    /* 1A 充电（正） */
+	out->pack_current_ma = 1000; /* 1A 充电（正） */
 	for (int i = 0; i < BMS_TEMP_SENSOR_COUNT; i++) {
-		out->temp_dci[i] = 250;                 /* 25.0℃ */
+		out->temp_dci[i] = 250; /* 25.0℃ */
 	}
 
 	return 0;
@@ -56,13 +56,11 @@ static void afe_thread(void *p1, void *p2, void *p3)
 	}
 }
 
-K_THREAD_DEFINE(bms_afe_tid, AFE_THREAD_STACK, afe_thread,
-		NULL, NULL, NULL, AFE_THREAD_PRIO, 0, 0);
+K_THREAD_DEFINE(bms_afe_tid, AFE_THREAD_STACK, afe_thread, NULL, NULL, NULL, AFE_THREAD_PRIO, 0, 0);
 
 int bms_afe_init(void)
 {
-	LOG_INF("AFE init: period=%d ms, cells=%d, temps=%d",
-		CONFIG_BMS_AFE_SAMPLE_PERIOD_MS, BMS_CELL_COUNT,
-		BMS_TEMP_SENSOR_COUNT);
+	LOG_INF("AFE init: period=%d ms, cells=%d, temps=%d", CONFIG_BMS_AFE_SAMPLE_PERIOD_MS,
+		BMS_CELL_COUNT, BMS_TEMP_SENSOR_COUNT);
 	return 0;
 }

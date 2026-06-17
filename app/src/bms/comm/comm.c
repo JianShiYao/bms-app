@@ -24,8 +24,7 @@ LOG_MODULE_REGISTER(bms_comm, LOG_LEVEL_INF);
 static void comm_tx_meas(const struct bms_cell_meas *m)
 {
 	/* TODO: 打包为 CAN 帧并 can_send()。当前仅 DBG 桩。 */
-	LOG_DBG("CAN TX meas: cell0=%dmV I=%dmA T0=%d.%d C",
-		m->cell_mv[0], m->pack_current_ma,
+	LOG_DBG("CAN TX meas: cell0=%dmV I=%dmA T0=%d.%d C", m->cell_mv[0], m->pack_current_ma,
 		m->temp_dci[0] / 10, m->temp_dci[0] % 10);
 }
 
@@ -57,9 +56,9 @@ static void comm_thread(void *p1, void *p2, void *p3)
 		if (zbus_chan_read(&chan_soc, &soc, K_MSEC(50)) == 0) {
 			/* TODO: can_send() SOC/SOH 帧。 */
 			if (soc.soc_permille != last_soc || soc.soh_permille != last_soh) {
-				LOG_INF("CAN TX soc=%u.%u%% soh=%u.%u%%",
-					soc.soc_permille / 10, soc.soc_permille % 10,
-					soc.soh_permille / 10, soc.soh_permille % 10);
+				LOG_INF("CAN TX soc=%u.%u%% soh=%u.%u%%", soc.soc_permille / 10,
+					soc.soc_permille % 10, soc.soh_permille / 10,
+					soc.soh_permille % 10);
 				last_soc = soc.soc_permille;
 				last_soh = soc.soh_permille;
 			}
@@ -68,8 +67,7 @@ static void comm_thread(void *p1, void *p2, void *p3)
 		if (zbus_chan_read(&chan_prot_state, &prot, K_MSEC(50)) == 0) {
 			/* TODO: can_send() 保护状态帧。保护状态变化是安全事件，务必可见。 */
 			if (prot.state != last_state || prot.contactor != last_contactor) {
-				LOG_INF("CAN TX prot state=%d contactor=%s",
-					prot.state,
+				LOG_INF("CAN TX prot state=%d contactor=%s", prot.state,
 					prot.contactor == BMS_CONTACTOR_CLOSED ? "CLOSED" : "OPEN");
 				last_state = prot.state;
 				last_contactor = prot.contactor;
@@ -80,8 +78,8 @@ static void comm_thread(void *p1, void *p2, void *p3)
 	}
 }
 
-K_THREAD_DEFINE(bms_comm_tid, COMM_THREAD_STACK, comm_thread,
-		NULL, NULL, NULL, COMM_THREAD_PRIO, 0, 0);
+K_THREAD_DEFINE(bms_comm_tid, COMM_THREAD_STACK, comm_thread, NULL, NULL, NULL, COMM_THREAD_PRIO, 0,
+		0);
 
 int bms_comm_init(void)
 {

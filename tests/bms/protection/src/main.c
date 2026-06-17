@@ -35,8 +35,7 @@ ZTEST(bms_protection, test_normal_closes_contactor)
 
 	zassert_ok(bms_protection_evaluate(&m, &lim, &evt));
 	zassert_equal(evt.state, BMS_PROT_NORMAL);
-	zassert_equal(evt.contactor, BMS_CONTACTOR_CLOSED,
-		      "normal must close contactor");
+	zassert_equal(evt.contactor, BMS_CONTACTOR_CLOSED, "normal must close contactor");
 }
 
 ZTEST(bms_protection, test_overvoltage_opens)
