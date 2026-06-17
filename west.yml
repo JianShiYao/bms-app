@@ -1,0 +1,29 @@
+# west manifest —— T2 拓扑：本仓库作为 manifest 仓库
+# 把 Zephyr v4.4.0 及所需 HAL 作为依赖拉取到上一级 workspace 目录。
+#
+# 使用方式（需先安装好 west + Zephyr SDK，见 README.md）：
+#   west init -l .        # 以本目录为 manifest 初始化 workspace
+#   west update           # 拉取 zephyr v4.4.0 与 allowlist 中的模块
+manifest:
+  version: "1.2"
+
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v4.4.0
+      import:
+        # 只拉取本项目需要的模块，避免拉取全部 HAL，加快 west update。
+        # native_sim 阶段其实无需 hal_stm32；第二步 STM32F405 板会用到。
+        name-allowlist:
+          - cmsis
+          - cmsis_6
+          - hal_stm32
+          - segger          # RTT 日志后端（可选，按需保留）
+
+  self:
+    # 本仓库在 workspace 中的相对路径（workspace 根为本目录的上一级）。
+    path: bms-app

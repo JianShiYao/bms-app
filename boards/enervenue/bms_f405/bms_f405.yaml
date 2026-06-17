@@ -1,0 +1,16 @@
+# 板元数据（供 twister 等使用）。TODO: 按实际资源/外设修正。
+identifier: bms_f405
+name: BMS STM32F405 custom board
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+ram: 192
+flash: 1024
+supported:
+  - gpio
+  - uart
+# 配好 dts 后再加：
+#  - adc
+#  - can

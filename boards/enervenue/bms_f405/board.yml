@@ -1,0 +1,8 @@
+# 自定义 STM32F405 板定义（Zephyr 硬件模型 v2）
+# TODO: 确认 SoC 具体封装变体（如 stm32f405rg / stm32f405vg）后修正 socs.name。
+board:
+  name: bms_f405
+  full_name: BMS STM32F405 custom board
+  vendor: enervenue
+  socs:
+    - name: stm32f405xg

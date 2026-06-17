@@ -1,0 +1,6 @@
+tests:
+  bms.soc:
+    platform_allow: native_sim
+    tags:
+      - bms
+      - soc

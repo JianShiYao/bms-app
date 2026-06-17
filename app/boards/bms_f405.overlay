@@ -1,0 +1,13 @@
+/*
+ * bms_f405 应用级 devicetree overlay（第二步）
+ *
+ * TODO: 为 BMS 模块提供 devicetree 绑定，例如：
+ *   - afe:  &adc1 通道 / 专用 AFE 芯片节点
+ *   - comm: &can1
+ *   - protection: 接触器控制 GPIO（&gpiox pin flags）
+ *   - balancing: 均衡开关 GPIO
+ */
+
+/ {
+	/* 占位 */
+};

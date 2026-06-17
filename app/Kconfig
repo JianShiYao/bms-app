@@ -1,0 +1,58 @@
+# BMS 应用级配置
+mainmenu "BMS firmware configuration"
+
+menu "BMS application"
+
+config BMS_CELL_COUNT
+	int "Number of series cells（串数）"
+	range 1 256
+	default 16
+	help
+	  电池组串联单体数量，决定每帧测量数组长度。
+
+config BMS_TEMP_SENSOR_COUNT
+	int "Number of temperature sensors（温度传感器数）"
+	range 1 64
+	default 4
+
+config BMS_AFE
+	bool "AFE / 电芯采样模块"
+	default y
+	help
+	  周期采集电压/电流/温度并发布到 zbus。
+
+config BMS_AFE_SAMPLE_PERIOD_MS
+	int "AFE 采样周期 (ms)"
+	depends on BMS_AFE
+	default 100
+
+config BMS_SOC
+	bool "SOC/SOH 估算模块"
+	default y
+
+config BMS_PROTECTION
+	bool "保护状态机模块"
+	default y
+
+config BMS_PROTECTION_PERIOD_MS
+	int "保护评估周期 (ms)"
+	depends on BMS_PROTECTION
+	default 50
+
+config BMS_BALANCING
+	bool "单体均衡模块"
+	default y
+
+config BMS_COMM
+	bool "CAN 通信模块"
+	default y
+
+config BMS_COMM_REPORT_PERIOD_MS
+	int "CAN 上报周期 (ms)"
+	depends on BMS_COMM
+	default 200
+
+endmenu
+
+# 必须在文件末尾引入 Zephyr 的 Kconfig 树
+source "Kconfig.zephyr"

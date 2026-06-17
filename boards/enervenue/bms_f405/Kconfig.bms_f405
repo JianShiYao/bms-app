@@ -1,0 +1,4 @@
+# 板级 Kconfig 入口（HWMv2）
+# TODO: 确认与所选 SoC 变体匹配的 SOC_* 符号。
+config BOARD_BMS_F405
+	select SOC_STM32F405XX

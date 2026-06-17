@@ -1,0 +1,32 @@
+# Zephyr / west workspace
+.west/
+build/
+build-*/
+twister-out/
+twister-out.*/
+
+# 由 west update 拉取的依赖（不入本仓库）
+/zephyr/
+/modules/
+/tools/
+/bootloader/
+
+# 编译产物
+*.o
+*.obj
+*.elf
+*.exe
+*.bin
+*.hex
+*.map
+*.lst
+
+# 编辑器/IDE
+.vscode/
+.idea/
+*.swp
+compile_commands.json
+
+# Python venv（工具链）
+.venv/
+__pycache__/

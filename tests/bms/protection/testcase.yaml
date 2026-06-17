@@ -1,0 +1,7 @@
+tests:
+  bms.protection:
+    platform_allow: native_sim
+    tags:
+      - bms
+      - protection
+      - safety
