@@ -40,7 +40,8 @@ powershell -ExecutionPolicy Bypass -File scripts\check.ps1 -Fast    # 快跑：�
 ```
 - 缺工具（如未装 clang-tidy）的门会标 `SKIP`（不计失败，CI 会补跑）；任一 `FAIL` 退出码非 0。
 - SCA / clang-tidy 做 `-p always` 干净构建，全量约数分钟；日常迭代可先 `-Fast`，开 PR 前再跑一次全量。
-- 覆盖率本地走 `..\run-tests-coverage.ps1`；QEMU 路线覆盖率不可靠，可靠覆盖率见 CI / WSL2+native_sim。
+- **clang-tidy 与覆盖率同属"Linux 可靠"项**：clang-tidy 的 parity 需 `native_sim`（提供 host flags），而 native_sim 在 Windows **配置失败**，且本地新版本 clang-tidy 与 CI 不一致——故 clang-tidy 以 **CI(Linux) 为准**，Windows 上 check.ps1 标 `SKIP`；要本地对齐用 **WSL2**（Zephyr 即装在 WSL）。
+- **cppcheck** 则不受此限：check.ps1 用 **mps2/an386 的 `compile_commands.json`**（Windows 可编）走 project 精查；覆盖率本地走 `..\run-tests-coverage.ps1`（QEMU 路线覆盖率不可靠，可靠覆盖率见 CI / WSL2+native_sim）。
 
 ## 5. PR 流程
 

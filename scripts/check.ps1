@@ -54,7 +54,9 @@ if (-not (Have "west")) {
 } else {
     # --- Gate 2: build both compilable targets (clean) --------------------
     Gate "build (mps2/an386)" {
-        west build -b mps2/an386 app -d build\check-an386 -p always
+        # Export compile_commands.json here -- it builds on Windows (unlike
+        # native_sim) and feeds cppcheck's accurate PROJECT mode below.
+        west build -b mps2/an386 app -d build\check-an386 -p always -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
         if ($LASTEXITCODE -eq 0) { "PASS" } else { "FAIL" }
     }
     Gate "build (native_sim)" {
@@ -90,8 +92,15 @@ if (-not (Have "west")) {
         # --- Gate 5: clang-tidy (CERT/readability). Needs clang-tidy locally. -
         Gate "clang-tidy" {
             if (-not (Have "clang-tidy")) { Write-Host "clang-tidy not installed; skipping." -ForegroundColor Yellow; return "SKIP" }
+            # clang-tidy parity needs native_sim (host flags). native_sim does NOT
+            # configure on Windows, and a locally-newer clang-tidy diverges from
+            # CI's. So clang-tidy is CI(Linux)-authoritative; SKIP if the build
+            # cannot be produced here. For local parity run check in WSL2.
             west build -b native_sim app -d build\check-tidy -p always -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-            if ($LASTEXITCODE -ne 0) { return "FAIL" }
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "native_sim build unavailable (expected on Windows); clang-tidy is CI/WSL2-authoritative -> SKIP." -ForegroundColor Yellow
+                return "SKIP"
+            }
             # Strip gcc-only flags clang rejects (same set as CI's sed step).
             $ccPath = "build\check-tidy\compile_commands.json"
             $cc = Get-Content $ccPath -Raw
@@ -113,9 +122,10 @@ if (-not $Fast) {
         # No 'Have cppcheck' precheck: cppcheck-run.sh resolves cppcheck itself
         # (PATH or C:/Program Files/Cppcheck), which PowerShell's PATH may miss.
         if (-not (Have "bash")) { Write-Host "bash not found; cannot run cppcheck-run.sh." -ForegroundColor Yellow; return "SKIP" }
-        # Prefer PROJECT mode using the clang-tidy gate's compile db (accurate,
-        # real -I/-D -> few false positives). Fall back to standalone if absent.
-        $cc = "build/check-tidy/compile_commands.json"
+        # Prefer PROJECT mode using the mps2 build gate's compile db (accurate,
+        # real -I/-D -> few false positives; mps2 builds on Windows, unlike the
+        # native_sim db clang-tidy uses). Fall back to standalone if absent.
+        $cc = "build/check-an386/compile_commands.json"
         if (Test-Path $cc) {
             Write-Host "project mode (accurate) via $cc" -ForegroundColor DarkGray
             $out = (bash scripts/cppcheck-run.sh --project $cc 2>&1 | Out-String)
