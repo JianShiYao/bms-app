@@ -19,7 +19,7 @@ Checks: >
   -clang-diagnostic-padded,
   -clang-diagnostic-unsafe-buffer-usage,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
-WarningsAsErrors:   ''
+WarningsAsErrors:   '*'
 FormatStyle:        file
 # Only diagnose this project's own headers; silence transitively-included Zephyr headers.
 HeaderFilterRegex:  '.*/app/include/bms/.*\.(h|hpp)$'

@@ -98,12 +98,10 @@ jobs:
           name: sca-gcc-log
           path: sca-build.log
 
-  # Gate 5: clang-tidy (CERT/readability). SOFT for now (continue-on-error):
-  # inventory findings, tune .clang-tidy, then harden and add to required checks.
+  # Gate 5: clang-tidy (CERT/readability). HARD gate (WarningsAsErrors in .clang-tidy).
   clang-tidy:
     needs: format
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
