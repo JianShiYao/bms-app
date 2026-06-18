@@ -6,9 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Gate 1: source formatting must match the Zephyr clang-format style.
-  # clang-format is pinned to the same version used locally so CI and local
-  # produce identical verdicts.
+  # Gate 1: formatting (fast fail-first). clang-format pinned to match local.
   format:
     runs-on: ubuntu-latest
     steps:
@@ -24,22 +22,99 @@ jobs:
           if [ -z "$files" ]; then echo "no source files to check"; exit 0; fi
           clang-format --dry-run --Werror --style=file $files
 
-  # Gate 2: build the target firmware and run the unit tests.
-  # Only runs if formatting passed.
-  build-test:
-    runs-on: ubuntu-latest
+  # Gate 2: build firmware for each compilable target.
+  # NOTE: bms_f405 is an incomplete board template — add `enervenue/bms_f405`
+  # to the matrix once its dts/defconfig TODOs are resolved.
+  build:
     needs: format
+    runs-on: ubuntu-latest
+    name: build (${{ matrix.board }})
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [mps2/an386, native_sim]
     steps:
-      - name: Checkout (manifest repo) into workspace subdir
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           path: bms-app
-      - name: Set up Zephyr (west + SDK)
-        uses: zephyrproject-rtos/action-zephyr-setup@v1
+      - uses: zephyrproject-rtos/action-zephyr-setup@v1
         with:
           app-path: bms-app
           toolchains: arm-zephyr-eabi
-      - name: Build firmware (mps2/an386)
-        run: west build -b mps2/an386 bms-app/app
-      - name: Run unit tests (native_sim)
-        run: west twister -T bms-app/tests -p native_sim --inline-logs
+      - name: Build
+        run: west build -b ${{ matrix.board }} bms-app/app
+
+  # Gate 3: unit tests + coverage (native_sim; reliable on Linux).
+  test-coverage:
+    needs: format
+    runs-on: ubuntu-latest
+    # twister's coverage tool-selection reads ZEPHYR_TOOLCHAIN_VARIANT directly;
+    # action-zephyr-setup doesn't export it, so set it here (SDK gcov path).
+    env:
+      ZEPHYR_TOOLCHAIN_VARIANT: zephyr
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: bms-app
+      - uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: bms-app
+          toolchains: arm-zephyr-eabi
+      - name: Install gcovr
+        run: pip install gcovr
+      - name: Twister + coverage
+        run: >
+          west twister -T bms-app/tests -p native_sim --inline-logs
+          --coverage --coverage-tool gcovr -O twister-out
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            twister-out/coverage/**
+            twister-out/twister.xml
+
+  # Gate 4: static analysis (gcc -fanalyzer), scoped to app code.
+  sca-gcc:
+    needs: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: bms-app
+      - uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: bms-app
+          toolchains: arm-zephyr-eabi
+      - name: Build with gcc analyzer
+        run: west build -b mps2/an386 bms-app/app -- -DZEPHYR_SCA_VARIANT=gcc 2>&1 | tee sca-build.log
+      - name: Gate on app-code analyzer warnings
+        run: bash bms-app/scripts/sca-check.sh sca-build.log
+      - name: Upload SCA log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sca-gcc-log
+          path: sca-build.log
+
+  # Gate 5: clang-tidy (CERT/readability). SOFT for now (continue-on-error):
+  # inventory findings, tune .clang-tidy, then harden and add to required checks.
+  clang-tidy:
+    needs: format
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: bms-app
+      - uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: bms-app
+          toolchains: arm-zephyr-eabi
+      - name: Install clang-tidy
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy
+      - name: Generate compile_commands.json (native_sim host flags)
+        run: west build -b native_sim bms-app/app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: Run clang-tidy on app sources
+        run: clang-tidy -p build $(find bms-app/app/src -name '*.c')

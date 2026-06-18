@@ -1,0 +1,45 @@
+# clang-tidy config for bms-app (C / Zephyr, snake_case).
+# Adapted from stm32-project-template/.clang-tidy: kept cert-* and readability-*,
+# dropped the C++/Google CamelCase naming (bms-app is C with snake_case).
+#
+# Rollout: WarningsAsErrors is intentionally EMPTY for the first pass so CI can
+# inventory findings without blocking. Once findings are triaged/tuned, set
+# WarningsAsErrors and add the `clang-tidy` check to branch-protection contexts.
+---
+Checks: >
+  cert-*,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -readability-avoid-const-params-in-decls,
+  -readability-function-cognitive-complexity,
+  -clang-diagnostic-declaration-after-statement,
+  -clang-diagnostic-documentation,
+  -clang-diagnostic-missing-noreturn,
+  -clang-diagnostic-padded,
+  -clang-diagnostic-unsafe-buffer-usage
+WarningsAsErrors:   ''
+FormatStyle:        file
+# Only diagnose this project's own headers; silence transitively-included Zephyr headers.
+HeaderFilterRegex:  '.*/app/include/bms/.*\.(h|hpp)$'
+CheckOptions:
+  # --- C snake_case naming (BMS / Zephyr conventions) ---
+  - { key: readability-identifier-naming.FunctionCase,        value: lower_case }
+  - { key: readability-identifier-naming.VariableCase,        value: lower_case }
+  - { key: readability-identifier-naming.ParameterCase,       value: lower_case }
+  - { key: readability-identifier-naming.LocalVariableCase,   value: lower_case }
+  - { key: readability-identifier-naming.GlobalVariableCase,  value: lower_case }
+  - { key: readability-identifier-naming.StaticVariableCase,  value: lower_case }
+  - { key: readability-identifier-naming.StructCase,          value: lower_case }
+  - { key: readability-identifier-naming.UnionCase,           value: lower_case }
+  - { key: readability-identifier-naming.EnumCase,            value: lower_case }
+  - { key: readability-identifier-naming.MemberCase,          value: lower_case }
+  - { key: readability-identifier-naming.TypedefCase,         value: lower_case }
+  # Constants / enum constants / macros are UPPER_CASE (e.g. BMS_PROT_OV, CONFIG_*)
+  - { key: readability-identifier-naming.EnumConstantCase,    value: UPPER_CASE }
+  - { key: readability-identifier-naming.GlobalConstantCase,  value: UPPER_CASE }
+  - { key: readability-identifier-naming.MacroDefinitionCase, value: UPPER_CASE }
+  # Local constants stay snake_case (idiomatic in C)
+  - { key: readability-identifier-naming.LocalConstantCase,   value: lower_case }
+  - { key: readability-identifier-naming.IgnoreFailedSplit,   value: '0' }
+  - { key: readability-braces-around-statements.ShortStatementLines, value: '0' }

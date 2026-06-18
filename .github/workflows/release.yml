@@ -1,0 +1,47 @@
+name: Release
+
+# CD: on a version tag (vX.Y.Z), build release firmware and publish a GitHub Release.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: bms-app
+          fetch-depth: 0
+      - name: Verify tag matches VERSION
+        run: bash bms-app/scripts/check-version-tag.sh "${{ github.ref_name }}"
+      - uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: bms-app
+          toolchains: arm-zephyr-eabi
+      - name: Build release firmware (mps2/an386)
+        run: west build -b mps2/an386 bms-app/app -- -DCMAKE_BUILD_TYPE=Release
+      # NOTE: add a second build block for enervenue/bms_f405 once it's complete;
+      # the release step globs release/** so extra boards just add more files.
+      - name: Collect artifacts + checksums
+        run: |
+          mkdir -p release
+          for f in elf bin hex map; do
+            cp "build/zephyr/zephyr.$f" "release/mps2-an386-zephyr.$f" 2>/dev/null || true
+          done
+          cd release && sha256sum * > SHA256SUMS
+          echo "---- release contents ----" && ls -al
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-mps2-an386
+          path: release/**
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: release/**
