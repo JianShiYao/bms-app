@@ -66,6 +66,21 @@ jobs:
         run: >
           west twister -T bms-app/tests -p native_sim --inline-logs
           --coverage --coverage-tool gcovr -O twister-out
+      - name: App-scoped coverage gate
+        # twister's own gcovr is rooted at zephyr/, which excludes our app/ (a
+        # sibling dir). Run our own gcovr rooted at the workspace, filtered to
+        # app/src + app/include, for a MEANINGFUL number, and gate on it.
+        # Baseline (2026-06-18): lines 61.0%, branches 39.1%. Thresholds are set
+        # below the baseline with margin to catch regressions without flakiness;
+        # raise them as test coverage grows.
+        run: >
+          gcovr --root "$GITHUB_WORKSPACE"
+          --filter 'bms-app/app/(src|include)/.*'
+          --gcov-ignore-parse-errors=all
+          --print-summary
+          --fail-under-line 55
+          --fail-under-branch 30
+          twister-out
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v7
@@ -73,6 +88,7 @@ jobs:
           name: coverage-report
           path: |
             twister-out/coverage/**
+            twister-out/coverage.json
             twister-out/twister.xml
 
   # Gate 4: static analysis (gcc -fanalyzer), scoped to app code.
