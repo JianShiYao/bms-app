@@ -115,6 +115,44 @@ git commit --no-verify
 ```
 
 > 行尾由 `.gitattributes` 统一为 LF，确保 Windows 与 Linux/CI 一致。
+>
+> 注：`git config core.hooksPath scripts/hooks` 同时启用 **pre-commit**（格式）与 **pre-push**
+> （format + 增量 clang-tidy + cppcheck/MISRA 告警）；后两者依赖下节的工具，未装则自动跳过。
+
+## 七、静态分析工具依赖（cppcheck / clang-tidy）
+
+pre-push 钩子与 `scripts\check.ps1` 会调用 **cppcheck**（含 MISRA）与 **clang-tidy**。
+两者均为**可选本地依赖**：未安装时对应检查自动标 `SKIP`（不阻断本地操作），**CI 会权威地补跑**。
+分层触发与各门细节见 [开发流程与质量审查](docs/development-workflow.md)。
+
+### cppcheck（+ MISRA）
+
+```powershell
+winget install Cppcheck.Cppcheck      # 或：scoop install cppcheck
+```
+
+- **MISRA addon 不随 Windows 安装包附带**，需额外下载（GPLv3，不入库，放在 gitignore 的本地目录）：
+  ```powershell
+  # 需 git-bash；按已装 cppcheck 版本拉取 misra.py 等到 scripts\.cppcheck-addons\
+  bash scripts/setup-cppcheck-misra.sh
+  ```
+- MISRA addon 运行需 **Python 在 PATH**（项目 venv 里即有）。
+- 运行方式：pre-push 对改动的 `.c` 跑**独立模式**（无需构建、秒级，但无构建上下文会有已知假阳性，**仅告警**）；
+  `check.ps1` 用 **mps2/an386 的 `compile_commands.json`** 跑 **project 模式**（准确，假阳性基本消除）。
+- 噪声抑制与 MISRA deviation 集中在 `.cppcheck-suppressions` 维护。
+
+### clang-tidy
+
+随 **LLVM** 发布：
+
+```powershell
+scoop install llvm                    # 或：winget install LLVM.LLVM
+```
+
+- 安装后需**新开终端 / Reload VS Code**，`clang-tidy` 才在 PATH 上。
+- **Windows 原生对 Zephyr 不可靠**：clang-tidy 需 `native_sim`（提供 host flags，Windows 无法配置），
+  且本地 LLVM 版本常比 CI 新、结果不一致。故 clang-tidy **以 CI（Linux）为准**，
+  `check.ps1` 在 Windows 上会标 `SKIP`；要本地对齐请在 **WSL2**（Zephyr 即装在 WSL）下运行。
 
 ## 架构
 
