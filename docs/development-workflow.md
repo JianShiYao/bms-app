@@ -63,13 +63,13 @@ gh pr create --base master      # 开 PR（填模板）
 | ④ 发布 | 打 tag | `.github/workflows/release.yml`（tag `v*`） | 发布失败即无 Release |
 | ⑤ 审计 | 持续 | `dependabot` / `CODEOWNERS` / `CHANGELOG` / PR 模板 | 软约束 |
 
-CI（③）当前 5 道门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(软门禁，整改中)。
+CI（③）当前 6 道门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(CERT/可读性)。
 SCA/clang-tidy/覆盖率的路线图见 [ci-borrow-checklist.md](ci-borrow-checklist.md)。
 
 ## 7. 分支保护说明
 
-master 受保护，必过检查：`format`、`build (mps2/an386)`、`build (native_sim)`、`test-coverage`、`sca-gcc`。
-- `clang-tidy` 现为**软门禁**（`continue-on-error`），不在必过列；整改完命名/参数兼容后再硬化并加入。
+master 受保护，必过检查（6 项）：`format`、`build (mps2/an386)`、`build (native_sim)`、`test-coverage`、`sca-gcc`、`clang-tidy`。
+- `clang-tidy` 已**硬门禁**（`.clang-tidy` 开启 `WarningsAsErrors`，当前 0 告警）并加入必过列。
 - **单人项目说明**：必需 reviewer = 0（无法要求他人评审），用「PR + CI 必过 + 自审 diff」替代第二双眼；
   团队化后改 reviewer ≥ 1、启用 `require_code_owner_reviews`、考虑 `enforce_admins`。
 
