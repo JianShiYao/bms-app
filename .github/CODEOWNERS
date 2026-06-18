@@ -1,0 +1,7 @@
+# 代码所有者（PR 自动请求其评审）。
+# 当前单人项目，全仓归属维护者。
+* @JianShiYao
+
+# 团队化后可按目录细分，例如安全相关模块交安全组评审：
+# /app/src/bms/protection/   @JianShiYao @safety-team
+# /boards/                   @JianShiYao @hw-team
