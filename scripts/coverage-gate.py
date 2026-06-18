@@ -66,6 +66,14 @@ def main():
         br_cov += bc
 
     if line_tot == 0:
+        all_files = [f.get("file", "") for f in data.get("files", [])]
+        print(f"WARNING: no app files matched. report has {len(all_files)} files; sample:")
+        for p in all_files[:20]:
+            print(f"  {p}")
+        # In report-only mode (no thresholds) don't fail — this surfaces the path
+        # format so the filter can be fixed. With a real threshold set, this is fatal.
+        if args.min_line == 0.0 and args.min_branch == 0.0:
+            return 0
         print("::error::no app files found in coverage report (check filter / paths)")
         return 2
 

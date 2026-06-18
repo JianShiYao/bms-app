@@ -78,6 +78,7 @@ jobs:
           name: coverage-report
           path: |
             twister-out/coverage/**
+            twister-out/coverage.json
             twister-out/twister.xml
 
   # Gate 4: static analysis (gcc -fanalyzer), scoped to app code.
