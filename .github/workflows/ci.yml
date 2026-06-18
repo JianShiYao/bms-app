@@ -98,12 +98,10 @@ jobs:
           name: sca-gcc-log
           path: sca-build.log
 
-  # Gate 5: clang-tidy (CERT/readability). SOFT for now (continue-on-error):
-  # inventory findings, tune .clang-tidy, then harden and add to required checks.
+  # Gate 5: clang-tidy (CERT/readability). HARD gate (WarningsAsErrors in .clang-tidy).
   clang-tidy:
     needs: format
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -116,5 +114,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y clang-tidy
       - name: Generate compile_commands.json (native_sim host flags)
         run: west build -b native_sim bms-app/app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: Strip gcc-only flags clang rejects
+        run: |
+          sed -i -E 's/-fno-(reorder-functions|freestanding|defer-pop|printf-return-value|reorder-blocks-and-partition)//g; s/--param=[^ "]*//g' build/compile_commands.json
       - name: Run clang-tidy on app sources
         run: clang-tidy -p build $(find bms-app/app/src -name '*.c')

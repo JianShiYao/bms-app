@@ -17,8 +17,9 @@ Checks: >
   -clang-diagnostic-documentation,
   -clang-diagnostic-missing-noreturn,
   -clang-diagnostic-padded,
-  -clang-diagnostic-unsafe-buffer-usage
-WarningsAsErrors:   ''
+  -clang-diagnostic-unsafe-buffer-usage,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+WarningsAsErrors:   '*'
 FormatStyle:        file
 # Only diagnose this project's own headers; silence transitively-included Zephyr headers.
 HeaderFilterRegex:  '.*/app/include/bms/.*\.(h|hpp)$'
@@ -39,6 +40,8 @@ CheckOptions:
   - { key: readability-identifier-naming.EnumConstantCase,    value: UPPER_CASE }
   - { key: readability-identifier-naming.GlobalConstantCase,  value: UPPER_CASE }
   - { key: readability-identifier-naming.MacroDefinitionCase, value: UPPER_CASE }
+  # Ignore include-guard macros (e.g. BMS_AFE_H_) — trailing underscore trips UPPER_CASE.
+  - { key: readability-identifier-naming.MacroDefinitionIgnoredRegexp, value: '.*_H_?$' }
   # Local constants stay snake_case (idiomatic in C)
   - { key: readability-identifier-naming.LocalConstantCase,   value: lower_case }
   - { key: readability-identifier-naming.IgnoreFailedSplit,   value: '0' }
