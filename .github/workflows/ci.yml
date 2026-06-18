@@ -66,11 +66,17 @@ jobs:
         run: >
           west twister -T bms-app/tests -p native_sim --inline-logs
           --coverage --coverage-tool gcovr -O twister-out
-      - name: App-scoped coverage gate
-        # Reports app-only (app/src, app/include) coverage; whole-tree % is
-        # meaningless (dominated by uncovered kernel). Thresholds default to 0
-        # (report-only) until a baseline is set via --min-line / --min-branch.
-        run: python3 bms-app/scripts/coverage-gate.py
+      - name: App-scoped coverage report
+        # twister's own gcovr is rooted at zephyr/, which excludes our app/ (a
+        # sibling dir). Run our own gcovr rooted at the workspace, filtered to
+        # app/src + app/include, to get a MEANINGFUL number. Report-only for now
+        # (--fail-under-line to be added once the baseline is known).
+        run: >
+          gcovr --root "$GITHUB_WORKSPACE"
+          --filter 'bms-app/app/(src|include)/.*'
+          --gcov-ignore-parse-errors=all
+          --print-summary
+          twister-out
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v7
