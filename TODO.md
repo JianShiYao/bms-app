@@ -10,8 +10,13 @@
 - [x] **分支保护**：master 要求 PR + **6 项** CI 必过（含 clang-tidy）。
 - [x] **app 覆盖率门禁**：自跑 gcovr（root=workspace、过滤 `app/`）并设阈值 line ≥ 55% / branch ≥ 30%（基线 lines 61.0% / branches 39.1%）。
 
-## 进行中 / 待办
+## 进行中
 
 - [ ] **本地 Windows 覆盖率**：QEMU 路线不可靠；如需本地出覆盖率用 **WSL2 + native_sim**（`west twister -p native_sim --coverage`）。CI 已可替代日常需求。
 - [ ] **bms_f405 进矩阵**：自定义板 dts/defconfig 完善后，加入 CI build 矩阵与 release.yml。
 - [ ] **后续增强**：codechecker（封装 clang-tidy/clang-analyzer + cppcheck）做更深 SCA；MISRA 视功能安全需求评估（商业工具）。见 [docs/ci-borrow-checklist.md](docs/ci-borrow-checklist.md)。
+
+## 待办
+
+- [ ] **renode与qemu对比** ：通过对比二者进行模拟硬件环境的选型、适配。
+- [ ] **codereview** ：多人开发还需要增加代码审查环节。

@@ -1,0 +1,98 @@
+#!/bin/sh
+# pre-push: a CHEAP "don't push something CI will reject" net. Runs ONCE per
+# push (not per commit), so it can do a little more than pre-commit -- but it
+# must stay fast and portable, so it NEVER triggers a full Zephyr build.
+#
+# What it does, in order:
+#   1. clang-format check on every project .c/.h changed in the push range
+#      (catches a commit that bypassed pre-commit with --no-verify).
+#   2. clang-tidy on changed app/src/*.c -- ONLY if clang-tidy AND an existing
+#      build/compile_commands.json are both present (reuses your dev build;
+#      never builds from scratch). Otherwise skipped with a hint.
+#
+# The FULL CI mirror (both boards build + twister + SCA + clang-tidy) lives in
+# scripts/check.ps1 -- run it manually before opening a PR.
+#
+# Enable once per clone:  git config core.hooksPath scripts/hooks
+# Bypass in emergencies:  git push --no-verify
+
+zero="0000000000000000000000000000000000000000"
+
+# Locate clang-format: PATH first, then the workspace venv (same as pre-commit).
+CF="$(command -v clang-format 2>/dev/null)"
+if [ -z "$CF" ]; then
+    CF="/d/__00_WorkSpace/__06_Study/bms-workspace/.venv/Scripts/clang-format.exe"
+fi
+
+# Collect changed .c/.h across every ref being pushed.
+# git feeds the hook lines of: <local_ref> <local_oid> <remote_ref> <remote_oid>
+changed=""
+while read -r local_ref local_oid remote_ref remote_oid; do
+    [ "$local_oid" = "$zero" ] && continue            # branch deletion: nothing to check
+    if [ "$remote_oid" = "$zero" ]; then
+        # New branch on remote: diff against origin/master, else the root commit.
+        base="$(git merge-base origin/master "$local_oid" 2>/dev/null)"
+        [ -z "$base" ] && base="$(git rev-list --max-parents=0 "$local_oid" | tail -n1)"
+        range="$base..$local_oid"
+    else
+        range="$remote_oid..$local_oid"
+    fi
+    files="$(git diff --name-only --diff-filter=ACM "$range" \
+             | grep -E '^(app|drivers|tests)/.*\.(c|h)$')"
+    changed="$changed
+$files"
+done
+
+# Dedup and drop blank lines.
+changed="$(printf '%s\n' "$changed" | sort -u | grep -E '.')"
+if [ -z "$changed" ]; then
+    echo "pre-push: no project .c/.h changes in this push; nothing to check."
+    exit 0
+fi
+
+# --- 1. format check on the push range ------------------------------------
+if [ -x "$CF" ] || command -v "$CF" >/dev/null 2>&1; then
+    fail=0
+    for f in $changed; do
+        [ -f "$f" ] || continue                       # deleted file: skip
+        "$CF" --dry-run --Werror --style=file "$f" || fail=1
+    done
+    if [ "$fail" -ne 0 ]; then
+        echo ""
+        echo "pre-push: format violations above (a commit likely used --no-verify)."
+        echo "    fix: powershell -ExecutionPolicy Bypass -File scripts/format.ps1"
+        echo "    then re-commit and push (or 'git push --no-verify' to bypass)."
+        exit 1
+    fi
+    echo "pre-push: format OK."
+else
+    echo "pre-push: clang-format not found (PATH or venv); skipping format check." >&2
+fi
+
+# --- 2. opportunistic clang-tidy (only when cheap: tool + existing build) --
+TIDY="$(command -v clang-tidy 2>/dev/null)"
+app_c="$(printf '%s\n' "$changed" | grep -E '^app/src/.*\.c$' || true)"
+if [ -n "$TIDY" ] && [ -f build/compile_commands.json ] && [ -n "$app_c" ]; then
+    echo "pre-push: clang-tidy on changed app/src files (reusing build/)..."
+    if ! clang-tidy -p build $app_c; then
+        echo ""
+        echo "pre-push: clang-tidy reported issues above. Fix, or run the full mirror:"
+        echo "    powershell -ExecutionPolicy Bypass -File scripts/check.ps1"
+        exit 1
+    fi
+    echo "pre-push: clang-tidy OK."
+else
+    echo "pre-push: skipping clang-tidy (needs clang-tidy + build/compile_commands.json)."
+    echo "          run the full CI mirror before opening a PR:"
+    echo "          powershell -ExecutionPolicy Bypass -File scripts/check.ps1"
+fi
+
+# --- 3. cppcheck + MISRA on changed app/src .c (WARN-ONLY; no build needed) -
+# cppcheck analyzes sources directly, so this is cheap enough for pre-push.
+# Non-blocking by design (see scripts/cppcheck-run.sh); never stops a push here.
+if [ -n "$app_c" ]; then
+    echo "pre-push: cppcheck + MISRA on changed app/src files (warn-only)..."
+    sh scripts/cppcheck-run.sh $app_c
+fi
+
+exit 0

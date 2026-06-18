@@ -65,11 +65,15 @@ MISRA 类：`eclair`、`polyspace`、`coverity`、`iar_c_stat`、`cpptest`（均
   - 免费替代：cppcheck 的 misra addon（stm32 就是这么做），但 **MISRA 规则全文受版权保护**，
     stm32 仅放了 `misra-c-2023-headlines.txt`（标题行），借鉴时需自备规则文本。
 - [ ] 建议：先上免费的 `gcc`/`codechecker`，确有合规需求再评估商业工具。
+- [ ] **引入方式（按阻断强度递进，非按位置）**：① 本地试跑调参 + 建 suppression/基线 → ② 进 CI 但**非阻断**（`continue-on-error`/只出报告或 PR 注释，观察若干 PR）→ ③ 噪声归零后升为**必过门禁** → ④ 证明低噪后下放到 `pre-push`。
+  - 切忌一上来把吵的工具设成 CI 必过门（会卡死每个 PR，且在 CI 来回调参极慢）；
+  - 用 **baseline 只对新增代码报错**，不必先清零历史问题即可上线；
+  - 详见 [development-workflow.md §6](development-workflow.md) 的「按阻断强度递进」阶梯表。
 
 ## 落地顺序建议
 1. 先补 **CI 骨架 + twister + 格式检查**（P0）——投入最小，立刻拦低级问题。
 2. 再加 **SCA（gcc/codechecker）+ 借用 stm32 的 `.clang-tidy`**（P1）。
-3. 最后按需考虑 **MISRA / Doxygen**（P2/P3）。
+3. 最后按需考虑 **MISRA / Doxygen**（P2/P3）——引入时按上面「非阻断→基线→门禁」的阶梯，勿直接设成必过门。
 
 ## 参考文件（stm32-project-template）
 - CI 流水线：`.github/workflows/ci-pipeline.yml`

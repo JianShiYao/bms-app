@@ -11,7 +11,7 @@
 |---|---|---|---|
 | 需求 | 设计/规格文档（`docs/`） | 软 | 需求管理、验收标准、需求↔测试追溯 |
 | 设计 | 架构文档 + 分层/zbus 解耦 | 软 | 设计评审流程、API 文档(Doxygen)、FMEA/安全分析 |
-| 编码 | clang-format、.editorconfig、命名规范、pre-commit 钩子 | 提交前拦截 | — |
+| 编码 | clang-format（pre-commit/CI 强制）、.editorconfig（编辑器实时，**依赖插件**）、命名规范 | clang-format=提交前拦截；editorconfig=仅编辑器层 | — |
 | 静态分析 | gcc `-fanalyzer`、clang-tidy(CERT/可读性，硬) | CI 必过 | cppcheck、MISRA、复杂度度量 |
 | 测试 | ztest 单测、twister、app 覆盖率门禁(line≥55%) | CI 必过 | 集成/HIL 测试、未覆盖模块、分支覆盖偏低 |
 | 构建 | 多目标编译矩阵(mps2/an386 + native_sim) | CI 必过 | bms_f405 板、Release 多板 |
@@ -28,10 +28,13 @@
 - 无成文**设计评审**门槛；API 文档（Doxygen）未搭建。
 
 ### 2. 编码（提交前）
-**现状**（提交前即拦截）：
-- 格式：仓库根 [.clang-format](../.clang-format)（Zephyr 风格）+ [.editorconfig](../.editorconfig)；行尾 LF 由 [.gitattributes](../.gitattributes) 统一。
+**现状**（提交前即拦截）。规则文件本身不"触发"检查，触发靠读取它的工具，分三层：
+- 格式：
+  - [.clang-format](../.clang-format)（Zephyr 风格 tab/8）——**权威**。触发链：保存时由 C/C++ 扩展套用 → 提交时 pre-commit 用 `clang-format --dry-run --Werror` 硬拦截 → CI 设 format gate 兜底。
+  - [.editorconfig](../.editorconfig)（缩进/charset/去尾空格/结尾换行；C 段已对齐 tab/8 以避免与 clang-format 冲突）——**仅编辑器层，依赖插件**：需安装 `EditorConfig.EditorConfig`（已列入 [.vscode/extensions.json](../../.vscode/extensions.json) 推荐）才生效，**不装则该文件不起作用**；它无独立提交门禁，非 C 文件（yaml/json/ps1/md）的排版仅靠它。
+  - 行尾 LF 由 [.gitattributes](../.gitattributes) 在提交时强制（与是否装插件无关）。
 - 命名/规范：[.clang-tidy](../.clang-tidy)（C/snake_case，cert-*/readability-*）。
-- 本地门禁：[scripts/hooks/pre-commit](../scripts/hooks/pre-commit) 校验暂存 `.c/.h` 格式；`scripts/format.ps1` 一键格式化/检查。
+- 本地门禁：[scripts/hooks/pre-commit](../scripts/hooks/pre-commit)（需 `git config core.hooksPath scripts/hooks` 注册一次）校验暂存 `.c/.h` 格式；`scripts/format.ps1` 一键格式化/检查。
 **待补齐**：无（编码层管控已较完整）。
 
 ### 3. 静态分析（SCA，CI 必过）

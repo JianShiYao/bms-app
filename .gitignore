@@ -36,3 +36,9 @@ compile_commands.json
 # Python venv（工具链）
 .venv/
 __pycache__/
+
+# cppcheck MISRA addon（GPLv3，按机器下载，不入库；见 scripts/setup-cppcheck-misra.sh）
+scripts/.cppcheck-addons/
+# cppcheck 分析中间产物
+*.dump
+*.ctu-info

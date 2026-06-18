@@ -27,19 +27,20 @@
 ## 3. 克隆后一次性设置
 
 ```powershell
-git config core.hooksPath scripts/hooks   # 启用 pre-commit 格式钩子
+git config core.hooksPath scripts/hooks   # 一次启用 pre-commit(格式) + pre-push(推前自检)
 ```
 详见 [README 第六节](../README.md#六代码格式化与提交检查)。
 
-## 4. 提交前自检（pre-PR 三连）
+## 4. 提交前自检（开 PR 前跑 check.ps1）
 
-在开 PR 前本地先过一遍，避免 CI 才发现问题：
+开 PR 前在**已激活 venv 的 PowerShell** 里本地复现 CI 全套门禁，避免 push 后才在 CI 发现问题：
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\format.ps1 -Check   # 格式
-west build -b mps2/an386 app                                         # 能编
-west twister -T tests -p mps2/an386 -c                               # 测试 11/11
+powershell -ExecutionPolicy Bypass -File scripts\check.ps1          # 全量：format/build×2/twister/sca/clang-tidy
+powershell -ExecutionPolicy Bypass -File scripts\check.ps1 -Fast    # 快跑：仅 format/build×2/twister(跳过较慢的 sca/clang-tidy)
 ```
-（覆盖率本地走 `..\run-tests-coverage.ps1`；QEMU 路线覆盖率不可靠，可靠覆盖率见 CI / WSL2+native_sim。）
+- 缺工具（如未装 clang-tidy）的门会标 `SKIP`（不计失败，CI 会补跑）；任一 `FAIL` 退出码非 0。
+- SCA / clang-tidy 做 `-p always` 干净构建，全量约数分钟；日常迭代可先 `-Fast`，开 PR 前再跑一次全量。
+- 覆盖率本地走 `..\run-tests-coverage.ps1`；QEMU 路线覆盖率不可靠，可靠覆盖率见 CI / WSL2+native_sim。
 
 ## 5. PR 流程
 
@@ -53,17 +54,55 @@ gh pr create --base master      # 开 PR（填模板）
 - 合并策略：**仅 Squash**（master 线性、每 PR 一条规范提交）。
 - master 受保护：CI 必过才能合并；禁直推、禁强推、要求线性历史。
 
-## 6. 五道质量关
+## 6. 分层质量关（按触发时机递进）
 
-| 关 | 时机 | 工具 | 阻断点 |
-|---|---|---|---|
-| ① 编辑时 | 写码 | `.clang-format` + `.editorconfig`（编辑器即时） | 软约束 |
-| ② 提交前 | `git commit` | `scripts/hooks/pre-commit`（暂存 .c/.h 格式校验） | 本地拒绝提交 |
-| ③ CI / PR | push / PR | `.github/workflows/ci.yml` | 分支保护拦合并 |
-| ④ 发布 | 打 tag | `.github/workflows/release.yml`（tag `v*`） | 发布失败即无 Release |
-| ⑤ 审计 | 持续 | `dependabot` / `CODEOWNERS` / `CHANGELOG` / PR 模板 | 软约束 |
+**设计原则：越靠前的关越要快，越靠后的关越全。** 检查按成本放到合适的触发点，
+而不是一股脑塞进 `pre-commit`（那样会慢到被 `--no-verify` 绕过，门形同虚设）。
 
-CI（③）当前 6 道门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(CERT/可读性)。
+| 关 | 时机 | 工具 | 速度 | 阻断点 |
+|---|---|---|---|---|
+| ① 编辑时 | 写码/保存 | `.clang-format` + `.editorconfig`（编辑器即时，editorconfig 依赖插件） | 实时 | 软约束（自动套用） |
+| ② 提交前 | `git commit` | `scripts/hooks/pre-commit`（暂存 .c/.h 格式校验） | 秒级 | 本地拒绝提交 |
+| ③ 推送前 | `git push` | `scripts/hooks/pre-push`（push 范围 format + 机会性增量 clang-tidy + **cppcheck/MISRA 告警**） | 秒级~十几秒 | format/tidy 拒推；cppcheck/MISRA 仅告警 |
+| ④ 开 PR 前 | 手动 | `scripts/check.ps1`（本地全量镜像 CI） | 数分钟 | 自检（暴露 CI 必失项） |
+| ⑤ CI / PR | push / PR | `.github/workflows/ci.yml`（6 门，权威） | — | 分支保护拦合并 |
+| ⑥ 发布 | 打 tag | `.github/workflows/release.yml`（tag `v*`） | — | 发布失败即无 Release |
+| ⑦ 审计 | 持续 | `dependabot` / `CODEOWNERS` / `CHANGELOG` / PR 模板 | — | 软约束 |
+
+**为什么重检查（clang-tidy / SCA / 将来的 MISRA/cppcheck）不放 `pre-commit`：**
+它们依赖完整构建生成的 `compile_commands.json`，首轮要编一遍 Zephyr（数十秒~分钟），
+每次 commit 都做不现实。因此：
+
+- `pre-commit`（每次提交）只做**秒级**的 clang-format —— 保证提交粒度的快。
+- `pre-push`（每次推送一次）做**便宜网**：对本次 push 的改动做 format 校验（挡 `--no-verify` 漏过的）、
+  在本地已有 `build/compile_commands.json` 时**复用它**增量跑 clang-tidy（绝不从零构建）、
+  并用 [`scripts/cppcheck-run.sh`](../scripts/cppcheck-run.sh) 对改动的 `.c` 跑 **cppcheck + MISRA**
+  （**独立粗筛**：无需构建、秒级；但无 Zephyr 头/宏上下文，会有已知假阳性如 MISRA 17.3/17.7，故 warn-only）。
+- `check.ps1`（开 PR 前手动）才做**全量镜像**：两板构建 + twister + SCA + clang-tidy + cppcheck/MISRA，对齐 CI。
+  其中 cppcheck/MISRA 走 **project 模式**（`cppcheck --project build/check-tidy/compile_commands.json`，复用 clang-tidy
+  那步的编译库），有真实 `-I/-D` 上下文，**假阳性基本消除**（实测 17→0）。
+
+> **cppcheck/MISRA 双层**：pre-push 用独立模式图快（容忍假阳性、只告警）；check.ps1/CI 用 project 模式图准。
+> MISRA addon（`misra.py`，GPLv3）不入库，按机器跑 [`scripts/setup-cppcheck-misra.sh`](../scripts/setup-cppcheck-misra.sh)
+> 下载到 gitignore 的 `scripts/.cppcheck-addons/`；噪声与 deviation 在 [`.cppcheck-suppressions`](../.cppcheck-suppressions) 集中维护。
+
+**新静态分析工具（cppcheck / MISRA）的引入按「阻断强度」递进，而非按位置：**
+直接把还很吵的工具设成 CI 必过门，会让每个 PR 都被误报卡死、且在 CI 上来回调参极慢。正确阶梯：
+
+| 阶段 | 在哪 | 阻断强度 | 目的 | 本项目现状 |
+|---|---|---|---|---|
+| ① 试跑调参 | 本地（反馈最快） | 不阻断 | 看噪声量、选规则子集、建 suppression/基线 | — |
+| ② 观察期 | pre-push（本地） / CI | **非阻断（告警）** | 跑若干轮，确认基线稳 | **当前在此**：pre-push + check.ps1 中 cppcheck/MISRA = warn-only |
+| ③ 升门禁 | CI | **必过**（加入 required checks） | 噪声归零后才阻断合并 | 待噪声调稳后做 |
+| ④ 收紧本地 | pre-push | 本地拦截（`CPPCHECK_FAIL=1`） | 低噪后给开发者硬反馈 | 一个开关即可启用 |
+
+> 说明：本项目把②"非阻断观察"放在**本地（pre-push / check.ps1 的 warn-only）**做，而非 CI——
+> 对单人项目本地反馈更快、调 suppression 不必来回 push。[`.cppcheck-suppressions`](../.cppcheck-suppressions)
+> 集中维护豁免与 MISRA deviation；噪声调稳后，pre-push 设 `CPPCHECK_FAIL=1` 即升级为阻断，或再并入 CI required checks。
+
+要点：**调参在本地做**（CI 来回 push 太慢）；**进 CI 第一步必须非阻断**；用 **baseline/suppression 只对新增代码报错**，不必先清零历史问题即可上线。
+
+CI（⑤）当前 6 道门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(CERT/可读性)。
 各阶段质量管控现状与待补齐的全景见 [quality-management.md](quality-management.md)；SCA/clang-tidy/覆盖率的路线图见 [ci-borrow-checklist.md](ci-borrow-checklist.md)。
 
 ## 7. 分支保护说明

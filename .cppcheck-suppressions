@@ -1,0 +1,24 @@
+# cppcheck suppression list (project-wide, used by scripts/cppcheck-run.sh).
+# Format: <id>[:<file>[:<line>]]   one per line.   '#' starts a comment.
+#
+# We run cppcheck WITHOUT build include paths, so silence include-resolution
+# noise here -- these are environment artifacts, not real defects.
+missingInclude
+missingIncludeSystem
+unknownMacro
+unmatchedSuppression
+checkersReport
+# 'misra-config' = "macro X unknown, analysis incomplete" (e.g. Zephyr's
+# CONFIG_* / IS_ENABLED). It is a completeness notice, NOT a rule violation;
+# expected when running cppcheck without the Kconfig-generated build config.
+misra-config
+# In project mode cppcheck cannot identify the cross-compiler, so Zephyr's
+# toolchain.h trips its #error guard. cppcheck limitation, not our code; scope
+# to zephyr/ headers so a real #error in our own code is still reported.
+preprocessorErrorDirective:*/zephyr/*
+
+# --- Accepted MISRA deviations (add with a one-line justification) ----------
+# Each entry waives a rule for the whole project; prefer inline
+# '// cppcheck-suppress misra-c2012-X.Y' at the exact site when possible.
+# Example:
+# misra-c2012-15.5  # early return used for guard clauses (readability > single-exit)
