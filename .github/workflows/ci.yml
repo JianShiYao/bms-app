@@ -10,8 +10,8 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install clang-format (pinned to local version)
@@ -34,7 +34,7 @@ jobs:
       matrix:
         board: [mps2/an386, native_sim]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: bms-app
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -53,7 +53,7 @@ jobs:
     env:
       ZEPHYR_TOOLCHAIN_VARIANT: zephyr
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: bms-app
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -68,7 +68,7 @@ jobs:
           --coverage --coverage-tool gcovr -O twister-out
       - name: Upload coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: |
@@ -80,7 +80,7 @@ jobs:
     needs: format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: bms-app
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -93,7 +93,7 @@ jobs:
         run: bash bms-app/scripts/sca-check.sh sca-build.log
       - name: Upload SCA log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sca-gcc-log
           path: sca-build.log
@@ -103,7 +103,7 @@ jobs:
     needs: format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: bms-app
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
