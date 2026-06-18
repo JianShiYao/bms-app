@@ -48,6 +48,10 @@ jobs:
   test-coverage:
     needs: format
     runs-on: ubuntu-latest
+    # twister's coverage tool-selection reads ZEPHYR_TOOLCHAIN_VARIANT directly;
+    # action-zephyr-setup doesn't export it, so set it here (SDK gcov path).
+    env:
+      ZEPHYR_TOOLCHAIN_VARIANT: zephyr
     steps:
       - uses: actions/checkout@v4
         with:
