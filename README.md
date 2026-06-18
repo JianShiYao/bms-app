@@ -2,6 +2,8 @@
 
 基于 **Zephyr RTOS v4.4.0** 的电池管理系统（BMS）固件。采用 west **T2 拓扑**（本仓库即 manifest 仓库），分层架构 + zbus 消息总线解耦。
 
+> 参与开发请先读 **[开发流程与质量审查](docs/development-workflow.md)**（分支模型 / 提交规范 / PR 流程 / 质量门禁 / 发布）。
+
 - 第一步：在 PC 上用 **QEMU（`mps2/an386`，Cortex-M4F）** 跑通架构与业务骨架。
   - 选 `mps2/an386` 是因为它与目标 STM32F405 同为 **Cortex-M4F（带硬件 FPU）**，架构忠实。
   - 注：`native_sim` 的 POSIX 架构仅支持 Linux（见 `zephyr/arch/posix/CMakeLists.txt`），
