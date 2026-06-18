@@ -22,10 +22,9 @@
 ## 二、分阶段详述
 
 ### 1. 需求与设计
-**现状**：系统设计见 [architecture.md](architecture.md)（三层架构、zbus 数据流、保护优先级、fail-safe 原则）；功能规格散见 `docs/`。模块化由 Kconfig 开关表达（`CONFIG_BMS_*`）。
+**现状**：系统设计见 [architecture.md](architecture.md)（三层架构、zbus 数据流、保护优先级、fail-safe 原则）；功能规格散见 `docs/`。模块化由 Kconfig 开关表达（`CONFIG_BMS_*`）。**已提供需求工程模板** [templates/](templates/)（需求规格 + 设计规格 + 需求↔测试追溯，EARS 句式、ID 规范、与 ztest 关联约定）。
 **待补齐**：
-- 无形式化**需求管理**与**验收标准**；
-- 无**需求↔测试追溯**（功能安全关键 —— 每条安全需求应能追到测试用例）；
+- 按模块**填充**需求/设计文档并建立追溯矩阵（模板已就绪，内容待写）；
 - 无成文**设计评审**门槛；API 文档（Doxygen）未搭建。
 
 ### 2. 编码（提交前）
