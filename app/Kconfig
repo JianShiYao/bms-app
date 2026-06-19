@@ -30,6 +30,42 @@ config BMS_SOC
 	bool "SOC/SOH 估算模块"
 	default y
 
+config BMS_SOC_PACK_CAPACITY_MAH
+	int "电池组额定容量 (mAh)"
+	depends on BMS_SOC
+	range 1 10000000
+	default 100000
+	help
+	  库仑积分换算基准（额定容量，单位 mAh）。换算公式
+	  ΔSOC(‰)=acc(mA·ms)/(容量×3600)。多板型适配请覆写，
+	  禁止在算法中硬编码（REQ-SOC-C12）。
+
+config BMS_SOC_INIT_FROM_VOLTAGE
+	bool "上电用电压线性映射初始化 SOC 初值"
+	depends on BMS_SOC
+	default y
+	help
+	  y：首帧用 bms_soc_estimate 的电压映射(3000mV→0‰,4200mV→1000‰)
+	  作为库仑积分起点（REQ-SOC-C04）。n：从 0‰ 起算（不推荐）。
+
+config BMS_SOC_GAP_FACTOR_N
+	int "丢帧判定因子 N（Δt 上限 = N × AFE 采样周期）"
+	depends on BMS_SOC
+	range 2 1000
+	default 10
+	help
+	  帧间差 > N×CONFIG_BMS_AFE_SAMPLE_PERIOD_MS 判为丢帧，Δt 夹紧到
+	  该上限，避免单帧 SOC 大幅跳变（REQ-SOC-C02-3、C06）。
+
+config BMS_SOC_MAX_CURRENT_MA
+	int "合理电流量程上限绝对值 (mA)"
+	depends on BMS_SOC
+	range 1 2000000
+	default 200000
+	help
+	  |pack_current_ma| 超过此值判为坏数据，跳过本帧积分（REQ-SOC-C06）。
+	  默认 ±200A，覆盖 C10 建议的 ±100A 测试量程并留裕量。
+
 config BMS_PROTECTION
 	bool "保护状态机模块"
 	default y
