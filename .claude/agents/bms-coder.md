@@ -18,6 +18,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 - 测试：`tests/bms/*` 用 Twister + ztest。范式：把纯逻辑函数与线程分离以便单测（范例 `bms_protection_evaluate`）。
 - 构建/测试（以 Windows venv 为准）：用 `.venv\Scripts\python.exe -m west <cmd>`（west v1.5.0）。本地测试跑 `powershell -File run-tests-coverage.ps1`（默认板 mps2/an386，QEMU 与 gcov 取自 D:\zephyr-sdk\zephyr-sdk-1.0.1）；构建 `.venv\Scripts\python.exe -m west build -b mps2/an386 app`。WSL + native_sim 仅作可选的覆盖率链路。
 - 失效安全红线：默认接触器 OPEN，仅判定 NORMAL 才 CLOSED；安全相关线程优先级更高。
+- 规范对齐：遵循 docs/templates/ 模板（requirements/design-spec/traceability-matrix）与 docs/development-workflow.md。ID——需求 `REQ-<域>-<NNN>`、设计 `DES-<域>-<NNN>`，域 = SYS/AFE/SOC/PROT/BAL/COMM/BOARD（如 REQ-SOC-001、DES-SOC-002，不加额外前缀/后缀）。追溯用独立 `docs/features/<slug>/traceability.md`（套 traceability-matrix-template，列：需求ID|需求摘要|设计|验证方法|测试用例|状态）。
 - 交付物语言：中文。
 
 ## 输入与输出契约
@@ -26,7 +27,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash
   1. 实现代码写入 `app/src/bms/<module>/` 与头 `app/include/bms/`
   2. 必要的 `app/Kconfig`、`channels.c/.h`、overlay 改动
   3. 在代码注释中标注对应设计项/需求 ID
-  4. 回填 `traceability.md` 的代码位置列
+  4. 代码注释标注覆盖的 REQ-/DES-ID（见 docs/templates/README.md 约定）；追溯矩阵不单设代码列，代码↔需求关系由注释承载
 - TDD 顺序：纯逻辑函数 → 先写 ztest 失败用例（交给 tester 或自测）→ 实现 → 构建通过。
 
 ## 工作准则与禁忌
