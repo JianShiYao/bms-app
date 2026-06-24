@@ -20,6 +20,8 @@
 | 依赖/供应链 | west manifest pin、dependabot(actions) | 软 | pip 依赖、SBOM、依赖漏洞扫描 |
 | 流程治理 | PR 流 + 6 门禁分支保护、Conventional Commits、CODEOWNERS、CHANGELOG | 合并拦截 | 多人评审(单人=0)、需求/缺陷跟踪系统 |
 
+> 流程门补充：特性开发的迭代准入/准出(DoR/DoD)、安全改动路径、追溯 DoD 门见 [development-workflow.md §1.3 / §2 / §7](development-workflow.md)；PR 模板含「追溯链无断链」「安全相关改动」勾选项。本文对应的方法论依据见 [development-methodology.md](development-methodology.md)。
+
 ## 二、分阶段详述
 
 ### 1. 需求与设计
@@ -54,7 +56,7 @@
 **待补齐**：
 - **未被测试的模块**：当前 soc/protection/afe/channels 进入测试构建；**balancing/comm/main 无专门单测**；
 - **分支覆盖偏低**（39%），init/线程路径未覆盖；
-- 无**集成测试**、无**HIL（硬件在环）**、无 fuzz/属性测试。
+- 集成/系统验证当前**合并为一个环节**（对齐 [development-workflow.md §8](development-workflow.md) V 腿表），但**尚无专门的多模块集成测试套件**——现仅靠各模块单测 + `native_sim` 整机运行覆盖；专门集成测试待补。无 **HIL（硬件在环）**、无 fuzz/属性测试。
 
 ### 5. 构建 / CI（必过门禁）
 **现状**：[.github/workflows/ci.yml](../.github/workflows/ci.yml) 6 道门禁 DAG：
@@ -95,4 +97,18 @@ BMS 属安全相关系统，保护逻辑（过压/过流/过温→接触器）�
 - **FMEA / 危害分析** 与对应的诊断/降级策略；
 - **固件签名 + 安全启动**，防篡改。
 
-这些超出当前 QEMU 骨架阶段，待接真实硬件并明确安全目标后纳入规划。
+其中**安全纪律**——关联安全需求、测试先行、验证失效安全默认态——按 [development-workflow.md §2](development-workflow.md) **现行生效，不分阶段**；**重型工作产物**（FMEA / 危害分析 / ISO 26262 工作产物全集、保护路径 MC-DC 高覆盖、固件签名+安全启动）则待接真实硬件并明确安全目标后纳入规划。
+
+## 五、对方法论五原则的符合性
+
+> 依据 [development-methodology.md](development-methodology.md) §4 的五条原则，评估本项目质量管控的符合度（✅满足 / ⚠️部分 / ❌差距）。本文是该方法论原则2·3·5 的落地与现状映射（见方法论 §6 派生表）。
+
+| 方法论原则 | 结论 | 说明 |
+|---|---|---|
+| ①软件优先/可仿真 | ✅ 满足 | 多目标编译矩阵(native_sim + mps2/an386)、zbus 解耦、afe 后端可切换 |
+| ②测试左移/金字塔 | ⚠️ 部分 | 单元层好(47 例 + 纯函数 + 覆盖率门)；集成层尚无专门套件、balancing/comm/main 无单测、分支覆盖 39% 偏低 |
+| ③可追溯性是灵魂 | ⚠️ 推进中 | 新特性经小 V 的 DoD **强制**追溯链(已生效)；历史需求(逆向 231 条)追溯矩阵**增量 backfill**(待补) |
+| ④失效安全/红线先行 | ✅ 纪律满足 / ⚠️ 重型项待补 | 默认 OPEN 红线 + 安全改动纪律(development-workflow §2)现行；FMEA/认证类待接真板 |
+| ⑤持续合规/自动化为桥 | ✅ 代码维度 / ⚠️ 追溯维度 | CI 6 门 + 分层门禁扎实；追溯维护暂靠 DoD/PR 模板(未自动化)，CI 追溯校验留作后续 |
+
+> 待补齐项详见第三节优先级表；可追溯性的"新工作强制/历史增量"边界以方法论 §4 原则3 立场为准。
