@@ -103,9 +103,13 @@ Expected: 切到新分支 `docs/agile-v-methodology`。
 
 3. **可追溯性是灵魂(V 模型核心)** — 每条需求贯通 `需求→架构→设计→代码→测试`,右腿验证可回溯左腿;**无追溯即无完备性证据**;安全相关需求优先自动化测试。
    > BMS:`REQ-<域>-NNN → DES-<域>-NNN → 代码位置 → ztest 用例`;域 = SYS/AFE/SOC/PROT/BAL/COMM/BOARD;ztest 用 `/* Verifies REQ-<域>-NNN: ... */` 回链。
+   >
+   > **立场(原则即刻生效,不悬空)**:本原则对**新特性即刻强制**——小 V 的 DoD 要求追溯链无断链,无追溯不得合并。历史代码(逆向得到的既有需求)的追溯矩阵作为**独立的增量 backfill** 推进,不因历史欠账而削弱对新工作的强制。
 
 4. **失效安全 / 安全红线先行** — 安全相关改动必须关联安全需求、默认安全态、测试先行、显式验证。
    > BMS:接触器**默认 OPEN**,仅判定 NORMAL 才 CLOSED;保护线程最高优先级;SOC 等信息流不得参与保护决策。
+   >
+   > **立场(纪律不分阶段)**:安全**纪律**——关联安全需求、测试先行、验证失效安全默认态(见 [development-workflow.md §2](development-workflow.md))——**现行生效,不分项目阶段**。仅 FMEA / 危害分析 / ISO 26262 工作产物全集等**重型**项可随"接真板、明确安全目标"后置。不给安全纪律留"待真板再说"的口子。
 
 5. **持续合规(自动化是桥)** — 验证与追溯靠自动化**持续**满足,而非阶段末人工补;门要前移、高频、自动。这是 §2 调和洞察的落地。
    > BMS:CI 6 门(format / build×2 / test-coverage / sca-gcc / clang-tidy)+ pre-commit/pre-push 分层门禁 + DoD 追溯门。
@@ -129,7 +133,7 @@ Expected: 切到新分支 `docs/agile-v-methodology`。
 | [templates/](templates/) | §4 原则3(可追溯性) | REQ/DES ID 规范、追溯矩阵、EARS 模板 |
 | CI(`.github/workflows/ci.yml`) | §4 原则2·5 | 自动化验证门 |
 | [superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md) | §3 模型 / §4 | agent 体系的设计取舍 |
-| [quality-management.md](quality-management.md) | §4 原则2·3·5 | 各阶段质量管控现状与缺口 |
+| [quality-management.md](quality-management.md) | §4 原则2·3·5 | 各阶段质量管控现状与缺口、对五原则的符合性 |
 
 ## 7. 术语表
 
@@ -339,13 +343,83 @@ git commit -m "docs(claude): reference methodology root as workflow rationale"
 
 ---
 
-## Task 6: 全局验证(派生闭环 + 链接 + 无重复)
+## Task 6: quality-management 对齐方法论
+
+**Files:**
+- Modify: `docs/quality-management.md`(加「五原则符合性」节、改 §四末句、修 §二.4 不一致、补交叉引用)
+
+**背景:** quality-management 写于方法论+工作流重构前,需对齐:加符合性映射并声明依据、把安全纪律从"待真板"上移为现行、修「无集成测试」与 development-workflow §8 的口径冲突。
+
+- [ ] **Step 1: 新增「五、对方法论五原则的符合性」节**
+
+在现有「## 四、功能安全视角(BMS 特别提示)」节**之后**,追加新节:
+
+````markdown
+## 五、对方法论五原则的符合性
+
+> 依据 [development-methodology.md](development-methodology.md) §4 的五条原则,评估本项目质量管控的符合度(✅满足 / ⚠️部分 / ❌差距)。本文是该方法论原则2·3·5 的落地与现状映射(见方法论 §6 派生表)。
+
+| 方法论原则 | 结论 | 说明 |
+|---|---|---|
+| ①软件优先/可仿真 | ✅ 满足 | 多目标编译矩阵(native_sim + mps2/an386)、zbus 解耦、afe 后端可切换 |
+| ②测试左移/金字塔 | ⚠️ 部分 | 单元层好(47 例 + 纯函数 + 覆盖率门);集成层尚无专门套件、balancing/comm/main 无单测、分支覆盖 39% 偏低 |
+| ③可追溯性是灵魂 | ⚠️ 推进中 | 新特性经小 V 的 DoD **强制**追溯链(已生效);历史需求(逆向 231 条)追溯矩阵**增量 backfill**(待补) |
+| ④失效安全/红线先行 | ✅ 纪律满足 / ⚠️ 重型项待补 | 默认 OPEN 红线 + 安全改动纪律(development-workflow §2)现行;FMEA/认证类待接真板 |
+| ⑤持续合规/自动化为桥 | ✅ 代码维度 / ⚠️ 追溯维度 | CI 6 门 + 分层门禁扎实;追溯维护暂靠 DoD/PR 模板(未自动化),CI 追溯校验留作后续 |
+
+> 待补齐项详见第三节优先级表;可追溯性的"新工作强制/历史增量"边界以方法论 §4 原则3 立场为准。
+````
+
+- [ ] **Step 2: 改 §四末句——安全纪律上移为现行**
+
+把「四、功能安全视角」节末句:
+```
+这些超出当前 QEMU 骨架阶段，待接真实硬件并明确安全目标后纳入规划。
+```
+替换为:
+```
+其中**安全纪律**——关联安全需求、测试先行、验证失效安全默认态——按 [development-workflow.md §2](development-workflow.md) **现行生效,不分阶段**;**重型工作产物**(FMEA / 危害分析 / ISO 26262 工作产物全集、保护路径 MC-DC 高覆盖、固件签名+安全启动)则待接真实硬件并明确安全目标后纳入规划。
+```
+
+- [ ] **Step 3: 修「无集成测试」与 §8 的口径不一致**
+
+把「二、4. 测试与覆盖率」节"待补齐"中的:
+```
+- 无**集成测试**、无**HIL（硬件在环）**、无 fuzz/属性测试。
+```
+替换为:
+```
+- 集成/系统验证当前**合并为一个环节**(对齐 [development-workflow.md §8](development-workflow.md) V 腿表),但**尚无专门的多模块集成测试套件**——现仅靠各模块单测 + `native_sim` 整机运行覆盖;专门集成测试待补。无 **HIL(硬件在环)**、无 fuzz/属性测试。
+```
+
+- [ ] **Step 4: 补 DoR/DoD、§2、追溯门交叉引用**
+
+在「一、全景总览」表后插入一句:
+```markdown
+> 流程门补充:特性开发的迭代准入/准出(DoR/DoD)、安全改动路径、追溯 DoD 门见 [development-workflow.md §1.3 / §2 / §7](development-workflow.md);PR 模板含「追溯链无断链」「安全相关改动」勾选项。
+```
+
+- [ ] **Step 5: 校验改动一致**
+
+Run: `grep -n "development-methodology.md\|尚无专门的多模块集成测试\|现行生效" docs/quality-management.md`
+Expected: 新节引用 `development-methodology.md`;不再有孤立的"无集成测试"绝对表述;§四末句出现"现行生效"。
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add docs/quality-management.md
+git commit -m "docs(quality): align with methodology (principle conformance, safety timing, integration-test wording)"
+```
+
+---
+
+## Task 7: 全局验证(派生闭环 + 链接 + 无重复)
 
 **Files:** 无(只读核对)
 
 - [ ] **Step 1: 派生闭环核对**
 
-母文档 §6 表中每个下游(development-workflow / agents-guide / templates / 2026-06-19 spec / quality-management),逐一确认其文中已有指回母文档的"依据"链接(本计划 Task 2–5 已加 development-workflow / agents-guide / templates / CLAUDE.md;2026-06-19 spec 与 quality-management 为被引用方,无需反向链接)。
+母文档 §6 表中每个下游(development-workflow / agents-guide / templates / quality-management / 2026-06-19 spec),逐一确认其文中已有指回母文档的"依据"链接(本计划 Task 2–6 已加 development-workflow / agents-guide / templates / CLAUDE.md / quality-management;2026-06-19 spec 为被引用方,无需反向链接)。
 Expected: 无孤链。
 
 - [ ] **Step 2: 链接有效性**
@@ -373,10 +447,12 @@ Expected: PR 创建,CI 6 门触发(文档改动应全绿)。
 
 ## Self-Review(本计划对 spec 的覆盖)
 
-- spec §2.1 母文档七节 → Task 1 全文覆盖 ✓
-- spec §2.2 配套回改(development-workflow §1 / agents-guide / templates/README / CLAUDE.md)→ Task 2/3/4/5 ✓
-- spec §3 五条原则定稿 → Task 1 §4 ✓
-- spec §4 派生关系表 → Task 1 §6 ✓
-- spec §5 验证项 → Task 1 Step2–3 + Task 6 ✓
-- 占位符扫描:无 TBD/TODO;母文档全文已嵌入,非占位 ✓
-- 一致性:ID 形式 `REQ-<域>-NNN`、域集合、ztest 注释格式在母文档与 §1 一致 ✓
+> 依据 spec `2026-06-24-agile-v-development-methodology-design.md`(§1 目的 / §2 决策 / §3 母文档结构含五原则 / §4 配套回改 / §5 范围 / §6 验证)。
+
+- spec §3 母文档七节 → Task 1 全文覆盖 ✓
+- spec §3 §4 原则3/原则4 的两条"立场"(可追溯性新工作强制·历史增量;安全纪律不分阶段)→ Task 1 原则3/4 已注入,且 Task 6 quality-management 用同口径 ✓
+- spec §4 配套回改(development-workflow §1 / agents-guide / templates/README / CLAUDE.md / **quality-management**)→ Task 2/3/4/5/**6** ✓
+- spec §3 派生关系表 → Task 1 §6 ✓
+- spec §6 验证项(含 quality-management 对齐验收)→ Task 1 Step2–3 + Task 6 Step5 + Task 7 ✓
+- 占位符扫描:无 TBD/TODO;母文档与 quality-management 新节全文已嵌入,非占位 ✓
+- 一致性:ID 形式 `REQ-<域>-NNN`、域集合、ztest 注释格式在母文档与 §1 一致;母文档"立场"与 quality-management 结论口径一致(新工作强制/历史增量;纪律现行/重型后置)✓
