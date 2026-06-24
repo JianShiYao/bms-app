@@ -7,6 +7,10 @@ project(bms_app LANGUAGES C)
 # 模块公共头（对外接口）
 target_include_directories(app PRIVATE include)
 
+# 健壮性：app 自有源码的编译告警视为错误（仅限 app 目标，不波及 Zephyr/modules）。
+# 与 clang-tidy(WarningsAsErrors)/sca-gcc 形成互补，挡住编译器层告警。
+target_compile_options(app PRIVATE -Werror)
+
 # 核心源：main + zbus channel 定义
 target_sources(app PRIVATE
   src/main.c

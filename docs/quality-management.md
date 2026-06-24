@@ -12,10 +12,10 @@
 |---|---|---|---|
 | 需求 | 设计/规格文档（`docs/`） | 软 | 需求管理、验收标准、需求↔测试追溯 |
 | 设计 | 架构文档 + 分层/zbus 解耦 | 软 | 设计评审流程、API 文档(Doxygen)、FMEA/安全分析 |
-| 编码 | clang-format（pre-commit/CI 强制）、.editorconfig（编辑器实时，**依赖插件**）、命名规范 | clang-format=提交前拦截；editorconfig=仅编辑器层 | — |
+| 编码 | clang-format（pre-commit/CI 强制）、.editorconfig（编辑器实时，**依赖插件**）、命名规范、**app `-Werror`**（编译告警即错，限 app 目标） | clang-format=提交前拦截；`-Werror`=CI 构建拦截；editorconfig=仅编辑器层 | — |
 | 静态分析 | gcc `-fanalyzer`、clang-tidy(CERT/可读性，硬)、cppcheck+MISRA(本地 + CI 非阻断观察) | CI 必过；cppcheck/MISRA=非阻断(`continue-on-error`) | cppcheck/MISRA 升必过门、复杂度度量 |
 | 测试 | ztest 单测(soc/protection/afe，47 例)、twister、app 覆盖率门禁(line≥55%) | CI 必过 | 集成/HIL 测试、balancing/comm 单测、分支覆盖偏低 |
-| 构建 | 多目标编译矩阵(mps2/an386 + native_sim) | CI 必过 | bms_f405 板、Release 多板 |
+| 构建 | 多目标编译矩阵(mps2/an386 + native_sim)、app `-Werror`、**CI 工具版本已 pin**(clang-format 22.1.5 / gcovr 7.2 / runner 镜像 ubuntu-24.04 锁 apt cppcheck·clang-tidy) | CI 必过 | bms_f405 板、Release 多板 |
 | 发布(CD) | tag→固件制品+SHA256+Release、tag↔VERSION 校验 | 失败即无 Release | 固件签名、SBOM、制品 attestation |
 | 依赖/供应链 | west manifest pin、dependabot(actions) | 软 | pip 依赖、SBOM、依赖漏洞扫描 |
 | 流程治理 | PR 流 + 6 门禁分支保护、Conventional Commits、CODEOWNERS、CHANGELOG | 合并拦截 | 多人评审(单人=0)、需求/缺陷跟踪系统 |
