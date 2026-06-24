@@ -26,6 +26,60 @@ config BMS_AFE_SAMPLE_PERIOD_MS
 	depends on BMS_AFE
 	default 100
 
+choice
+	prompt "AFE 数据源后端"
+	depends on BMS_AFE
+	default BMS_AFE_BACKEND_SIM
+	help
+	  选择 afe 的采样实现后端（业务逻辑/线程不变，差异收敛到 bms_afe_backend_read()，
+	  见 docs/architecture.md「数据源后端可切换（afe）」）。
+
+config BMS_AFE_BACKEND_STUB
+	bool "stub（恒定桩数据）"
+	help
+	  返回固定电压/电流/温度，确定性最强，用于最小化烟雾测试。
+
+config BMS_AFE_BACKEND_SIM
+	bool "sim（充放电仿真模型）"
+	help
+	  三角充放电 + 库仑积分 + OCV 映射 + 温升，QEMU/native_sim 下产出"会动"的
+	  可复现数据，供 soc/protection/balancing 拿到变化输入。
+
+config BMS_AFE_BACKEND_ADC
+	bool "adc（真实硬件，经 devicetree ADC/AFE 芯片）"
+	help
+	  真机后端：DEVICE_DT_GET 取 ADC/专用 AFE 芯片走设备 API。当前为占位，
+	  待 bms_f405 板 dts 就绪后实现。
+
+endchoice
+
+# 测量合理性校验阈值（"读数是否物理可信"，区别于 protection 的保护阈值）。
+# 取很宽的量程，只剔除明显坏帧（断线/量程溢出/ADC 异常），见架构「测量数据纪律」。
+config BMS_AFE_PLAUSIBLE_CELL_MV_MIN
+	int "单体电压合理下限 (mV)"
+	depends on BMS_AFE
+	default 0
+
+config BMS_AFE_PLAUSIBLE_CELL_MV_MAX
+	int "单体电压合理上限 (mV)"
+	depends on BMS_AFE
+	default 6000
+
+config BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA
+	int "电流绝对值合理上限 (mA)"
+	depends on BMS_AFE
+	default 300000
+
+config BMS_AFE_PLAUSIBLE_TEMP_DCI_MIN
+	int "温度合理下限 (0.1℃)"
+	depends on BMS_AFE
+	default -400
+
+config BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX
+	int "温度合理上限 (0.1℃)"
+	depends on BMS_AFE
+	default 1250
+
 config BMS_SOC
 	bool "SOC/SOH 估算模块"
 	default y

@@ -15,6 +15,12 @@ target_sources(app PRIVATE
 
 # 各 BMS 模块按 Kconfig 开关裁剪编译
 target_sources_ifdef(CONFIG_BMS_AFE        app PRIVATE src/bms/afe/afe.c)
+# afe 测量合理性校验（纯函数，测量数据纪律）
+target_sources_ifdef(CONFIG_BMS_AFE        app PRIVATE src/bms/afe/afe_validate.c)
+# afe 采样后端：三选一（choice 保证恰好一个 backend 提供 bms_afe_backend_read）
+target_sources_ifdef(CONFIG_BMS_AFE_BACKEND_STUB app PRIVATE src/bms/afe/afe_stub.c)
+target_sources_ifdef(CONFIG_BMS_AFE_BACKEND_SIM  app PRIVATE src/bms/afe/afe_sim.c)
+target_sources_ifdef(CONFIG_BMS_AFE_BACKEND_ADC  app PRIVATE src/bms/afe/afe_adc.c)
 target_sources_ifdef(CONFIG_BMS_SOC        app PRIVATE src/bms/soc/soc.c)
 target_sources_ifdef(CONFIG_BMS_PROTECTION app PRIVATE src/bms/protection/protection.c)
 target_sources_ifdef(CONFIG_BMS_BALANCING  app PRIVATE src/bms/balancing/balancing.c)
