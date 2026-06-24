@@ -13,7 +13,7 @@
 | 需求 | 设计/规格文档（`docs/`） | 软 | 需求管理、验收标准、需求↔测试追溯 |
 | 设计 | 架构文档 + 分层/zbus 解耦 | 软 | 设计评审流程、API 文档(Doxygen)、FMEA/安全分析 |
 | 编码 | clang-format（pre-commit/CI 强制）、.editorconfig（编辑器实时，**依赖插件**）、命名规范 | clang-format=提交前拦截；editorconfig=仅编辑器层 | — |
-| 静态分析 | gcc `-fanalyzer`、clang-tidy(CERT/可读性，硬)、cppcheck+MISRA(本地 warn-only) | CI 必过；cppcheck/MISRA=本地告警 | cppcheck/MISRA 升级进 CI、复杂度度量 |
+| 静态分析 | gcc `-fanalyzer`、clang-tidy(CERT/可读性，硬)、cppcheck+MISRA(本地 + CI 非阻断观察) | CI 必过；cppcheck/MISRA=非阻断(`continue-on-error`) | cppcheck/MISRA 升必过门、复杂度度量 |
 | 测试 | ztest 单测(soc/protection/afe，47 例)、twister、app 覆盖率门禁(line≥55%) | CI 必过 | 集成/HIL 测试、balancing/comm 单测、分支覆盖偏低 |
 | 构建 | 多目标编译矩阵(mps2/an386 + native_sim) | CI 必过 | bms_f405 板、Release 多板 |
 | 发布(CD) | tag→固件制品+SHA256+Release、tag↔VERSION 校验 | 失败即无 Release | 固件签名、SBOM、制品 attestation |
@@ -44,8 +44,8 @@
 **现状**：
 - `sca-gcc`：`-DZEPHYR_SCA_VARIANT=gcc`（`-fanalyzer`），经 [scripts/sca-check.sh](../scripts/sca-check.sh) 只拦 `app/` 的 `-Wanalyzer` 告警。**CI 必过**。
 - `clang-tidy`：硬门禁（`WarningsAsErrors`，当前 0 告警），CERT + 可读性 + snake_case 命名。**CI 必过**。
-- `cppcheck + MISRA`（misra addon）：[scripts/cppcheck-run.sh](../scripts/cppcheck-run.sh)，**本地 warn-only**——pre-push 独立模式粗筛、check.ps1 project 模式精查；豁免/deviation 在 [.cppcheck-suppressions](../.cppcheck-suppressions) 维护。
-**待补齐**：**cppcheck/MISRA 升级进 CI**（按「非阻断→基线→必过」阶梯，见 [development-workflow.md §8](development-workflow.md)）；圈复杂度等度量。
+- `cppcheck + MISRA`（misra addon）：[scripts/cppcheck-run.sh](../scripts/cppcheck-run.sh)，**warn-only**——pre-push 独立模式粗筛、check.ps1 project 模式精查、**CI `cppcheck-misra` job（`continue-on-error`，非必过，产出报告制品）**;豁免/deviation 在 [.cppcheck-suppressions](../.cppcheck-suppressions) 维护。
+**待补齐**：cppcheck/MISRA **已进 CI（非阻断观察，②阶梯）**，待噪声稳后**升必过门**（③，需在 GitHub 分支保护加该 check；见 [development-workflow.md §8](development-workflow.md)）；圈复杂度等度量。
 
 ### 4. 测试与覆盖率（CI 必过）
 **现状**：
@@ -82,7 +82,7 @@
 |---|---|---|---|
 | 高 | 补齐 balancing/comm 单测、提高分支覆盖（afe 已补） | 直接提升固件可靠性 | 随阈值逐步调高 |
 | 高 | 需求↔测试追溯 + 验收标准 | 功能安全基础 | BMS 安全相关必备 |
-| 中 | cppcheck/MISRA 升级进 CI（本地已接，warn-only） | 嵌入式编码合规 | 按非阻断→基线→必过阶梯 |
+| 中 | cppcheck/MISRA 升必过门（已进 CI 非阻断观察 ②，待升 ③） | 嵌入式编码合规 | 噪声稳后去 `continue-on-error` + 加分支保护 |
 | 中 | Doxygen API 文档 + GitHub Pages | 可维护性 | 见 ci-borrow-checklist |
 | 中 | bms_f405 进编译矩阵 + 真机 HIL | 接真板必需 | 需自托管 runner + 硬件 |
 | 低 | 固件签名 / SBOM / attestation | 供应链与安全启动 | 量产/OTA 阶段 |
