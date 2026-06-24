@@ -88,6 +88,25 @@ protection / 阈值 / 接触器 / 采样等**安全关键**改动,除常规流�
   例：`feat/soc-coulomb-counting`、`fix/protection-uv-threshold`、`ci/add-release-workflow`。
 - 特性分支一律从**最新 `master`** 切出(勿从其他工作分支派生)。
 
+### 3.1 并行工作:worktree 隔离(默认约定)
+
+> 方法论依据:[development-methodology.md §4 原则5](development-methodology.md)(持续合规)——**用隔离让冲突无从发生;实在要交汇,交给 git 在合并点显式裁决(可控集成)**。
+
+**约定:同时推进多个不相关任务时,默认用 git worktree 物理隔离——「一任务 = 一 worktree = 一分支 = 一 PR」,`master` 为唯一汇入点。**
+
+- **默认单工作树串行**即可;**仅在真有并行需求时**才开 worktree(避免过度工程)。
+- **禁止**两个 session/agent 指向**同一工作树**改同一批文件——这是丢更新与状态错乱的根源。
+- 开/收:
+
+  ```powershell
+  git worktree add ..\bms-app-<topic> -b <type>/<topic>   # 从 master 切隔离工作区 + 分支
+  # …在该目录开 session 工作 → 本地自检(§6) → PR(§7) → Squash 合 master…
+  git worktree remove ..\bms-app-<topic>                   # 合并后清理
+  ```
+
+- Claude Code 并行子任务用 `isolation: "worktree"` 的 subagent(详见 superpowers `using-git-worktrees`)。
+- 冲突处理:隔离后**文件级冲突不会发生**;唯一交汇点是分支→`master` 合并,由 git 显式处理(冲突可见、可审查),与 §7 / §9 一致。
+
 ## 4. 提交信息规范（Conventional Commits）
 
 ```
