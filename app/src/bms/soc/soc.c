@@ -102,9 +102,9 @@ static bool soc_current_in_range(int32_t pack_current_ma)
  */
 static uint16_t soc_charge_to_permille(int64_t acc_charge_ma_ms)
 {
-	const int64_t DEN = (int64_t)CONFIG_BMS_SOC_PACK_CAPACITY_MAH * 3600; /* mA·ms / ‰ */
+	const int64_t den = (int64_t)CONFIG_BMS_SOC_PACK_CAPACITY_MAH * 3600; /* mA·ms / ‰ */
 	int64_t acc = acc_charge_ma_ms;
-	int64_t pm = (acc + (acc >= 0 ? DEN / 2 : -DEN / 2)) / DEN;
+	int64_t pm = (acc + (acc >= 0 ? den / 2 : -den / 2)) / den;
 
 	if (pm < 0) {
 		pm = 0;
@@ -141,7 +141,7 @@ int bms_soc_coulomb_step(struct bms_soc_coulomb_state *state, const struct bms_c
 		return -EINVAL;
 	}
 
-	const int64_t DEN = (int64_t)CONFIG_BMS_SOC_PACK_CAPACITY_MAH * 3600; /* mA·ms / ‰ */
+	const int64_t den = (int64_t)CONFIG_BMS_SOC_PACK_CAPACITY_MAH * 3600; /* mA·ms / ‰ */
 
 	/* 输出先置安全态：用上一稳定 SOC（未初始化则 0），ts/soh 先填（REQ-SOC-C05） */
 	out->timestamp_ms = meas->timestamp_ms;
@@ -154,7 +154,7 @@ int bms_soc_coulomb_step(struct bms_soc_coulomb_state *state, const struct bms_c
 
 		(void)bms_soc_estimate(meas, &init); /* meas 已非空，返回 0 */
 		/* 由初值 ‰ 反算等效起始电荷 → 此后 ‰ 恒由 acc 推出（单一真值源，设计 §4.4） */
-		state->acc_charge_ma_ms = (int64_t)init.soc_permille * DEN;
+		state->acc_charge_ma_ms = (int64_t)init.soc_permille * den;
 		state->soc_permille = init.soc_permille;
 		state->last_ts_ms = meas->timestamp_ms;
 		state->initialized = true;
@@ -184,8 +184,8 @@ int bms_soc_coulomb_step(struct bms_soc_coulomb_state *state, const struct bms_c
 	}
 
 	/* 积分（先提升 int64，防中间溢出，设计 §4.2）；方向随电流符号（REQ-SOC-C07） */
-	int64_t dQ = (int64_t)meas->pack_current_ma * (int64_t)dt_ms; /* mA·ms */
-	state->acc_charge_ma_ms += dQ;
+	int64_t dq = (int64_t)meas->pack_current_ma * (int64_t)dt_ms; /* mA·ms */
+	state->acc_charge_ma_ms += dq;
 
 	/* 换算 + 对称舍入 + 夹紧（设计 §4.4，REQ-SOC-C03/C11） */
 	uint16_t pm = soc_charge_to_permille(state->acc_charge_ma_ms);
