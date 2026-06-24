@@ -27,7 +27,7 @@
 #define SIM_CHARGE_MA     2000        /* 充放电电流幅值 */
 #define SIM_CYCLE_MS      60000       /* 一个充→放循环周期 (ms) */
 #define SIM_BASE_TEMP_DCI 250         /* 基础温度 25.0℃ (单位 0.1℃) */
-#define SIM_SEED          0x12345678u /* 复位用固定噪声种子（确定性） */
+#define SIM_SEED          0x12345678U /* 复位用固定噪声种子（确定性） */
 
 /* ΔSOC(‰) 换算分母：容量(mAh) × 3600 = mA·ms/‰ */
 #define SIM_SOC_DEN ((int64_t)CONFIG_BMS_SOC_PACK_CAPACITY_MAH * 3600)
@@ -36,7 +36,7 @@
  * 故同一初始种子 + 同一调用序列 → 逐位可复现）。 */
 static int32_t sim_noise(uint32_t *lcg, int32_t range)
 {
-	*lcg = *lcg * 1103515245u + 12345u;
+	*lcg = *lcg * 1103515245U + 12345U;
 	return (int32_t)((*lcg >> 16) % (uint32_t)(2 * range + 1)) - range;
 }
 
@@ -65,7 +65,7 @@ int bms_afe_sim_step(struct bms_afe_sim_state *st, uint32_t now_ms, struct bms_c
 	}
 
 	/* 首帧（last_ms==0）Δt 记 0，不积分，避免上电首帧 SOC 跳变 */
-	uint32_t dt_ms = (st->last_ms == 0) ? 0u : (now_ms - st->last_ms);
+	uint32_t dt_ms = (st->last_ms == 0) ? 0U : (now_ms - st->last_ms);
 
 	st->last_ms = now_ms;
 	out->timestamp_ms = now_ms;
