@@ -1,4 +1,6 @@
 version: 2
+# 备注：CI 里 pin 的 pip 包（clang-format / gcovr）如需自动更新，
+# 可在此追加 package-ecosystem: "pip"（需先有 requirements 文件）。
 updates:
   # 保持 GitHub Actions（ci.yml / release.yml 用到的 action）版本更新。
   - package-ecosystem: "github-actions"
@@ -9,5 +11,3 @@ updates:
       prefix: "ci"
     labels:
       - "dependencies"
-  # 备注：CI 里 pin 的 pip 包（clang-format / gcovr）如需自动更新，
-  # 可在此追加 package-ecosystem: "pip"（需先有 requirements 文件）。
