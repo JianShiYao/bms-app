@@ -17,7 +17,7 @@ LOG_MODULE_REGISTER(bms_afe, LOG_LEVEL_INF);
 #define AFE_THREAD_PRIO  6
 
 /* 合理性校验阈值（来自 Kconfig）。语义为"读数是否物理可信"，非保护阈值。 */
-static const struct bms_afe_limits afe_limits = {
+static const struct bms_afe_limits AFE_LIMITS = {
 	.cell_mv_min = CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MIN,
 	.cell_mv_max = CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MAX,
 	.current_abs_max_ma = CONFIG_BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA,
@@ -34,7 +34,7 @@ int bms_afe_sample(struct bms_cell_meas *out)
 	if (ret != 0) {
 		return ret;
 	}
-	return bms_afe_validate(out, &afe_limits);
+	return bms_afe_validate(out, &AFE_LIMITS);
 }
 
 static void afe_thread(void *p1, void *p2, void *p3)
