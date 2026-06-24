@@ -9,16 +9,52 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 # C/C++: align with .clang-format (Zephyr style = tab, width 8) so the editor
-# does not fight clang-format on save. clang-format remains the authority.
+# does not fight clang-format on save. clang-format remains the authority
+# (and editorconfig-checker skips *.c/*.h — see .ecrc).
 [*.{c,h,cpp,hpp}]
 indent_style = tab
 indent_size = 8
 
+# Data / structured files that conventionally use 2-space indent.
 [*.{json,yml,yaml}]
+indent_size = 2
+
+# YAML-content dotfiles (no .yml/.yaml extension) also use 2-space indent.
+[{.clang-format,.clang-tidy,.yamllint}]
+indent_size = 2
+
+# Markdown: nested lists / fences use 2-space steps.
+[*.md]
+indent_size = 2
+
+# CMake uses 2-space indent.
+[{CMakeLists.txt,*.cmake}]
+indent_size = 2
+
+# Shell scripts (incl. extensionless git hooks) use 2-space indent.
+[*.sh]
+indent_size = 2
+
+[scripts/hooks/*]
 indent_size = 2
 
 [*.ps1]
 indent_size = 4
+
+# Free-form notes and Kconfig fragments: 2-space.
+[*.txt]
+indent_size = 2
+
+[*.conf]
+indent_size = 2
+
+# Kconfig uses tabs (Kconfig language convention).
+[Kconfig*]
+indent_style = tab
+
+# Devicetree sources/overlays use tabs (Zephyr/DT convention).
+[*.{dts,dtsi,overlay}]
+indent_style = tab
 
 [Makefile]
 indent_style = tab
