@@ -3,7 +3,8 @@
 本文梳理 bms-app 从需求到交付各阶段**已落地的质量管控**与**待补齐项**，便于评估当前成熟度与规划下一步。
 相关文档：开发流程见 [development-workflow.md](development-workflow.md)；CI 借鉴路线图见 [ci-borrow-checklist.md](ci-borrow-checklist.md)；待办见 [../TODO.md](../TODO.md)。
 
-> 当前状态（2026-06-18）：QEMU 阶段骨架 + 完整 CI/CD 质量门禁；尚未接真实硬件（STM32F405）。
+> 当前状态（2026-06-24）：QEMU 阶段骨架 + 完整 CI/CD 质量门禁；cppcheck/MISRA 已上（本地 warn-only）；
+> afe 已补单测（20 例）且采样后端可切换（stub/sim/adc）；尚未接真实硬件（STM32F405）。
 
 ## 一、全景总览
 
@@ -11,9 +12,9 @@
 |---|---|---|---|
 | 需求 | 设计/规格文档（`docs/`） | 软 | 需求管理、验收标准、需求↔测试追溯 |
 | 设计 | 架构文档 + 分层/zbus 解耦 | 软 | 设计评审流程、API 文档(Doxygen)、FMEA/安全分析 |
-| 编码 | clang-format、.editorconfig、命名规范、pre-commit 钩子 | 提交前拦截 | — |
-| 静态分析 | gcc `-fanalyzer`、clang-tidy(CERT/可读性，硬) | CI 必过 | cppcheck、MISRA、复杂度度量 |
-| 测试 | ztest 单测、twister、app 覆盖率门禁(line≥55%) | CI 必过 | 集成/HIL 测试、未覆盖模块、分支覆盖偏低 |
+| 编码 | clang-format（pre-commit/CI 强制）、.editorconfig（编辑器实时，**依赖插件**）、命名规范 | clang-format=提交前拦截；editorconfig=仅编辑器层 | — |
+| 静态分析 | gcc `-fanalyzer`、clang-tidy(CERT/可读性，硬)、cppcheck+MISRA(本地 warn-only) | CI 必过；cppcheck/MISRA=本地告警 | cppcheck/MISRA 升级进 CI、复杂度度量 |
+| 测试 | ztest 单测(soc/protection/afe，47 例)、twister、app 覆盖率门禁(line≥55%) | CI 必过 | 集成/HIL 测试、balancing/comm 单测、分支覆盖偏低 |
 | 构建 | 多目标编译矩阵(mps2/an386 + native_sim) | CI 必过 | bms_f405 板、Release 多板 |
 | 发布(CD) | tag→固件制品+SHA256+Release、tag↔VERSION 校验 | 失败即无 Release | 固件签名、SBOM、制品 attestation |
 | 依赖/供应链 | west manifest pin、dependabot(actions) | 软 | pip 依赖、SBOM、依赖漏洞扫描 |
@@ -28,25 +29,30 @@
 - 无成文**设计评审**门槛；API 文档（Doxygen）未搭建。
 
 ### 2. 编码（提交前）
-**现状**（提交前即拦截）：
-- 格式：仓库根 [.clang-format](../.clang-format)（Zephyr 风格）+ [.editorconfig](../.editorconfig)；行尾 LF 由 [.gitattributes](../.gitattributes) 统一。
+**现状**（提交前即拦截）。规则文件本身不"触发"检查，触发靠读取它的工具，分三层：
+- 格式：
+  - [.clang-format](../.clang-format)（Zephyr 风格 tab/8）——**权威**。触发链：保存时由 C/C++ 扩展套用 → 提交时 pre-commit 用 `clang-format --dry-run --Werror` 硬拦截 → CI 设 format gate 兜底。
+  - [.editorconfig](../.editorconfig)（缩进/charset/去尾空格/结尾换行；C 段已对齐 tab/8 以避免与 clang-format 冲突）——**仅编辑器层，依赖插件**：需安装 `EditorConfig.EditorConfig`（已列入 [.vscode/extensions.json](../../.vscode/extensions.json) 推荐）才生效，**不装则该文件不起作用**；它无独立提交门禁，非 C 文件（yaml/json/ps1/md）的排版仅靠它。
+  - 行尾 LF 由 [.gitattributes](../.gitattributes) 在提交时强制（与是否装插件无关）。
 - 命名/规范：[.clang-tidy](../.clang-tidy)（C/snake_case，cert-*/readability-*）。
-- 本地门禁：[scripts/hooks/pre-commit](../scripts/hooks/pre-commit) 校验暂存 `.c/.h` 格式；`scripts/format.ps1` 一键格式化/检查。
+- 本地门禁：[scripts/hooks/pre-commit](../scripts/hooks/pre-commit)（需 `git config core.hooksPath scripts/hooks` 注册一次）校验暂存 `.c/.h` 格式；`scripts/format.ps1` 一键格式化/检查。
 **待补齐**：无（编码层管控已较完整）。
 
-### 3. 静态分析（SCA，CI 必过）
+### 3. 静态分析（SCA）
 **现状**：
-- `sca-gcc`：`-DZEPHYR_SCA_VARIANT=gcc`（`-fanalyzer`），经 [scripts/sca-check.sh](../scripts/sca-check.sh) 只拦 `app/` 的 `-Wanalyzer` 告警。
-- `clang-tidy`：硬门禁（`WarningsAsErrors`，当前 0 告警），CERT + 可读性 + snake_case 命名。
-**待补齐**：cppcheck；**MISRA-C**（功能安全相关，需商业工具或 cppcheck misra addon + 规则文本）；圈复杂度等度量。
+- `sca-gcc`：`-DZEPHYR_SCA_VARIANT=gcc`（`-fanalyzer`），经 [scripts/sca-check.sh](../scripts/sca-check.sh) 只拦 `app/` 的 `-Wanalyzer` 告警。**CI 必过**。
+- `clang-tidy`：硬门禁（`WarningsAsErrors`，当前 0 告警），CERT + 可读性 + snake_case 命名。**CI 必过**。
+- `cppcheck + MISRA`（misra addon）：[scripts/cppcheck-run.sh](../scripts/cppcheck-run.sh)，**本地 warn-only**——pre-push 独立模式粗筛、check.ps1 project 模式精查；豁免/deviation 在 [.cppcheck-suppressions](../.cppcheck-suppressions) 维护。
+**待补齐**：**cppcheck/MISRA 升级进 CI**（按「非阻断→基线→必过」阶梯，见 [development-workflow.md §8](development-workflow.md)）；圈复杂度等度量。
 
 ### 4. 测试与覆盖率（CI 必过）
 **现状**：
-- 单元测试：ztest 2 套（`tests/bms/soc` 5 例、`tests/bms/protection` 6 例），共 11/11；平台 `native_sim` + `mps2/an386`。
+- 单元测试：ztest 3 套（`tests/bms/soc` 21 例、`tests/bms/protection` 6 例、`tests/bms/afe` 20 例），共 **47/47**；平台 `native_sim` + `mps2/an386`。
 - 执行：CI 用 `west twister -p native_sim`；本地可用 QEMU（`../run-tests-coverage.ps1`）。
+  - ⚠️ QEMU 下 `bms.soc`（21 例）较易触发 harness **超时 flake**（用例本身全过），本地按需加 `--timeout-multiplier 4`；CI 走 native_sim 不受此限。
 - 覆盖率门禁：自跑 gcovr（root=workspace、过滤 `app/`），**line ≥ 55% / branch ≥ 30%**（基线 lines 61.0% / branches 39.1%）。
 **待补齐**：
-- **未被测试的模块**：当前仅 soc/protection/channels 进入测试构建；afe/balancing/comm/main 无专门单测；
+- **未被测试的模块**：当前 soc/protection/afe/channels 进入测试构建；**balancing/comm/main 无专门单测**；
 - **分支覆盖偏低**（39%），init/线程路径未覆盖；
 - 无**集成测试**、无**HIL（硬件在环）**、无 fuzz/属性测试。
 
@@ -72,9 +78,9 @@
 
 | 优先级 | 项 | 价值 | 备注 |
 |---|---|---|---|
-| 高 | 补齐 afe/balancing/comm 单测、提高分支覆盖 | 直接提升固件可靠性 | 随阈值逐步调高 |
+| 高 | 补齐 balancing/comm 单测、提高分支覆盖（afe 已补） | 直接提升固件可靠性 | 随阈值逐步调高 |
 | 高 | 需求↔测试追溯 + 验收标准 | 功能安全基础 | BMS 安全相关必备 |
-| 中 | cppcheck / MISRA-C 接入 | 嵌入式编码合规 | 免费 cppcheck 起步，MISRA 视认证需求 |
+| 中 | cppcheck/MISRA 升级进 CI（本地已接，warn-only） | 嵌入式编码合规 | 按非阻断→基线→必过阶梯 |
 | 中 | Doxygen API 文档 + GitHub Pages | 可维护性 | 见 ci-borrow-checklist |
 | 中 | bms_f405 进编译矩阵 + 真机 HIL | 接真板必需 | 需自托管 runner + 硬件 |
 | 低 | 固件签名 / SBOM / attestation | 供应链与安全启动 | 量产/OTA 阶段 |

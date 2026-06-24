@@ -26,9 +26,99 @@ config BMS_AFE_SAMPLE_PERIOD_MS
 	depends on BMS_AFE
 	default 100
 
+choice
+	prompt "AFE 数据源后端"
+	depends on BMS_AFE
+	default BMS_AFE_BACKEND_SIM
+	help
+	  选择 afe 的采样实现后端（业务逻辑/线程不变，差异收敛到 bms_afe_backend_read()，
+	  见 docs/architecture.md「数据源后端可切换（afe）」）。
+
+config BMS_AFE_BACKEND_STUB
+	bool "stub（恒定桩数据）"
+	help
+	  返回固定电压/电流/温度，确定性最强，用于最小化烟雾测试。
+
+config BMS_AFE_BACKEND_SIM
+	bool "sim（充放电仿真模型）"
+	help
+	  三角充放电 + 库仑积分 + OCV 映射 + 温升，QEMU/native_sim 下产出"会动"的
+	  可复现数据，供 soc/protection/balancing 拿到变化输入。
+
+config BMS_AFE_BACKEND_ADC
+	bool "adc（真实硬件，经 devicetree ADC/AFE 芯片）"
+	help
+	  真机后端：DEVICE_DT_GET 取 ADC/专用 AFE 芯片走设备 API。当前为占位，
+	  待 bms_f405 板 dts 就绪后实现。
+
+endchoice
+
+# 测量合理性校验阈值（"读数是否物理可信"，区别于 protection 的保护阈值）。
+# 取很宽的量程，只剔除明显坏帧（断线/量程溢出/ADC 异常），见架构「测量数据纪律」。
+config BMS_AFE_PLAUSIBLE_CELL_MV_MIN
+	int "单体电压合理下限 (mV)"
+	depends on BMS_AFE
+	default 0
+
+config BMS_AFE_PLAUSIBLE_CELL_MV_MAX
+	int "单体电压合理上限 (mV)"
+	depends on BMS_AFE
+	default 6000
+
+config BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA
+	int "电流绝对值合理上限 (mA)"
+	depends on BMS_AFE
+	default 300000
+
+config BMS_AFE_PLAUSIBLE_TEMP_DCI_MIN
+	int "温度合理下限 (0.1℃)"
+	depends on BMS_AFE
+	default -400
+
+config BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX
+	int "温度合理上限 (0.1℃)"
+	depends on BMS_AFE
+	default 1250
+
 config BMS_SOC
 	bool "SOC/SOH 估算模块"
 	default y
+
+config BMS_SOC_PACK_CAPACITY_MAH
+	int "电池组额定容量 (mAh)"
+	depends on BMS_SOC
+	range 1 10000000
+	default 100000
+	help
+	  库仑积分换算基准（额定容量，单位 mAh）。换算公式
+	  ΔSOC(‰)=acc(mA·ms)/(容量×3600)。多板型适配请覆写，
+	  禁止在算法中硬编码（REQ-SOC-C12）。
+
+config BMS_SOC_INIT_FROM_VOLTAGE
+	bool "上电用电压线性映射初始化 SOC 初值"
+	depends on BMS_SOC
+	default y
+	help
+	  y：首帧用 bms_soc_estimate 的电压映射(3000mV→0‰,4200mV→1000‰)
+	  作为库仑积分起点（REQ-SOC-C04）。n：从 0‰ 起算（不推荐）。
+
+config BMS_SOC_GAP_FACTOR_N
+	int "丢帧判定因子 N（Δt 上限 = N × AFE 采样周期）"
+	depends on BMS_SOC
+	range 2 1000
+	default 10
+	help
+	  帧间差 > N×CONFIG_BMS_AFE_SAMPLE_PERIOD_MS 判为丢帧，Δt 夹紧到
+	  该上限，避免单帧 SOC 大幅跳变（REQ-SOC-C02-3、C06）。
+
+config BMS_SOC_MAX_CURRENT_MA
+	int "合理电流量程上限绝对值 (mA)"
+	depends on BMS_SOC
+	range 1 2000000
+	default 200000
+	help
+	  |pack_current_ma| 超过此值判为坏数据，跳过本帧积分（REQ-SOC-C06）。
+	  默认 ±200A，覆盖 C10 建议的 ±100A 测试量程并留裕量。
 
 config BMS_PROTECTION
 	bool "保护状态机模块"

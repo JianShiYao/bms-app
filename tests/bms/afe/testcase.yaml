@@ -1,0 +1,8 @@
+tests:
+  bms.afe:
+    platform_allow:
+      - mps2/an386
+      - native_sim
+    tags:
+      - bms
+      - afe

@@ -1,0 +1,5 @@
+# Non-markdown files that markdownlint must not lint (they use '#' comments,
+# which markdownlint misreads as headings).
+.cppcheck-suppressions
+.gitignore
+.clang-tidy

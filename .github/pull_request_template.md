@@ -16,6 +16,8 @@
 - [ ] `west build -b mps2/an386 app` 编译通过
 - [ ] `west twister -T tests -p mps2/an386 -c` 全过（11/11）
 - [ ] 提交信息符合 Conventional Commits
+- [ ] 追溯链无断链（REQ→DES→code→test；如属特性小 V，`docs/features/<slug>/traceability.md` 已更新）
+- [ ] 安全相关改动：已关联安全需求并有失效安全测试（不涉及则划掉）
 - [ ] 如涉及发版：已更新 `VERSION` 与 `CHANGELOG.md`
 - [ ] 如涉及接口/行为：已更新相关文档
 

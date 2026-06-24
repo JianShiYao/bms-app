@@ -1,10 +1,10 @@
 /*
- * AFE（电芯采样）模块 —— 桩实现
+ * AFE（电芯采样）模块 —— 线程编排
  *
  * 职责：周期采集电压/电流/温度，发布到 chan_cell_meas。
- * native_sim 下产生桩数据；真实硬件接 ADC 或专用 AFE 芯片（驱动留 drivers/）。
+ * 采样实现按 Kconfig 选后端（afe_stub / afe_sim / afe_adc），业务逻辑不变，
+ * 见 docs/architecture.md「数据源后端可切换（afe）」。
  */
-#include <errno.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
@@ -16,24 +16,25 @@ LOG_MODULE_REGISTER(bms_afe, LOG_LEVEL_INF);
 #define AFE_THREAD_STACK 1024
 #define AFE_THREAD_PRIO  6
 
+/* 合理性校验阈值（来自 Kconfig）。语义为"读数是否物理可信"，非保护阈值。 */
+static const struct bms_afe_limits AFE_LIMITS = {
+	.cell_mv_min = CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MIN,
+	.cell_mv_max = CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MAX,
+	.current_abs_max_ma = CONFIG_BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA,
+	.temp_dci_min = CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MIN,
+	.temp_dci_max = CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX,
+};
+
 int bms_afe_sample(struct bms_cell_meas *out)
 {
-	if (out == NULL) {
-		return -EINVAL;
-	}
+	/* 数据源边缘：acquire（所选后端）→ validate（纯函数置 validity）→ 交业务层。
+	 * 见 docs/architecture.md「测量数据纪律」：业务层只看到带有效位的可信帧。 */
+	int ret = bms_afe_backend_read(out);
 
-	out->timestamp_ms = k_uptime_get_32();
-
-	/* TODO: 替换为真实 ADC / AFE 芯片读取。以下为 native_sim 桩数据。 */
-	for (int i = 0; i < BMS_CELL_COUNT; i++) {
-		out->cell_mv[i] = 3700 + (i % 5) * 5; /* ~3.70V 附近 */
+	if (ret != 0) {
+		return ret;
 	}
-	out->pack_current_ma = 1000; /* 1A 充电（正） */
-	for (int i = 0; i < BMS_TEMP_SENSOR_COUNT; i++) {
-		out->temp_dci[i] = 250; /* 25.0℃ */
-	}
-
-	return 0;
+	return bms_afe_validate(out, &AFE_LIMITS);
 }
 
 static void afe_thread(void *p1, void *p2, void *p3)

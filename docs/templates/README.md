@@ -3,6 +3,8 @@
 本目录提供从**需求 → 设计 → 测试 → 追溯**的轻量模板，用于落地
 [质量管控全景](../quality-management.md)中标注的「需求管理 / 验收标准 / 需求↔测试追溯」。
 
+> 本套 ID / 追溯规范是研发方法论**原则3(可追溯性)**的落地;方法论根基见 [../development-methodology.md](../development-methodology.md)。
+
 ## 模板清单
 
 | 模板 | 用途 |

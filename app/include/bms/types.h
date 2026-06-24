@@ -22,12 +22,25 @@ extern "C" {
 #define BMS_CELL_COUNT        CONFIG_BMS_CELL_COUNT
 #define BMS_TEMP_SENSOR_COUNT CONFIG_BMS_TEMP_SENSOR_COUNT
 
+/**
+ * bms_cell_meas.validity 测量有效位（测量数据纪律：值 + 时间戳 + 有效性）。
+ *
+ * 设计来源：docs/architecture.md「测量数据纪律」。某位为 1 表示对应量本帧通过
+ * 合理性校验、下游方可采用；为 0 表示无效，下游须失效安全处理（如电流无效则
+ * SOC 不积分、保护不据此闭合接触器）。位由 afe 边缘的纯函数 bms_afe_validate() 置位。
+ */
+#define BMS_MEAS_VALID_VOLTAGE (1U << 0) /**< 电压量合理 */
+#define BMS_MEAS_VALID_CURRENT (1U << 1) /**< 电流量合理 */
+#define BMS_MEAS_VALID_TEMP    (1U << 2) /**< 温度量合理 */
+#define BMS_MEAS_VALID_ALL (BMS_MEAS_VALID_VOLTAGE | BMS_MEAS_VALID_CURRENT | BMS_MEAS_VALID_TEMP)
+
 /** 一帧电芯测量数据（由 afe 模块发布到 chan_cell_meas） */
 struct bms_cell_meas {
-	uint32_t timestamp_ms;                   /**< 采样时刻（k_uptime） */
+	uint32_t timestamp_ms;                   /**< 采样时刻（k_uptime, ms），用于下游过期检测 */
 	int32_t cell_mv[BMS_CELL_COUNT];         /**< 每串电压，单位 mV */
 	int32_t pack_current_ma;                 /**< 总电流，充电为正，单位 mA */
 	int32_t temp_dci[BMS_TEMP_SENSOR_COUNT]; /**< 温度，单位 0.1℃ */
+	uint8_t validity; /**< 有效位掩码，BMS_MEAS_VALID_*；0=全无效（安全默认）*/
 };
 
 /** SOC/SOH 状态（由 soc 模块发布到 chan_soc） */
