@@ -95,6 +95,10 @@ WSL + `native_sim` 仅用于更可靠的覆盖率（CI 即走 native_sim）。
 > 把追溯表塞进 `00-iteration-plan.md`、从 `ci/local-quality-layering` 切分支。这三点的**明文规则**现已固化在
 > [development-workflow.md §1.1–1.2、§3](development-workflow.md)（ID 用 `REQ-<域>-NNN`、追溯矩阵独立成 `traceability.md`、
 > 特性分支从 `master` 切）——后续 agent 的 CKB/契约以该处为准；历史样例不回改。
+>
+> **ID 规范化进展（2026-06-24）**：`REQ-SOC-Cxx` 已规范为 **`REQ-SOC-025..036`**（接续遗留 `soc.md` 001-024，`C0x→0(x+24)`）。
+> **活代码** `tests/bms/soc/` 已用规范 ID，权威矩阵见 [docs/traceability.md](traceability.md)；`docs/features/soc-coulomb/` 过程文档因
+> REQ/ADR/裸码交织且属历史记录，**保留原始 `Cxx`**（不回改，映射见 traceability.md）。protection/afe 测试的 REQ 注释为独立后续项。
 
 ## 6. 扩展点（YAGNI 之外）
 - 将来真机目标增多 → 把"集成测试 / 系统测试"从合并状态拆开。

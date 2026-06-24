@@ -6,7 +6,7 @@
  *  - bms_soc_coulomb_state_reset —— 状态复位（T-RESET）
  *  - bms_soc_coulomb_step        —— 库仑积分步进核心（T-STEP，新增）
  *
- * 每个用例注释回链需求ID（REQ-SOC-Cxx）/设计项（03-design.md §x）。
+ * 每个用例注释回链需求ID（REQ-SOC-025..036）/设计项（03-design.md §x）。
  * 测试桩与 soc.c 的回退默认一致（设计 §5.1）：
  *   CONFIG_BMS_SOC_PACK_CAPACITY_MAH = 100000 (mAh)
  *   CONFIG_BMS_AFE_SAMPLE_PERIOD_MS  = 100   (ms)
@@ -48,7 +48,7 @@ static void make_meas(struct bms_cell_meas *m, int32_t mv, int32_t cur, uint32_t
 
 /* ============================================================
  * T-EST：bms_soc_estimate 电压映射初值器（既有 5 用例，全部保留）
- * 回链：REQ-SOC-C04（初值=电压映射，0‰ 漂移）、REQ-SOC-C03（夹紧）
+ * 回链：REQ-SOC-028（初值=电压映射，0‰ 漂移）、REQ-SOC-027（夹紧）
  * ============================================================ */
 
 ZTEST(bms_soc, test_full_charge)
@@ -98,7 +98,7 @@ ZTEST(bms_soc, test_null_args)
 }
 
 /* ============================================================
- * T-RESET：bms_soc_coulomb_state_reset（设计 §2.3，REQ-SOC-C04 验收 2）
+ * T-RESET：bms_soc_coulomb_state_reset（设计 §2.3，REQ-SOC-028 验收 2）
  * ============================================================ */
 
 /* 复位后字段归零、initialized==false（设计 §2.3 契约） */
@@ -129,7 +129,7 @@ ZTEST(bms_soc, test_reset_null_safe)
  * T-STEP：bms_soc_coulomb_step 库仑积分步进核心
  * ============================================================ */
 
-/* 分支 A：空指针 → -EINVAL，不触 state、不写 out（设计 §3-A，REQ-SOC-C06 验收 1） */
+/* 分支 A：空指针 → -EINVAL，不触 state、不写 out（设计 §3-A，REQ-SOC-030 验收 1） */
 ZTEST(bms_soc, test_step_null_returns_einval)
 {
 	struct bms_soc_coulomb_state st;
@@ -146,7 +146,8 @@ ZTEST(bms_soc, test_step_null_returns_einval)
 	zassert_false(st.initialized, "state must not be touched on -EINVAL");
 }
 
-/* 分支 B：首帧初始化 —— 初值=电压映射且不积分（设计 §3-B，REQ-SOC-C04 验收 1，C05 含初始化帧） */
+/* 分支 B：首帧初始化 —— 初值=电压映射且不积分（设计 §3-B，REQ-SOC-028 验收 1，REQ-SOC-029
+ * 含初始化帧） */
 ZTEST(bms_soc, test_step_first_frame_init)
 {
 	struct bms_soc_coulomb_state st;
@@ -163,14 +164,14 @@ ZTEST(bms_soc, test_step_first_frame_init)
 
 	zassert_equal(out.soc_permille, map.soc_permille,
 		      "first frame SOC must equal voltage-map value (0permille drift)");
-	zassert_equal(out.timestamp_ms, m.timestamp_ms, "out ts == meas ts (REQ-SOC-C05)");
-	zassert_equal(out.soh_permille, 1000, "soh fixed 1000 (REQ-SOC-C05)");
+	zassert_equal(out.timestamp_ms, m.timestamp_ms, "out ts == meas ts (REQ-SOC-029)");
+	zassert_equal(out.soh_permille, 1000, "soh fixed 1000 (REQ-SOC-029)");
 	zassert_true(st.initialized, "state initialized after first frame");
 	zassert_equal(st.last_ts_ms, m.timestamp_ms, "last_ts set to first frame ts");
 	zassert_equal(st.soc_permille, out.soc_permille, "state.soc == out.soc");
 }
 
-/* 初始化仅发生一次：其后帧由积分更新，不再被电压映射覆盖（REQ-SOC-C04 验收 2） */
+/* 初始化仅发生一次：其后帧由积分更新，不再被电压映射覆盖（REQ-SOC-028 验收 2） */
 ZTEST(bms_soc, test_step_init_only_once)
 {
 	struct bms_soc_coulomb_state st;
@@ -191,7 +192,7 @@ ZTEST(bms_soc, test_step_init_only_once)
 }
 
 /*
- * 分支 D：正常充电积分，精度 ≤ ±1‰（设计 §3-D/§4，REQ-SOC-C01/C07/C11）。
+ * 分支 D：正常充电积分，精度 ≤ ±1‰（设计 §3-D/§4，REQ-SOC-025/031/035）。
  * 初值 500‰，恒流 +100000mA(100A，在量程内)，每帧 dt=1000ms(=dt_cap，仍属正常)。
  * 每帧 dQ = 100000 × 1000 = 1e8 mA·ms；ΔSOC/帧 = 1e8/3.6e8 ≈ 0.2778‰。
  * 跑 36 帧：累计 acc=3.6e9，ΔSOC = 3.6e9/3.6e8 = 10‰ → 期望 510‰（解析精确）。
@@ -213,16 +214,16 @@ ZTEST(bms_soc, test_step_charge_integration_accuracy)
 		ts += 1000;
 		make_meas(&m, 3600, 100000, ts);
 		zassert_ok(bms_soc_coulomb_step(&st, &m, &out));
-		/* 方向正确性：充电时 SOC 单调不减（REQ-SOC-C07 验收 1） */
+		/* 方向正确性：充电时 SOC 单调不减（REQ-SOC-031 验收 1） */
 		zassert_true(out.soc_permille >= prev, "charging must be monotonic non-decreasing");
 		prev = out.soc_permille;
 	}
-	/* 解析期望 510‰，容差 ±1‰（REQ-SOC-C01 验收 2、REQ-SOC-C11） */
+	/* 解析期望 510‰，容差 ±1‰（REQ-SOC-025 验收 2、REQ-SOC-035） */
 	zassert_within(out.soc_permille, 510, 1,
 		       "30s @100A on 100Ah pack should add ~10permille (got %u)", out.soc_permille);
 }
 
-/* 分支 D：放电方向 —— 电流为负 SOC 单调不增（REQ-SOC-C07 验收 2） */
+/* 分支 D：放电方向 —— 电流为负 SOC 单调不增（REQ-SOC-031 验收 2） */
 ZTEST(bms_soc, test_step_discharge_direction)
 {
 	struct bms_soc_coulomb_state st;
@@ -248,7 +249,7 @@ ZTEST(bms_soc, test_step_discharge_direction)
 		       out.soc_permille);
 }
 
-/* 零电流帧 SOC 不变，时间戳照常推进（REQ-SOC-C07 验收 3） */
+/* 零电流帧 SOC 不变，时间戳照常推进（REQ-SOC-031 验收 3） */
 ZTEST(bms_soc, test_step_zero_current_no_change)
 {
 	struct bms_soc_coulomb_state st;
@@ -267,7 +268,7 @@ ZTEST(bms_soc, test_step_zero_current_no_change)
 
 /*
  * 分支 C：时间戳非单调/回退 —— 回退缺省周期 period 作为 Δt，正向积分不反向跳变
- *（设计 §3-C，REQ-SOC-C02 验收 2、REQ-SOC-C06 验收 2）。
+ *（设计 §3-C，REQ-SOC-026 验收 2、REQ-SOC-030 验收 2）。
  */
 ZTEST(bms_soc, test_step_nonmonotonic_ts_fallback)
 {
@@ -295,7 +296,7 @@ ZTEST(bms_soc, test_step_nonmonotonic_ts_fallback)
 
 /*
  * 分支 E：丢帧（大间隔）—— Δt 夹紧到上限 dt_cap，单帧 |ΔSOC| ≤ 设计上限
- *（设计 §3-E/§3.1，REQ-SOC-C02 验收 3、REQ-SOC-C06 验收 2）。
+ *（设计 §3-E/§3.1，REQ-SOC-026 验收 3、REQ-SOC-030 验收 2）。
  * 设计上限：|ΔSOC|_max = MAX_CURRENT × dt_cap / DEN = 200000×1000/3.6e8 ≈ 0.56‰。
  * 用真实差值 1,000,000ms（远超 dt_cap=1000ms），若不夹紧会产生巨大跳变。
  */
@@ -326,7 +327,7 @@ ZTEST(bms_soc, test_step_frame_drop_clamped)
 
 /*
  * 分支 F：电流超量程 —— 跳过本帧积分，返回 -EAGAIN，acc 不污染，ts 推进
- *（设计 §3-F，REQ-SOC-C06 验收 2/3、REQ-SOC-C05 验收 2 不发布）。
+ *（设计 §3-F，REQ-SOC-030 验收 2/3、REQ-SOC-029 验收 2 不发布）。
  */
 ZTEST(bms_soc, test_step_over_range_current_skipped)
 {
@@ -343,7 +344,7 @@ ZTEST(bms_soc, test_step_over_range_current_skipped)
 	make_meas(&m, 3600, TEST_MAX_CURR_MA + 1, 1000);
 	int rc = bms_soc_coulomb_step(&st, &m, &out);
 	zassert_equal(rc, -EAGAIN, "over-range current must be skipped (-EAGAIN)");
-	/* acc 未被污染（REQ-SOC-C06 验收 3） */
+	/* acc 未被污染（REQ-SOC-030 验收 3） */
 	zassert_equal(st.acc_charge_ma_ms, acc_before, "acc must NOT be polluted by skipped frame");
 	/* out 保持上一稳定值 */
 	zassert_equal(out.soc_permille, 500, "out keeps last stable SOC");
@@ -351,7 +352,7 @@ ZTEST(bms_soc, test_step_over_range_current_skipped)
 	zassert_equal(st.last_ts_ms, 1000, "last_ts advances even when skipped");
 }
 
-/* 超量程负电流（远超限）同样跳过（失效安全「远超限」类，REQ-SOC-C06） */
+/* 超量程负电流（远超限）同样跳过（失效安全「远超限」类，REQ-SOC-030） */
 ZTEST(bms_soc, test_step_over_range_negative_current_skipped)
 {
 	struct bms_soc_coulomb_state st;
@@ -369,7 +370,7 @@ ZTEST(bms_soc, test_step_over_range_negative_current_skipped)
 }
 
 /*
- * 异常帧后正常帧可恢复正确积分（REQ-SOC-C06 验收 3：状态不被污染到不可恢复）。
+ * 异常帧后正常帧可恢复正确积分（REQ-SOC-030 验收 3：状态不被污染到不可恢复）。
  * 序列：初始化 → 超量程帧(跳过) → 正常充电帧 应能正常积分。
  */
 ZTEST(bms_soc, test_step_recovers_after_bad_frame)
@@ -396,7 +397,7 @@ ZTEST(bms_soc, test_step_recovers_after_bad_frame)
 }
 
 /*
- * REQ-SOC-C03：持续充电直至饱和，SOC 稳定于 1000‰，不溢出/不回绕。
+ * REQ-SOC-027：持续充电直至饱和，SOC 稳定于 1000‰，不溢出/不回绕。
  * 恒流 +200000mA(满量程)，dt=1000ms/帧。每帧 dQ=2e8；从 500‰ 起到 1000‰
  * 需 acc 增量 = 500×DEN = 1.8e11 → 900 帧，跑 2000 帧确保饱和。
  */
@@ -421,7 +422,7 @@ ZTEST(bms_soc, test_step_clamp_to_full)
 }
 
 /*
- * REQ-SOC-C03：持续放电直至耗尽，SOC 稳定于 0‰，不下溢/不出现负值。
+ * REQ-SOC-027：持续放电直至耗尽，SOC 稳定于 0‰，不下溢/不出现负值。
  */
 ZTEST(bms_soc, test_step_clamp_to_empty)
 {
@@ -444,7 +445,7 @@ ZTEST(bms_soc, test_step_clamp_to_empty)
 }
 
 /*
- * REQ-SOC-C10：长时间(≥24h 等效)大电流连续积分不溢出，SOC 计算正确且夹紧正常。
+ * REQ-SOC-034：长时间(≥24h 等效)大电流连续积分不溢出，SOC 计算正确且夹紧正常。
  * 以满量程 ±200000mA、dt_cap=1000ms/帧，24h = 86400 帧。int64 承载 acc 不溢。
  * 这里充电饱和后保持 1000‰（验证 acc 持续累加不破坏夹紧）。
  */
