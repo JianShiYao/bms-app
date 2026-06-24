@@ -8,7 +8,7 @@ on:
 jobs:
   # Gate 1: formatting (fast fail-first). clang-format pinned to match local.
   format:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -27,7 +27,7 @@ jobs:
   # to the matrix once its dts/defconfig TODOs are resolved.
   build:
     needs: format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: build (${{ matrix.board }})
     strategy:
       fail-fast: false
@@ -47,7 +47,7 @@ jobs:
   # Gate 3: unit tests + coverage (native_sim; reliable on Linux).
   test-coverage:
     needs: format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # twister's coverage tool-selection reads ZEPHYR_TOOLCHAIN_VARIANT directly;
     # action-zephyr-setup doesn't export it, so set it here (SDK gcov path).
     env:
@@ -60,8 +60,8 @@ jobs:
         with:
           app-path: bms-app
           toolchains: arm-zephyr-eabi
-      - name: Install gcovr
-        run: pip install gcovr
+      - name: Install gcovr (pinned for reproducible coverage)
+        run: pip install "gcovr==7.2"
       - name: Twister + coverage
         run: >
           west twister -T bms-app/tests -p native_sim --inline-logs
@@ -94,7 +94,7 @@ jobs:
   # Gate 4: static analysis (gcc -fanalyzer), scoped to app code.
   sca-gcc:
     needs: format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
         with:
@@ -117,7 +117,7 @@ jobs:
   # Gate 5: clang-tidy (CERT/readability). HARD gate (WarningsAsErrors in .clang-tidy).
   clang-tidy:
     needs: format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
         with:
@@ -143,7 +143,7 @@ jobs:
   # the noise baseline proves stable.
   cppcheck-misra:
     needs: format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
         with:
