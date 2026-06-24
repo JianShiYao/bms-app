@@ -63,9 +63,13 @@
 
 3. **可追溯性是灵魂(V 模型核心)** — 每条需求贯通 `需求→架构→设计→代码→测试`,右腿验证可回溯左腿;**无追溯即无完备性证据**;安全相关需求优先自动化测试。
    > BMS:`REQ-<域>-NNN → DES-<域>-NNN → 代码位置 → ztest 用例`;域 = SYS/AFE/SOC/PROT/BAL/COMM/BOARD;ztest 用 `/* Verifies REQ-<域>-NNN: ... */` 回链。
+   >
+   > **立场(原则即刻生效,不悬空)**:本原则对**新特性即刻强制**——小 V 的 DoD 要求追溯链无断链,无追溯不得合并。历史代码(逆向得到的既有需求)的追溯矩阵作为**独立的增量 backfill** 推进,不因历史欠账而削弱对新工作的强制。
 
 4. **失效安全 / 安全红线先行** — 安全相关改动必须关联安全需求、默认安全态、测试先行、显式验证。
    > BMS:接触器**默认 OPEN**,仅判定 NORMAL 才 CLOSED;保护线程最高优先级;SOC 等信息流不得参与保护决策。
+   >
+   > **立场(纪律不分阶段)**:安全**纪律**——关联安全需求、测试先行、验证失效安全默认态(见 [development-workflow.md §2](development-workflow.md))——**现行生效,不分项目阶段**。仅 FMEA / 危害分析 / ISO 26262 工作产物全集等**重型**项可随"接真板、明确安全目标"后置。
 
 5. **持续合规(自动化是桥)** — 验证与追溯靠自动化**持续**满足,而非阶段末人工补;门要前移、高频、自动。这是 §2 调和洞察的落地。
    > BMS:CI 6 门(format / build×2 / test-coverage / sca-gcc / clang-tidy)+ pre-commit/pre-push 分层门禁 + DoD 追溯门。
@@ -89,7 +93,7 @@
 | [templates/](templates/) | §4 原则3(可追溯性) | REQ/DES ID 规范、追溯矩阵、EARS 模板 |
 | CI(`.github/workflows/ci.yml`) | §4 原则2·5 | 自动化验证门 |
 | [superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md) | §3 模型 / §4 | agent 体系的设计取舍 |
-| [quality-management.md](quality-management.md) | §4 原则2·3·5 | 各阶段质量管控现状与缺口 |
+| [quality-management.md](quality-management.md) | §4 原则2·3·5 | 各阶段质量管控现状与缺口、对五原则的符合性 |
 
 ## 7. 术语表
 
