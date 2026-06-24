@@ -2,7 +2,7 @@
 
 本项目的所有重要变更记录于此。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
-版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)（0.x 约定见 [开发流程 §8](docs/development-workflow.md#8-发布流程cd)）。
+版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)（0.x 约定见 [开发流程 §10](docs/development-workflow.md#10-发布流程cd)）。
 
 ## [Unreleased]
 

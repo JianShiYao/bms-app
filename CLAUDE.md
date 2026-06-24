@@ -130,7 +130,8 @@ git config core.hooksPath scripts/hooks   # 在 bms-app/ 下执行一次
 
 ## 开发流程与提交规范
 
-权威文档：`docs/development-workflow.md`（务必先读）。
+方法论根基：`docs/development-methodology.md`（敏捷+V 研发方法论,一切流程由其衍生）。
+操作权威：`docs/development-workflow.md`（务必先读）。
 
 - **分支**：从最新 `master` 切出 `<type>/<kebab-描述>`（feat/fix/docs/ci/refactor/test/chore…）。
 - **提交**：Conventional Commits——`<type>(<scope>): <祈使句摘要>`，scope 用模块名（soc/protection/afe/balancing/comm/board/ci/docs）。

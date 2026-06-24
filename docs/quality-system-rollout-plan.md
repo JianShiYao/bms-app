@@ -8,6 +8,10 @@
 > [质量管控全景](quality-management.md) 与 [开发流程](development-workflow.md)；
 > 本文保留为**实施记录**（设计决策、次序、风险规避）。已通过 PR #1–#14 落地，
 > 含 6 道 CI 门禁、分支保护、CD（v0.1.0 / v0.1.1）、clang-tidy 硬化、app 覆盖率门禁。
+>
+> **后续进展（超出本轮计划，2026-06）**：本文「不在本轮范围」中的部分项已陆续落地——
+> cppcheck/MISRA（本地 warn-only，见 [development-workflow.md §8](development-workflow.md)）、
+> afe 单测（20 例）与可切换采样后端（stub/sim/adc）。最新状态以上述两份当前实况文档为准。
 
 ## Context（为什么做这件事）
 bms-app（Zephyr v4.4.0 BMS 固件，github.com/JianShiYao/bms-app）当时底座扎实但流程零散：

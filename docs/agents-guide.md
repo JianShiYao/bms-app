@@ -1,7 +1,8 @@
 # BMS 研发流程 Agent 体系 · 使用指南
 
 本文说明 `.claude/agents/` 下这套覆盖**需求→架构→详细设计→编码→测试→CICD**全流程的
-Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**（迭代节奏 + 每个特性走 V 模型的设计↔验证）。
+Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方法论依据见根基文档
+[development-methodology.md](development-methodology.md);本文是该方法论"小 V 各阶段"的 agent 执行载体。
 
 - 设计依据：[docs/superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md)
 - 实施计划：[docs/superpowers/plans/2026-06-19-bms-agile-v-agents.md](superpowers/plans/2026-06-19-bms-agile-v-agents.md)
@@ -52,12 +53,13 @@ Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**（迭代节�
 ### 3.3 交付物布局
 ```
 docs/features/<feature-slug>/
-├─ 00-iteration-plan.md   # orchestrator：计划+派发清单+追溯骨架
+├─ 00-iteration-plan.md   # orchestrator：计划+派发清单
 ├─ 01-requirements.md     # requirements
 ├─ 02-architecture.md     # architect
 ├─ 03-design.md           # designer
 ├─ 05-test-report.md      # tester
-└─ 06-cicd.md             # cicd
+├─ 06-cicd.md             # cicd
+└─ traceability.md        # 独立追溯矩阵（orchestrator 初始化，各阶段回填）
 ```
 产品代码与测试仍写入既有 `app/`、`tests/`；`docs/features/<slug>/` 只放过程交付物。
 
@@ -89,9 +91,10 @@ WSL + `native_sim` 仅用于更可靠的覆盖率（CI 即走 native_sim）。
 - **分支/PR**（见 [development-workflow.md](development-workflow.md)）：从最新 **master** 切
   `feat/<kebab>` 分支，PR `--base master`，仅 Squash 合并，master 受 6 道 CI 门保护。
 
-> ⚠️ 已知偏差（待对齐）：首个样例 `soc-coulomb` 使用了 `REQ-SOC-Cxx`（应为 `REQ-SOC-NNN`）、
-> 把追溯表放进 `00-iteration-plan.md`（宜独立成 traceability matrix）、并从 `ci/local-quality-layering`
-> 切分支（流程文档要求从 `master` 切）。后续应更新 agent 的 CKB/契约，使其引用上述模板与 ID 规范。
+> ⚠️ 已知偏差（仅限历史样例 `soc-coulomb`，规则面向后续新特性）：该样例用了 `REQ-SOC-Cxx`、
+> 把追溯表塞进 `00-iteration-plan.md`、从 `ci/local-quality-layering` 切分支。这三点的**明文规则**现已固化在
+> [development-workflow.md §1.1–1.2、§3](development-workflow.md)（ID 用 `REQ-<域>-NNN`、追溯矩阵独立成 `traceability.md`、
+> 特性分支从 `master` 切）——后续 agent 的 CKB/契约以该处为准；历史样例不回改。
 
 ## 6. 扩展点（YAGNI 之外）
 - 将来真机目标增多 → 把"集成测试 / 系统测试"从合并状态拆开。

@@ -1,18 +1,94 @@
 # 开发流程与质量审查
 
-本文是 bms-app 的**开发流程单一事实源**。环境安装/构建/运行/测试的命令见 [README](../README.md)；
-本文聚焦"如何协作开发、如何保证质量、如何发版"。
+本文是 bms-app 的**开发流程单一事实源**,覆盖**完整研发生命周期**——既包括「如何开发一个特性」(敏捷-V 小 V:需求→架构→设计→编码→测试),
+也包括「如何协作交付」(分支→提交→PR→CI→发版)。环境安装/构建/运行/测试的命令见 [README](../README.md)。
+
+> 小 V 的**执行细节**(怎么调 agent 链、各阶段产出模板)见 [agents-guide.md](agents-guide.md) 与 [templates/](templates/);
+> 本文只定义**流程骨架与质量门**,不复制那些细节。
 
 ---
 
-## 1. 分支模型
+## 1. 特性开发生命周期(敏捷-V 小 V)
+
+本节是**敏捷+V 方法论在本项目的操作落地**;方法论的"为什么/是什么"(模型、五条原则、可追溯性原理、DoR/DoD 的理由)见根基文档 [development-methodology.md](development-methodology.md),此处不再复述。下图为小 V 速查:
+
+```
+① 需求 ───────────────────────验证──▶ ⑥ 系统/集成测试（合并）
+② 架构 ──────────────────验证──────▶ （集成验证并入⑥）
+③ 详细设计 ──────验证────────────────▶ ④ 单元测试
+        └──────▶ 编码实现 ──────────────┘
+   贯穿：可追溯链(需求→架构→设计→代码→测试) · 代码评审 · CI 持续验证
+```
+
+- **方法论依据**：[development-methodology.md](development-methodology.md)（敏捷+V 研发方法论根基；本节为其在本项目的操作落地）
+- **agent 体系设计**：[superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md)
+- **怎么调 agent 链**：[agents-guide.md](agents-guide.md)(orchestrator → requirements → architect → designer → coder/tester → cicd)
+- **端到端样例**：[features/soc-coulomb/](features/soc-coulomb/)
+
+### 1.1 可追溯性(本项目落地)
+
+> 为什么可追溯性是 V 模型的灵魂,见 [development-methodology.md §4 原则3](development-methodology.md)。本小节只给本项目的 ID 链与格式规则:
+
+```
+REQ-<域>-NNN  →  DES-<域>-NNN  →  代码位置(file:行/函数)  →  ztest 用例
+```
+
+- **ID 规范**:需求 `REQ-<域>-NNN`、设计 `DES-<域>-NNN`,域 = `SYS/AFE/SOC/PROT/BAL/COMM/BOARD`(例 `REQ-PROT-001`、`DES-SOC-002`)。
+  详见 [templates/README.md](templates/README.md)。
+- **ztest 注释回链**:用例顶部标 `/* Verifies REQ-<域>-NNN: ... */`,把测试和需求显式绑定。
+- **追溯矩阵独立成文**:每个特性维护 `docs/features/<slug>/traceability.md`(用
+  [templates/traceability-matrix-template.md](templates/traceability-matrix-template.md)),**不要**塞进 `00-iteration-plan.md`。
+- **原则**:每条需求至少有一个验证手段(测试/分析/检视/演示);**安全相关需求优先自动化测试**。
+
+### 1.2 命名与文件约定(明文规则)
+
+- 需求/设计 ID 一律用 **`REQ-<域>-NNN` / `DES-<域>-NNN`** 形式;**不使用** `REQ-SOC-Cxx` 之类的临时式编号。
+- 特性过程交付物落在 `docs/features/<slug>/`:`00-iteration-plan.md`(计划+派发清单)、`01-requirements.md`、
+  `02-architecture.md`、`03-design.md`、`05-test-report.md`、`06-cicd.md`、`traceability.md`(独立追溯矩阵)。
+- 产品代码与测试仍写入既有 `app/`、`tests/`;`docs/features/<slug>/` 只放过程交付物。
+
+### 1.3 迭代准入 / 准出(DoR / DoD)
+
+> DoR/DoD 的设立理由见 [development-methodology.md §5](development-methodology.md)。下为本项目落地清单:
+
+每个特性默认继承以下通用判据(单特性可在其 `00-iteration-plan.md` 细化,但不得削弱)。
+
+**准入(DoR,进入迭代前满足)**
+- 依赖就绪(所需 zbus 通道/数据结构/配置项已存在或本迭代显式纳入);
+- 基线可构建可测(`mps2/an386` 构建 + `run-tests-coverage.ps1` 当前通过);
+- 迭代计划(`00-iteration-plan.md`)已评审,**非目标范围已界定**。
+
+**准出(DoD,迭代完成判据)**
+- 小 V 各阶段产出齐备(需求/架构/设计/代码/测试/cicd 交付物);
+- **追溯链无断链**:每条 `REQ-<域>-NNN` 贯通 需求→架构→设计→代码→测试,`traceability.md` 无空链;
+- 所有 ⚠️ **失效安全**项均有对应需求与测试用例并通过;
+- 构建 + `twister` + 覆盖率达门限,无回归;**CI 6 门全绿**;
+- 范围受控:非目标未被夹带实现。
+
+### 1.4 小 V 的分支 / PR 粒度
+
+- **一个特性 = 一条 `feat/<kebab>` 分支 = 一个 Squash PR**(分支/提交/PR 规则见 §3–§7)。
+- `docs/features/<slug>/*` 过程交付物与 `app/`、`tests/` 代码**在同一个 PR** 提交——过程文档随实现一起评审、一起进 `master`。
+
+## 2. 安全相关改动的额外要求
+
+protection / 阈值 / 接触器 / 采样等**安全关键**改动,除常规流程外须额外满足(对齐项目失效安全红线:
+默认接触器 **OPEN**,仅判定 NORMAL 才 CLOSED;另见 [quality-management.md 第四节](quality-management.md)):
+
+- **必关联安全需求**:改动须对应一条 `REQ-PROT-*`(等)安全需求;若无,先补需求再改。
+- **测试先行(TDD)**:先写覆盖该安全场景的 ztest,再实现;失效安全分支(默认 OPEN、仅 NORMAL 才 CLOSE)**必须**有显式用例。
+- **显式验证失效安全默认态**,并在 PR 的「风险与回滚」中说明影响面与回滚办法。
+- **加强自审**:单人项目无第二 reviewer,安全改动尤须对照需求逐条核 diff(必要时请 `code-reviewer` 评审)。
+
+## 3. 分支模型
 
 - `master`：唯一受保护主干，始终可构建、CI 全绿。**不可直接 push**（受分支保护）。
 - 工作分支：`<type>/<kebab-描述>`，type 对齐提交规范：
   `feat/ fix/ docs/ ci/ style/ chore/ refactor/ test/ build/ perf/`
   例：`feat/soc-coulomb-counting`、`fix/protection-uv-threshold`、`ci/add-release-workflow`。
+- 特性分支一律从**最新 `master`** 切出(勿从其他工作分支派生)。
 
-## 2. 提交信息规范（Conventional Commits）
+## 4. 提交信息规范（Conventional Commits）
 
 ```
 <type>(<scope>): <祈使句摘要>
@@ -22,16 +98,16 @@
 ```
 - `type`：`feat fix docs style refactor test chore ci build perf`
 - `scope`：模块名 —— `soc protection afe balancing comm board ci docs`
-- 版本影响：`feat`→次版本，`fix`→修订，`BREAKING CHANGE`→主版本（0.x 见 §7）。
+- 版本影响：`feat`→次版本，`fix`→修订，`BREAKING CHANGE`→主版本（0.x 见 §10）。
 
-## 3. 克隆后一次性设置
+## 5. 克隆后一次性设置
 
 ```powershell
 git config core.hooksPath scripts/hooks   # 一次启用 pre-commit(格式) + pre-push(推前自检)
 ```
 详见 [README 第六节](../README.md#六代码格式化与提交检查)。
 
-## 4. 提交前自检（开 PR 前跑 check.ps1）
+## 6. 提交前自检（开 PR 前跑 check.ps1）
 
 开 PR 前在**已激活 venv 的 PowerShell** 里本地复现 CI 全套门禁，避免 push 后才在 CI 发现问题：
 ```powershell
@@ -42,8 +118,9 @@ powershell -ExecutionPolicy Bypass -File scripts\check.ps1 -Fast    # 快跑：�
 - SCA / clang-tidy 做 `-p always` 干净构建，全量约数分钟；日常迭代可先 `-Fast`，开 PR 前再跑一次全量。
 - **clang-tidy 与覆盖率同属"Linux 可靠"项**：clang-tidy 的 parity 需 `native_sim`（提供 host flags），而 native_sim 在 Windows **配置失败**，且本地新版本 clang-tidy 与 CI 不一致——故 clang-tidy 以 **CI(Linux) 为准**，Windows 上 check.ps1 标 `SKIP`；要本地对齐用 **WSL2**（Zephyr 即装在 WSL）。
 - **cppcheck** 则不受此限：check.ps1 用 **mps2/an386 的 `compile_commands.json`**（Windows 可编）走 project 精查；覆盖率本地走 `..\run-tests-coverage.ps1`（QEMU 路线覆盖率不可靠，可靠覆盖率见 CI / WSL2+native_sim）。
+- **QEMU 测试超时 flake**：本地用 QEMU 跑 twister 时，`bms.soc`（21 例）较易触发 harness 超时（用例本身全过），按需加 `--timeout-multiplier 4`；CI 走 native_sim 不受此限。
 
-## 5. PR 流程
+## 7. PR 流程
 
 ```
 git switch -c feat/xxx          # 从最新 master 切分支
@@ -54,8 +131,10 @@ gh pr create --base master      # 开 PR（填模板）
 ```
 - 合并策略：**仅 Squash**（master 线性、每 PR 一条规范提交）。
 - master 受保护：CI 必过才能合并；禁直推、禁强推、要求线性历史。
+- **小 V 即一个 PR**：一个特性的全部小 V 交付物(`docs/features/<slug>/*`)+ `app/`/`tests/` 改动同 PR 提交;
+  合并前须满足 §1.3 的 **DoD**(尤其追溯链无断链);PR 模板的「追溯链无断链」「安全相关改动」勾选项即此门的检查点。
 
-## 6. 分层质量关（按触发时机递进）
+## 8. 分层质量关（按触发时机递进）
 
 **设计原则：越靠前的关越要快，越靠后的关越全。** 检查按成本放到合适的触发点，
 而不是一股脑塞进 `pre-commit`（那样会慢到被 `--no-verify` 绕过，门形同虚设）。
@@ -70,7 +149,17 @@ gh pr create --base master      # 开 PR（填模板）
 | ⑥ 发布 | 打 tag | `.github/workflows/release.yml`（tag `v*`） | — | 发布失败即无 Release |
 | ⑦ 审计 | 持续 | `dependabot` / `CODEOWNERS` / `CHANGELOG` / PR 模板 | — | 软约束 |
 
-**为什么重检查（clang-tidy / SCA / 将来的 MISRA/cppcheck）不放 `pre-commit`：**
+**上表是「静态/集成检查」视角;从 V 模型「右腿验证」视角,各层对应小 V 的验证阶段:**
+
+| 小 V 右腿 | 对应左腿 | 落地手段 | 在上表/CI 的位置 |
+|---|---|---|---|
+| ④ 单元测试 | ③ 详细设计 | Twister ztest(纯逻辑函数,`/* Verifies REQ-... */` 回链) | CI 门 `test-coverage`(native_sim) |
+| ⑥ 系统/集成验证 | ① 需求 | native_sim 多模块 + 验收准则回归(当前集成/系统合并) | CI 构建 + 覆盖率;DoD 准出核验 |
+| 失效安全需求 | ① 需求(⚠️ 项) | **优先自动化测试**;结构性约束(线程优先级/不阻塞)由评审+集成确认 | §2 安全路径 + DoD |
+
+> 即:§8 的「关」回答「改动够不够干净/能不能合」;小 V 右腿回答「需求/设计有没有被验证到」。两者经 **CI test-coverage 门**与 **DoD 追溯门**交汇。
+
+**为什么重检查（clang-tidy / SCA / cppcheck/MISRA）不放 `pre-commit`：**
 它们依赖完整构建生成的 `compile_commands.json`，首轮要编一遍 Zephyr（数十秒~分钟），
 每次 commit 都做不现实。因此：
 
@@ -106,14 +195,14 @@ gh pr create --base master      # 开 PR（填模板）
 CI（⑤）当前 6 道门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(CERT/可读性)。
 各阶段质量管控现状与待补齐的全景见 [quality-management.md](quality-management.md)；SCA/clang-tidy/覆盖率的路线图见 [ci-borrow-checklist.md](ci-borrow-checklist.md)。
 
-## 7. 分支保护说明
+## 9. 分支保护说明
 
 master 受保护，必过检查（6 项）：`format`、`build (mps2/an386)`、`build (native_sim)`、`test-coverage`、`sca-gcc`、`clang-tidy`。
 - `clang-tidy` 已**硬门禁**（`.clang-tidy` 开启 `WarningsAsErrors`，当前 0 告警）并加入必过列。
 - **单人项目说明**：必需 reviewer = 0（无法要求他人评审），用「PR + CI 必过 + 自审 diff」替代第二双眼；
   团队化后改 reviewer ≥ 1、启用 `require_code_owner_reviews`、考虑 `enforce_admins`。
 
-## 8. 发布流程（CD）
+## 10. 发布流程（CD）
 
 `VERSION` 文件 + git tag + `release.yml` 联动：
 1. 开 `chore(release): bump vX.Y.Z` 分支；
