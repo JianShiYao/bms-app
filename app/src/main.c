@@ -39,7 +39,6 @@ int main(void)
 	/* 健康监测：周期打印存活信息（后续可接看门狗喂狗） */
 	while (1) {
 		k_sleep(K_SECONDS(5));
-		LOG_INF("BMS alive, uptime=%u ms", k_uptime_get_32());
 	}
 
 	return 0;
