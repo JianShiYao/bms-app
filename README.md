@@ -20,78 +20,32 @@ bms-app/                     # 本仓库（west manifest 仓库）
 │  └─ src/bms/{afe,soc,protection,balancing,comm}/  # 模块桩实现
 ├─ boards/enervenue/bms_f405/   # 第二步：自定义 STM32F405 板（模板）
 ├─ drivers/                  # out-of-tree 驱动占位（如 AFE 芯片）
-├─ tests/bms/{soc,protection}/  # ztest 单测套件
+├─ tests/bms/{soc,protection,afe}/  # ztest 单测套件
 └─ docs/architecture.md      # 架构与数据流说明
 ```
 
-## 一、安装工具链（首次）
+## 一、环境搭建 / 构建 / 运行 / 测试
 
-> 官方指南：https://docs.zephyrproject.org/4.4.0/develop/getting_started/index.html
-
-1. 安装 **Python 3.10–3.12**（勾选 Add to PATH），以及 **CMake ≥ 3.20**、**Ninja**、**Git**。
-2. 创建虚拟环境并安装 west：
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   pip install west
-   ```
-3. 安装 **Zephyr SDK**（版本由 `zephyr/SDK_VERSION` 决定，当前为 **1.0.1**）。
-   workspace 初始化（第二步 `west update`）后，用 west 自动安装：
-   ```powershell
-   # 仅装 ARM 工具链 + host-tools（含 QEMU），版本自动匹配 SDK_VERSION
-   west sdk install --install-base D:\zephyr-sdk -t arm-zephyr-eabi
-   west sdk list        # 确认 arm-zephyr-eabi 与 hosttools 已安装
-   ```
-
-## 二、初始化 workspace（T2）
-
-在**本仓库目录**下执行：
+> **完整步骤见 [构建指南 docs/build-guide.md](docs/build-guide.md)** —— 工具链与 SDK 安装、
+> workspace 初始化、构建（增量/全新/多板）、QEMU 运行、单元测试、构建产物、配置覆盖、清理、排错速查。
+>
+> 首次搭建（装工具链 / `west init` + `west update` / 装 SDK）务必照
+> [构建指南 §0 环境准备](docs/build-guide.md) 一步步来。下面是跑通后的常用命令速览：
 
 ```powershell
-# 以本仓库为 manifest 初始化 workspace（workspace 根为上一级目录）
-west init -l .
-# 拉取 zephyr v4.4.0 与所需模块
-west update
-# 导出 Zephyr CMake 包，安装 Python 依赖
-west zephyr-export
-pip install -r ..\zephyr\scripts\requirements.txt
-```
+& ..\.venv\Scripts\Activate.ps1                       # 每个新终端先激活 venv
+west build -p always -b mps2/an386 app                # 构建（首次约 1–2 分钟）
+west build -t run                                     # QEMU 运行（Ctrl-A X 退出）
 
-## 三、构建与运行（QEMU / mps2/an386，Cortex-M4F）
-
-```powershell
-# 编译（首次会编译整个 Zephyr，约 1-2 分钟）
-west build -p always -b mps2/an386 app
-# 在 QEMU 中运行（看到各 BMS 线程启动与周期采样桩日志；Ctrl-A X 退出 QEMU）
-west build -t run
-```
-
-> 启动日志示例：`*** Booting Zephyr OS build v4.4.0 ***` →
-> `bms_main: ==== BMS firmware starting on mps2/an386 ====` → 各模块 init → 每 5s 心跳。
-
-## 四、运行单元测试（ztest on mps2/an386）
-
-> **Windows 必读**：twister 在 Windows 上只有设置了 `QEMU_BIN_PATH` 环境变量才会
-> 真正在 QEMU 中执行测试（否则只编译、显示 “built (not run)”）。该变量指向 Zephyr
-> SDK 自带的 QEMU 目录。
-
-```powershell
-# 指向 SDK 内置 QEMU（每个新终端都要设；可在系统环境变量中永久设置）
 $env:QEMU_BIN_PATH = "D:\zephyr-sdk\zephyr-sdk-1.0.1\hosttools\qemu"
-west twister -T tests -p mps2/an386 -c
+west twister -T tests -p mps2/an386 -c               # 单元测试（预期 47/47）
 ```
 
-预期：`11 of 11 executed test cases passed (100.00%)`（bms_soc 5 + bms_protection 6）。
+> 运行后启动日志示例：`*** Booting Zephyr OS build v4.4.0 ***` →
+> `bms_main: ==== BMS firmware starting on mps2/an386 ====` → 各模块 init → 每 5s 心跳。
+> STM32F405 真机板（`bms_f405`）待 dts/defconfig 完善后用 `west build -b bms_f405 app`。
 
-## 五、第二步：STM32F405 板
-
-板定义位于 `boards/enervenue/bms_f405/`（当前为模板，引脚标注 TODO）。完善 dts/defconfig 后：
-
-```powershell
-west build -b bms_f405 app
-```
-
-## 六、代码格式化与提交检查
+## 二、代码格式化与提交检查
 
 代码风格沿用 **Zephyr 官方 clang-format**（配置见仓库根 `.clang-format`）。
 
@@ -119,7 +73,7 @@ git commit --no-verify
 > 注：`git config core.hooksPath scripts/hooks` 同时启用 **pre-commit**（格式）与 **pre-push**
 > （format + 增量 clang-tidy + cppcheck/MISRA 告警）；后两者依赖下节的工具，未装则自动跳过。
 
-## 七、静态分析工具依赖（cppcheck / clang-tidy）
+## 三、静态分析工具依赖（cppcheck / clang-tidy）
 
 pre-push 钩子与 `scripts\check.ps1` 会调用 **cppcheck**（含 MISRA）与 **clang-tidy**。
 两者均为**可选本地依赖**：未安装时对应检查自动标 `SKIP`（不阻断本地操作），**CI 会权威地补跑**。
