@@ -42,3 +42,9 @@ scripts/.cppcheck-addons/
 # cppcheck 分析中间产物
 *.dump
 *.ctu-info
+
+# 硬件资料：体积大的二进制（数据手册 PDF / BOM xlsx / CubeMX ioc）不入库，
+# 另存网盘或 Git LFS；仅保留 docs/hardware/ 下的文本说明（.md/.txt）。
+docs/hardware/**/*.pdf
+docs/hardware/**/*.xlsx
+docs/hardware/**/*.ioc
