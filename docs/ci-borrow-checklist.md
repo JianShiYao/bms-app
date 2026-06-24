@@ -70,9 +70,9 @@
 - [x] 已上免费 cppcheck misra addon（warn-only），符合下面「非阻断」阶梯的起步档。
 - [ ] 若做功能安全合规，再评估商业工具（`eclair`/`polyspace`/`coverity`，均需许可证）。
   - 免费 addon 的 **MISRA 规则全文受版权保护**，仓库不含规则文本，本地自备（参考 stm32 仅放标题行 `misra-c-2023-headlines.txt`）。
-- [ ] **把 cppcheck/MISRA 升级进 CI**（当前仅本地 pre-push + check.ps1）——按阻断强度递进：
-      ① 本地试跑调参 + 建 suppression/基线（**已在此档**）→ ② 进 CI 非阻断（`continue-on-error`/只出报告或 PR 注释）
-      → ③ 噪声归零后升必过门禁 → ④ 证明低噪后下放 `pre-push`。
+- [ ] **把 cppcheck/MISRA 升级进 CI**——按阻断强度递进：
+      ① 本地试跑调参 + 建 suppression/基线（**已完成**）→ ② 进 CI 非阻断（`cppcheck-misra` job，`continue-on-error`，**已完成**）
+      → ③ 噪声归零后升必过门禁（待办，需在 GitHub 分支保护加该 check）→ ④ 证明低噪后下放 `pre-push`（`CPPCHECK_FAIL=1`）。
   - 切忌一上来把吵的工具设成 CI 必过门；用 **baseline 只对新增代码报错**。
   - 详见 [development-workflow.md §8](development-workflow.md) 的「按阻断强度递进」阶梯表。
 
