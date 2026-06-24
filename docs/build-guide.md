@@ -1,14 +1,52 @@
 # 构建指南（Build Guide）
 
-> 本文是 BMS 固件的**构建专题权威文档**，面向团队开发者。聚焦「如何编译」的全部细节：
-> 命令语法、多板构建、增量 vs 全新、构建产物、配置覆盖、清理与排错。
+> 本文是 BMS 固件的**构建专题权威文档**，面向团队开发者。覆盖从零到跑通的全链路：
+> 工具链/workspace **环境搭建** → **构建**（增量/全新/多板）→ QEMU **运行** → 单元**测试**，
+> 外加命令语法、构建产物、配置覆盖、清理与排错。
 >
-> **不在本文范围**：工具链/SDK 安装、workspace 首次初始化 —— 见 [README.md](../README.md) 的「一、安装工具链」「二、初始化 workspace」。
-> 分支/提交/PR/质量门禁流程见 [development-workflow.md](development-workflow.md)。
+> **不在本文范围**：分支/提交/PR/发布等开发流程，以及 clang-format/clang-tidy/cppcheck 等
+> **质量门禁工具的安装与使用** —— 见 [development-workflow.md](development-workflow.md) 与
+> [README.md](../README.md)「代码格式化」「静态分析工具依赖」。各项约定的唯一来源是 [../CLAUDE.md](../CLAUDE.md)。
 
 ---
 
-## 0. 前置：每个新终端都要激活 venv
+## 0. 环境准备
+
+包含两部分：**首次一次性**的工具链安装 + workspace 初始化（0.1 / 0.2），以及**每个新终端**都要做的 venv 激活（0.3）。
+本文所有命令默认在**本仓库目录 `bms-app/`** 下、**已激活 venv** 的 PowerShell 中执行。
+
+### 0.1 首次：安装工具链
+
+> 官方指南：https://docs.zephyrproject.org/4.4.0/develop/getting_started/index.html
+
+1. 安装 **Python 3.10–3.12**（勾选 Add to PATH），以及 **CMake ≥ 3.20**、**Ninja**、**Git**。
+2. 创建虚拟环境并安装 west（venv 建在 **workspace 根**，即本仓库的上一级）：
+   ```powershell
+   # 在 workspace 根目录下
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   pip install west
+   ```
+3. 安装 **Zephyr SDK**（版本由 `zephyr/SDK_VERSION` 决定，当前为 **1.0.1**）。
+   需先完成 0.2 的 `west update` 才能用 west 自动安装：
+   ```powershell
+   # 仅装 ARM 工具链 + host-tools（含 QEMU），版本自动匹配 SDK_VERSION
+   west sdk install --install-base D:\zephyr-sdk -t arm-zephyr-eabi
+   west sdk list        # 确认 arm-zephyr-eabi 与 hosttools 已安装
+   ```
+
+### 0.2 首次：初始化 workspace（T2 拓扑）
+
+在**本仓库目录 `bms-app/`** 下执行：
+
+```powershell
+west init -l .                              # 以本仓库为 manifest 初始化（workspace 根=上一级）
+west update                                 # 拉取 zephyr v4.4.0 与所需模块
+west zephyr-export                          # 导出 Zephyr CMake 包
+pip install -r ..\zephyr\scripts\requirements.txt   # 安装 Zephyr 的 Python 依赖
+```
+
+### 0.3 每个新终端：激活 venv
 
 `west`、`clang-format` 等都装在 workspace 根的 `.venv` 里。**每开一个新终端**、运行任何 `west` 命令前，先激活：
 
@@ -19,8 +57,6 @@ west --version            # 验证：能打印版本即 OK
 ```
 
 > 没激活会报 `west: The term 'west' is not recognized...`。
-
-本文所有命令默认在**本仓库目录 `bms-app/`** 下、**已激活 venv** 的 PowerShell 中执行。
 
 ---
 
@@ -187,21 +223,32 @@ Remove-Item -Recurse -Force build\an386, build\nsim
 
 ---
 
-## 9. 测试构建与质量门禁构建
+## 9. 测试构建与运行（ztest / twister）
 
-这两类「构建」有专属入口，不要用裸 `west build`：
+单元测试用 **twister** 跑，不要用裸 `west build`：
 
 ```powershell
-# 单元测试（twister）：Windows 必须先设 QEMU_BIN_PATH，否则只编译不运行
+# Windows 必须先设 QEMU_BIN_PATH，否则 twister 只编译不运行（显示 "built (not run)"）
 $env:QEMU_BIN_PATH = "D:\zephyr-sdk\zephyr-sdk-1.0.1\hosttools\qemu"
-west twister -T tests -p mps2/an386 -c        # 预期 11/11 通过
+west twister -T tests -p mps2/an386 -c        # 预期 47/47 通过
+```
 
-# 提交前本地全量镜像 CI（format→build×2→test→SCA→tidy→cppcheck）
+- `QEMU_BIN_PATH` 指向 SDK 自带 QEMU 目录（每个新终端都要设；也可在系统环境变量里永久设置）。
+- 当前测试规模：`bms.soc` 21 + `bms.protection` 6 + `bms.afe` 20 = **47 例**。
+- ⚠️ **QEMU soc 超时 flake**：`bms.soc`（21 例）在 QEMU 下较易触发 harness 超时（用例本身全过），
+  按需加 `--timeout-multiplier 4`；CI 走 `native_sim` 不受此限。
+- 跑单个套件：限定 `-T` 路径，如 `west twister -T tests/bms/soc -p mps2/an386 -c`。
+- 覆盖率：用 workspace 根的 `..\run-tests-coverage.ps1`（QEMU 覆盖率不稳，可靠覆盖率见 CI / WSL2+native_sim）。
+
+**提交前本地全量镜像 CI**（format→build×2→test→SCA→tidy→cppcheck）：
+
+```powershell
 powershell -ExecutionPolicy Bypass -File scripts\check.ps1
 powershell -ExecutionPolicy Bypass -File scripts\check.ps1 -Fast   # 仅 format+build+test（跳过两个重门）
 ```
 
-细节见 [README.md](../README.md)「四/六/七」与 [development-workflow.md](development-workflow.md)。
+> 质量门禁的分层触发、各门含义、工具安装见 [development-workflow.md](development-workflow.md) 与
+> [README.md](../README.md)「静态分析工具依赖」。
 
 ---
 
@@ -210,8 +257,8 @@ powershell -ExecutionPolicy Bypass -File scripts\check.ps1 -Fast   # 仅 format+
 | 现象 | 原因 | 处理 |
 |------|------|------|
 | `west: ... is not recognized` | 没激活 venv | `& ..\.venv\Scripts\Activate.ps1`（见 §0） |
-| `ZEPHYR_BASE ... not found` / 找不到 zephyr | workspace 未初始化或 `west update` 没跑 | 见 README「二、初始化 workspace」；确认上一级有 `zephyr/` |
-| 找不到 SDK / 工具链 / `arm-zephyr-eabi-gcc` | Zephyr SDK 未装或未被发现 | `west sdk list` 确认；缺则按 README「一」装 SDK（`west sdk install ...`） |
+| `ZEPHYR_BASE ... not found` / 找不到 zephyr | workspace 未初始化或 `west update` 没跑 | 见 §0.2 初始化 workspace；确认上一级有 `zephyr/` |
+| 找不到 SDK / 工具链 / `arm-zephyr-eabi-gcc` | Zephyr SDK 未装或未被发现 | `west sdk list` 确认；缺则按 §0.1 装 SDK（`west sdk install ...`） |
 | 改了 `prj.conf`/`Kconfig` 但行为没变 | 增量构建未重新配置 | 用 `-p always` 全新构建；核对 `build/zephyr/.config` |
 | twister 显示 `built (not run)`，测试没真正执行 | Windows 没设 `QEMU_BIN_PATH` | 设环境变量后重跑（§9） |
 | `native_sim` 在 Windows 上配置/编译失败 | POSIX 架构不支持 Windows 原生 | 改用 `mps2/an386`，或在 **WSL2** 下编译 `native_sim` |

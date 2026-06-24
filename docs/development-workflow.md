@@ -105,7 +105,7 @@ protection / 阈值 / 接触器 / 采样等**安全关键**改动,除常规流�
 ```powershell
 git config core.hooksPath scripts/hooks   # 一次启用 pre-commit(格式) + pre-push(推前自检)
 ```
-详见 [README 第六节](../README.md#六代码格式化与提交检查)。
+详见 [README 第二节](../README.md#二代码格式化与提交检查)。
 
 ## 6. 提交前自检（开 PR 前跑 check.ps1）
 
