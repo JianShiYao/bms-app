@@ -202,17 +202,18 @@ gh pr create --base master      # 开 PR（填模板）
 | 阶段 | 在哪 | 阻断强度 | 目的 | 本项目现状 |
 |---|---|---|---|---|
 | ① 试跑调参 | 本地（反馈最快） | 不阻断 | 看噪声量、选规则子集、建 suppression/基线 | — |
-| ② 观察期 | pre-push（本地） / CI | **非阻断（告警）** | 跑若干轮，确认基线稳 | **当前在此**：pre-push + check.ps1 中 cppcheck/MISRA = warn-only |
+| ② 观察期 | pre-push（本地） / CI | **非阻断（告警）** | 跑若干轮，确认基线稳 | **当前在此**：pre-push + check.ps1（本地）+ CI `cppcheck-misra` job（`continue-on-error`，非必过）均 warn-only |
 | ③ 升门禁 | CI | **必过**（加入 required checks） | 噪声归零后才阻断合并 | 待噪声调稳后做 |
 | ④ 收紧本地 | pre-push | 本地拦截（`CPPCHECK_FAIL=1`） | 低噪后给开发者硬反馈 | 一个开关即可启用 |
 
-> 说明：本项目把②"非阻断观察"放在**本地（pre-push / check.ps1 的 warn-only）**做，而非 CI——
-> 对单人项目本地反馈更快、调 suppression 不必来回 push。[`.cppcheck-suppressions`](../.cppcheck-suppressions)
-> 集中维护豁免与 MISRA deviation；噪声调稳后，pre-push 设 `CPPCHECK_FAIL=1` 即升级为阻断，或再并入 CI required checks。
+> 说明：②"非阻断观察"同时在**本地（pre-push / check.ps1 的 warn-only）**与 **CI（`cppcheck-misra` job，`continue-on-error`、不计入必过门、产出报告制品）**进行——
+> 本地反馈快、调 suppression 不必来回 push;CI 则给每个 PR 一份跨平台(Linux)的稳定基线观察。[`.cppcheck-suppressions`](../.cppcheck-suppressions)
+> 集中维护豁免与 MISRA deviation；噪声调稳后,去掉 `continue-on-error` 并把该 check 加入分支保护(③ 升必过),pre-push 设 `CPPCHECK_FAIL=1`(④ 收紧本地)。
 
 要点：**调参在本地做**（CI 来回 push 太慢）；**进 CI 第一步必须非阻断**；用 **baseline/suppression 只对新增代码报错**，不必先清零历史问题即可上线。
 
-CI（⑤）当前 6 道门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(CERT/可读性)。
+CI（⑤）当前 6 道**必过**门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(CERT/可读性)。
+另有 1 个**非阻断观察** job `cppcheck-misra`(②阶梯,`continue-on-error`,不计入必过门、产出报告制品),待噪声稳后升必过。
 各阶段质量管控现状与待补齐的全景见 [quality-management.md](quality-management.md)；SCA/clang-tidy/覆盖率的路线图见 [ci-borrow-checklist.md](ci-borrow-checklist.md)。
 
 ## 9. 分支保护说明

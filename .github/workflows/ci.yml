@@ -135,3 +135,35 @@ jobs:
           sed -i -E 's/-fno-(reorder-functions|freestanding|defer-pop|printf-return-value|reorder-blocks-and-partition)//g; s/--param=[^ "]*//g' build/compile_commands.json
       - name: Run clang-tidy on app sources
         run: clang-tidy -p build $(find bms-app/app/src -name '*.c')
+
+  # Observation job (NON-BLOCKING): cppcheck + MISRA addon.
+  # development-workflow.md §8 ladder, step ②: runs in CI and reports findings
+  # but does NOT block merge (continue-on-error; not a required check). Promote
+  # to required (drop continue-on-error + add to branch protection) only after
+  # the noise baseline proves stable.
+  cppcheck-misra:
+    needs: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: bms-app
+      - uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: bms-app
+          toolchains: arm-zephyr-eabi
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+      - name: Fetch MISRA addon (GPLv3, version-matched; not committed)
+        run: bash bms-app/scripts/setup-cppcheck-misra.sh
+      - name: Generate compile_commands.json (mps2/an386)
+        run: west build -b mps2/an386 bms-app/app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: Run cppcheck + MISRA (project mode, non-blocking)
+        continue-on-error: true
+        run: bash bms-app/scripts/cppcheck-run.sh --project build/compile_commands.json 2>&1 | tee cppcheck-report.txt
+      - name: Upload cppcheck/MISRA report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cppcheck-misra-report
+          path: cppcheck-report.txt
