@@ -5,6 +5,19 @@
 - 形态：`.claude/agents/*.md` 自定义 subagent（深度定制 BMS/Zephyr）
 - 产出语言：所有 agent 的文档/注释/交付物默认**中文**，与项目现有风格一致
 
+> **状态（2026-06-24 对齐说明）**：本文件是 2026-06-19 的**时间点设计规格**，记录 agent 体系的初始设计取舍。
+> 其核心决策——subagent 形态、敏捷-V、7 agent 名册、方案 A 编排——**依然有效**；但项目此后演进，下列主题的**现行权威**已转移，本规格与之冲突处一律以现行为准：
+>
+> | 主题 | 现行权威来源 |
+> |---|---|
+> | 方法论（为什么/是什么：敏捷-V、小 V、五原则 + 变更即再基线） | [development-methodology.md](../../development-methodology.md)（母文档；本规格在其 §6 派生表中被列为下游产物） |
+> | 操作（分支/PR、DoR/DoD、分层质量门、再基线、worktree、流程裁剪） | [development-workflow.md](../../development-workflow.md) |
+> | 需求基线与编号 | [docs/requirements/](../../requirements/)（按域 `REQ-<域>-NNN`，新特性接续既有域编号） |
+> | agent 操作（阶段门、评审门、何时不用完整小 V） | [agents-guide.md](../../agents-guide.md) §3 |
+>
+> 因此：本规格**不再作为流程模型的事实源**（§2 以 development-methodology.md §3 为准，避免与母文档漂移）；
+> §6 的需求归属以下方 2026-06-24 补注与 `docs/requirements/` 为准。
+
 ## 1. 目标
 
 为本 BMS 项目搭建一套覆盖**需求 → 架构 → 详细设计 → 编码 → 测试 → CI/CD**全流程的专业 subagent
@@ -125,6 +138,10 @@ bms-app/
 ```
 
 代码与测试仍写入既有 `app/`、`tests/` 目录结构；`docs/features/<slug>/` 仅存放流程交付物。
+
+> **更新（2026-06-24）**：需求的**权威基线**是按域的 `docs/requirements/<域>.md`（`REQ-<域>-NNN`，新特性接续既有域编号，如 SOC 接 `soc.md` 的 025+）。
+> feature 文件夹的 `01-requirements.md` 是该特性的**工作副本/增量**，须与域基线保持编号与内容一致；
+> 追溯矩阵独立为 `docs/features/<slug>/traceability.md`（套 `traceability-matrix-template`），不再内嵌进 `00-iteration-plan.md`（见 [agents-guide.md](../../agents-guide.md) §3.8）。
 
 ## 7. Agent 自身的验证
 
