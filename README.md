@@ -59,6 +59,9 @@ pip install -r ..\zephyr\scripts\requirements.txt
 
 ## 三、构建与运行（QEMU / mps2/an386，Cortex-M4F）
 
+> 构建的完整细节（增量 vs 全新、多板独立目录、构建产物、配置覆盖、清理、排错速查）见
+> **[构建指南 docs/build-guide.md](docs/build-guide.md)**。下面是最常用的两条命令。
+
 ```powershell
 # 编译（首次会编译整个 Zephyr，约 1-2 分钟）
 west build -p always -b mps2/an386 app
