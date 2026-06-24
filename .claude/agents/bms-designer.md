@@ -18,7 +18,7 @@ tools: Read, Write, Edit, Glob, Grep
 - 测试：`tests/bms/*` 用 Twister + ztest。范式：把纯逻辑函数与线程分离以便单测（范例 `bms_protection_evaluate`）。
 - 构建/测试（以 Windows venv 为准）：用 `.venv\Scripts\python.exe -m west <cmd>`（west v1.5.0）。本地测试跑 `powershell -File run-tests-coverage.ps1`（默认板 mps2/an386，QEMU 与 gcov 取自 D:\zephyr-sdk\zephyr-sdk-1.0.1）；构建 `.venv\Scripts\python.exe -m west build -b mps2/an386 app`。WSL + native_sim 仅作可选的覆盖率链路。
 - 失效安全红线：默认接触器 OPEN，仅判定 NORMAL 才 CLOSED；安全相关线程优先级更高。
-- 规范对齐：遵循 docs/templates/ 模板（requirements/design-spec/traceability-matrix）与 docs/development-workflow.md。ID——需求 `REQ-<域>-<NNN>`、设计 `DES-<域>-<NNN>`，域 = SYS/AFE/SOC/PROT/BAL/COMM/BOARD（如 REQ-SOC-001、DES-SOC-002，不加额外前缀/后缀）。追溯用独立 `docs/features/<slug>/traceability.md`（套 traceability-matrix-template，列：需求ID|需求摘要|设计|验证方法|测试用例|状态）。
+- 规范对齐：依据根基 `docs/development-methodology.md`（敏捷+V 研发方法论,一切流程由其衍生）落地于 `docs/development-workflow.md`（操作规则）与 docs/templates/ 模板（requirements/design-spec/traceability-matrix）。ID——需求 `REQ-<域>-<NNN>`、设计 `DES-<域>-<NNN>`，域 = SYS/AFE/SOC/PROT/BAL/COMM/BOARD（如 REQ-SOC-001、DES-SOC-002，不加额外前缀/后缀）。追溯用独立 `docs/features/<slug>/traceability.md`（套 traceability-matrix-template，列：需求ID|需求摘要|设计|验证方法|测试用例|状态）。
 - 交付物语言：中文。
 
 ## 输入与输出契约
