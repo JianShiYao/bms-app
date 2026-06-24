@@ -167,3 +167,57 @@ jobs:
         with:
           name: cppcheck-misra-report
           path: cppcheck-report.txt
+
+  # Observation job (NON-BLOCKING): .editorconfig conformance across tracked files.
+  # development-workflow.md §8 ladder, step ②: reports findings but does NOT block
+  # merge (continue-on-error; not a required check). Promote to required only after
+  # the baseline proves clean.
+  editorconfig:
+    needs: format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install editorconfig-checker (pinned)
+        run: |
+          EC_VERSION=3.0.3
+          curl -fsSL -o ec.tar.gz \
+            "https://github.com/editorconfig-checker/editorconfig-checker/releases/download/v${EC_VERSION}/ec-linux-amd64.tar.gz"
+          tar xzf ec.tar.gz
+          sudo install bin/ec-linux-amd64 /usr/local/bin/ec
+          ec --version
+      - name: Run editorconfig-checker (non-blocking)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ec 2>&1 | tee editorconfig-report.txt
+      - name: Upload editorconfig report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: editorconfig-report
+          path: editorconfig-report.txt
+
+  # Observation job (NON-BLOCKING): yamllint --strict on repo YAML (west.yml,
+  # workflows, dependabot, etc.). Config in .yamllint. Same §8 ladder step ②:
+  # reports but does not block; promote to required once the baseline is clean.
+  yamllint:
+    needs: format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install yamllint (pinned)
+        run: pip install "yamllint==1.35.1"
+      - name: Run yamllint --strict (non-blocking)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          yamllint --strict . 2>&1 | tee yamllint-report.txt
+      - name: Upload yamllint report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: yamllint-report
+          path: yamllint-report.txt
