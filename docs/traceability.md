@@ -31,11 +31,21 @@
 
 > SOC 小结：12 条中 9 条「已验证」、2 条 ⚠️ 结构性约束「已实现」（评审/集成确认）、1 条「部分」（待参数化测试）。
 
+## PROT 模块（保护，新固件需求）
+
+> 接续遗留 `docs/requirements/prot.md` 的 001-032（逆向旧固件）编号；以下为新固件实现并被测试链接的安全需求。
+
+| 需求 ID | 需求摘要 | 设计 | 验证方法 | 测试用例 | 状态 |
+|---|---|---|---|---|---|
+| ⚠️ REQ-PROT-033 | 无效测量 ⇒ 失效安全（测量有效位不齐时绝不闭合，强制 FAULT→OPEN） | `protection.c:bms_protection_evaluate`（validity 早返 FAULT；对齐 `architecture.md`「测量数据纪律」） | 测试 | `bms.protection.test_invalid_validity_opens`、`bms.protection.test_partial_validity_opens`、`bms.protection.test_invariant_closed_iff_normal` | 已验证 |
+
+> 红线不变量「接触器 CLOSED ⟺ NORMAL」由 `test_invariant_closed_iff_normal` 扫描覆盖（电压/电流/温度/有效位组合）。
+
 ## 其他模块（待补 REQ 链接）
 
 | 模块 | 现状 | 待补 |
 |---|---|---|
-| protection | 有 6 个 ztest（`tests/bms/protection/`），但**尚无 `/* Verifies REQ-PROT-NNN */` 注释** | 把每个用例映射到遗留 `prot.md` 的 `REQ-PROT-NNN` 并补注释 + 入本表 |
+| protection（OV/UV/OC/OT） | 6 个阈值 ztest + REQ-PROT-033 失效安全测试；OV/UV/OC/OT 用例**尚无 `REQ-PROT-NNN` 注释** | 把 OV/UV/OC/OT 等用例映射到遗留 `prot.md` 的 `REQ-PROT-NNN` 并补注释 + 入本表 |
 | afe | 有 20 个 ztest（`tests/bms/afe/`），同样**无 REQ 注释** | 同上，映射到 `REQ-AFE-NNN` |
 | balancing / comm / main | 无专门单测 | 先补单测（见 [quality-management.md](quality-management.md) 待补齐清单） |
 
