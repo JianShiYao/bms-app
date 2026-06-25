@@ -115,7 +115,7 @@ ADC/AFE → [afe] ─chan_cell_meas─┬→ [soc] ──chan_soc──┐
 2. **pre-commit**：仅对暂存的 app/drivers/tests 下 `.c/.h` 跑 clang-format（秒级，**硬拒绝**）。
 3. **pre-push**：format + 增量 clang-tidy（有 build 时）+ cppcheck/MISRA（**warn-only**）。
 4. **check.ps1**：本地全量镜像 CI。
-5. **CI**（`.github/workflows/ci.yml`，PR/push 触发）：`format` → 并行 `build(mps2/an386)`、`build(native_sim)`、`test-coverage`、`sca-gcc`、`clang-tidy`。覆盖率门槛 **行 ≥ 55% / 分支 ≥ 30%**（基线 61%/39%）。
+5. **CI**（`.github/workflows/ci.yml`，PR/push 触发）：`format` → 并行 `build(mps2/an386)`、`build(native_sim)`、`test-coverage`、`sca-gcc`、`clang-tidy`，外加卫生门 `editorconfig`、`yamllint`（阻断作业，合并后入分支保护必过列）。覆盖率门槛 **行 ≥ 55% / 分支 ≥ 30%**（基线 61%/39%）。
 6. **release**（`release.yml`，打 `vX.Y.Z` tag 触发）：校验 tag == `VERSION` → 构建 → 发布固件 + SHA256SUMS。
 
 **首次克隆须启用 hooks**（`core.hooksPath` 是本地配置，不随提交携带）：

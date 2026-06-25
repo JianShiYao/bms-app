@@ -1,0 +1,24 @@
+# yamllint config for the CI observation job (development-workflow.md section 8,
+# ladder step 2: non-blocking). Tighten / promote to a required gate once the
+# baseline is clean. ASCII-only comments on purpose: yamllint reads this file
+# with the locale default encoding, which breaks on Windows (GBK) if non-ASCII.
+extends: default
+
+# Generated / out-of-tree artifacts (also gitignored): never lint these.
+ignore: |
+  build/
+  twister-out/
+  .venv/
+
+rules:
+  # Allow longer lines (workflows / west manifest often exceed 80); warn only.
+  line-length:
+    max: 120
+    level: warning
+  # Do not require a leading `---` (workflows / manifest usually omit it).
+  document-start: disable
+  # GitHub Actions `on:` key trips the truthy rule; skip key checks.
+  truthy:
+    check-keys: false
+  comments:
+    min-spaces-from-content: 1
