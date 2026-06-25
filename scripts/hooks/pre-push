@@ -69,22 +69,27 @@ else
     echo "pre-push: clang-format not found (PATH or venv); skipping format check." >&2
 fi
 
-# --- 2. opportunistic clang-tidy (only when cheap: tool + existing build) --
+# --- 2. opportunistic clang-tidy (WARN-ONLY) ------------------------------
+# Runs only if clang-tidy + an existing build/compile_commands.json are present.
+# WARN-ONLY by design: clang-tidy is authoritative in CI (Linux). Locally it is
+# unreliable -- native_sim host flags are unavailable on Windows, and a newer
+# local LLVM reports checks CI's clang-tidy does not -- so it must NOT block the
+# push (consistent with check.ps1 SKIPping clang-tidy on Windows).
 TIDY="$(command -v clang-tidy 2>/dev/null)"
 app_c="$(printf '%s\n' "$changed" | grep -E '^app/src/.*\.c$' || true)"
 if [ -n "$TIDY" ] && [ -f build/compile_commands.json ] && [ -n "$app_c" ]; then
-    echo "pre-push: clang-tidy on changed app/src files (reusing build/)..."
-    if ! clang-tidy -p build $app_c; then
-        echo ""
-        echo "pre-push: clang-tidy reported issues above. Fix, or run the full mirror:"
-        echo "    powershell -ExecutionPolicy Bypass -File scripts/check.ps1"
-        exit 1
-    fi
-    echo "pre-push: clang-tidy OK."
+    echo "pre-push: clang-tidy on changed app/src files (warn-only)..."
+    # Strip gcc/arm-only flags clang rejects (else the TU fails to parse) into a
+    # temp compile DB -- same idea as CI's sed step, plus arm -mfp16-format.
+    cc_dir="$(mktemp -d)"
+    sed -E 's/-f(no-)?(reorder-functions|freestanding|defer-pop|printf-return-value|reorder-blocks-and-partition)//g; s/-mfp16-format=[^ "]*//g; s/--param=[^ "]*//g' \
+        build/compile_commands.json > "$cc_dir/compile_commands.json"
+    clang-tidy -p "$cc_dir" $app_c \
+        || echo "pre-push: clang-tidy findings above (WARN-ONLY; CI/WSL2 is authoritative)."
+    rm -rf "$cc_dir"
 else
     echo "pre-push: skipping clang-tidy (needs clang-tidy + build/compile_commands.json)."
-    echo "          run the full CI mirror before opening a PR:"
-    echo "          powershell -ExecutionPolicy Bypass -File scripts/check.ps1"
+    echo "          full CI mirror: powershell -ExecutionPolicy Bypass -File scripts/check.ps1"
 fi
 
 # --- 3. cppcheck + MISRA on changed app/src .c (WARN-ONLY; no build needed) -
