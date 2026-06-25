@@ -35,7 +35,7 @@ jobs:
       - name: Generate API docs
         run: doxygen docs/Doxyfile        # outputs doxygen-out/html
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: doxygen-out/html
 
