@@ -2,7 +2,8 @@
 
 基于 **Zephyr RTOS v4.4.0** 的电池管理系统（BMS）固件。采用 west **T2 拓扑**（本仓库即 manifest 仓库），分层架构 + zbus 消息总线解耦。
 
-> 参与开发请先读 **[开发流程与质量审查](docs/development-workflow.md)**（分支模型 / 提交规范 / PR 流程 / 质量门禁 / 发布）。
+> 参与开发请先读 **[开发流程与质量审查](docs/development-workflow.md)**（分支模型 / 提交规范 / PR 流程 / 质量门禁 / 发布）；
+> Git 操作细则、命令示例与出错恢复见 **[Git 管理制度与操作手册](docs/git-guide.md)**。
 
 - 第一步：在 PC 上用 **QEMU（`mps2/an386`，Cortex-M4F）** 跑通架构与业务骨架。
   - 选 `mps2/an386` 是因为它与目标 STM32F405 同为 **Cortex-M4F（带硬件 FPU）**，架构忠实。
@@ -91,6 +92,10 @@ winget install Cppcheck.Cppcheck      # 或：scoop install cppcheck
   bash scripts/setup-cppcheck-misra.sh
   ```
 - MISRA addon 运行需 **Python 在 PATH**（项目 venv 里即有）。
+- **规则描述（可选）**：MISRA 规则文本受版权保护、**不入库**。默认只报规则号（如 `misra-c2012-13.4`）；
+  若想同时打印规则描述，按机自备一份 rule-texts 文件放到 `scripts\.cppcheck-addons\misra-rule-texts.txt`
+  （cppcheck `--rule-texts` 的「Appendix A」格式，来源：MISRA 官方 cppcheck headlines（CC BY-NC-ND，**商业项目用需注意授权**）或你授权的 MISRA C:2012 PDF）。
+  脚本检测到即自动启用；详见 `bash scripts/setup-cppcheck-misra.sh` 的提示。
 - 运行方式：pre-push 对改动的 `.c` 跑**独立模式**（无需构建、秒级，但无构建上下文会有已知假阳性，**仅告警**）；
   `check.ps1` 用 **mps2/an386 的 `compile_commands.json`** 跑 **project 模式**（准确，假阳性基本消除）。
 - 噪声抑制与 MISRA deviation 集中在 `.cppcheck-suppressions` 维护。
@@ -107,6 +112,18 @@ scoop install llvm                    # 或：winget install LLVM.LLVM
 - **Windows 原生对 Zephyr 不可靠**：clang-tidy 需 `native_sim`（提供 host flags，Windows 无法配置），
   且本地 LLVM 版本常比 CI 新、结果不一致。故 clang-tidy **以 CI（Linux）为准**，
   `check.ps1` 在 Windows 上会标 `SKIP`；要本地对齐请在 **WSL2**（Zephyr 即装在 WSL）下运行。
+
+## 四、API 文档（Doxygen → GitHub Pages）
+
+公共接口（[app/include/bms/](app/include/bms/) 头文件）的 API 参考由 **Doxygen** 自动生成并发布到 GitHub Pages：
+
+- **在线文档**：<https://jianshiyao.github.io/bms-app/>
+- **自动发布**：`master` 上改动头文件 / `docs/Doxyfile` 时，[.github/workflows/docs.yml](.github/workflows/docs.yml) 自动构建并部署（也可手动 `workflow_dispatch`）。
+- **本地预览**（需装 `doxygen` + `graphviz`，在仓库根执行）：
+  ```powershell
+  doxygen docs/Doxyfile          # 生成 doxygen-out/html/index.html
+  ```
+- 配置见 [docs/Doxyfile](docs/Doxyfile)（仅文档公共 API，C 模式，Graphviz 画数据结构/协作图）。
 
 ## 架构
 

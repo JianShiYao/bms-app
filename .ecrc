@@ -1,0 +1,12 @@
+{
+  "$comment": "editorconfig-checker config. Indentation checks (style + size) are disabled: this is a polyglot repo (C tabs, Kconfig/dts tabs, YAML/CMake/MD 2-space, Markdown numbered-list continuations, here-docs) where a single indent-size rule cannot fit, and clang-format already owns C/C++ indentation as a hard gate. ec is kept as a hygiene gate: trailing whitespace, final newline, consistent LF line endings, charset, max line length. Generated/vendored trees are excluded.",
+  "Disable": {
+    "Indentation": true,
+    "IndentSize": true
+  },
+  "Exclude": [
+    "^build/",
+    "^twister-out/",
+    "scripts/\\.cppcheck-addons/"
+  ]
+}
