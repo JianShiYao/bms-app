@@ -108,6 +108,18 @@ scoop install llvm                    # 或：winget install LLVM.LLVM
   且本地 LLVM 版本常比 CI 新、结果不一致。故 clang-tidy **以 CI（Linux）为准**，
   `check.ps1` 在 Windows 上会标 `SKIP`；要本地对齐请在 **WSL2**（Zephyr 即装在 WSL）下运行。
 
+## 四、API 文档（Doxygen → GitHub Pages）
+
+公共接口（[app/include/bms/](app/include/bms/) 头文件）的 API 参考由 **Doxygen** 自动生成并发布到 GitHub Pages：
+
+- **在线文档**：<https://jianshiyao.github.io/bms-app/>
+- **自动发布**：`master` 上改动头文件 / `docs/Doxyfile` 时，[.github/workflows/docs.yml](.github/workflows/docs.yml) 自动构建并部署（也可手动 `workflow_dispatch`）。
+- **本地预览**（需装 `doxygen` + `graphviz`，在仓库根执行）：
+  ```powershell
+  doxygen docs/Doxyfile          # 生成 doxygen-out/html/index.html
+  ```
+- 配置见 [docs/Doxyfile](docs/Doxyfile)（仅文档公共 API，C 模式，Graphviz 画数据结构/协作图）。
+
 ## 架构
 
 详见 [docs/architecture.md](docs/architecture.md)。设计文档见 `docs/superpowers/specs/`。

@@ -1,0 +1,46 @@
+# Doxygen config for bms-app public API docs.
+# Scope: public interface headers only (app/include/bms). Run from repo root:
+#   doxygen docs/Doxyfile      -> output in doxygen-out/html
+# Unspecified options keep Doxygen defaults.
+
+PROJECT_NAME           = "BMS Firmware"
+PROJECT_BRIEF          = "Zephyr v4.4.0 Battery Management System - public API reference"
+OUTPUT_DIRECTORY       = doxygen-out
+
+# --- input: public API headers only -------------------------------------
+INPUT                  = app/include/bms
+FILE_PATTERNS          = *.h
+RECURSIVE              = YES
+
+# --- C-oriented extraction ----------------------------------------------
+OPTIMIZE_OUTPUT_FOR_C  = YES
+EXTRACT_ALL            = YES
+EXTRACT_STATIC         = YES
+JAVADOC_AUTOBRIEF      = YES
+MARKDOWN_SUPPORT       = YES
+TYPEDEF_HIDES_STRUCT   = YES
+
+# Resolve a few Zephyr/Kconfig macros so prototypes parse cleanly (doc-only).
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = __cplusplus= \
+                         __GNUC__=13
+
+# --- output: HTML only (for Pages); no LaTeX ----------------------------
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+
+# --- diagrams via Graphviz ----------------------------------------------
+HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+
+# --- noise control -------------------------------------------------------
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_AS_ERROR          = NO

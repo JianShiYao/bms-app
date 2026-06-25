@@ -48,3 +48,6 @@ scripts/.cppcheck-addons/
 docs/hardware/**/*.pdf
 docs/hardware/**/*.xlsx
 docs/hardware/**/*.ioc
+
+# Doxygen 生成输出（CI 发布到 Pages，不入库）
+doxygen-out/
