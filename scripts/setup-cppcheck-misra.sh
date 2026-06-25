@@ -52,3 +52,21 @@ fetch "$base/misra.py"        "$DEST/misra.py"
 echo ""
 echo "OK: MISRA addon installed in scripts/.cppcheck-addons/ (cppcheck $ver)."
 echo "verify: sh scripts/cppcheck-run.sh app/src/main.c"
+
+# --- Optional: rule-texts (print rule descriptions, not just IDs) ----------
+RULETEXTS="$DEST/misra-rule-texts.txt"
+if [ -f "$RULETEXTS" ]; then
+    echo "rule-texts: present -> cppcheck-run.sh will print MISRA descriptions."
+else
+    echo ""
+    echo "NOTE: MISRA rule text is copyright and is NOT shipped/downloaded here."
+    echo "      Without it cppcheck prints rule IDs only (e.g. misra-c2012-13.4)."
+    echo "      To also print descriptions, place a rule-texts file at:"
+    echo "          $RULETEXTS"
+    echo "      Format = cppcheck '--rule-texts' (the 'Appendix A Summary of"
+    echo "      guidelines' layout). Sources (pick one you are licensed for):"
+    echo "        * MISRA's official cppcheck headlines file (CC BY-NC-ND 4.0;"
+    echo "          NonCommercial -- a commercial project may need MISRA licensing)."
+    echo "        * Appendix A of your licensed MISRA C:2012 PDF."
+    echo "      It stays LOCAL (gitignored); never commit MISRA text to the repo."
+fi

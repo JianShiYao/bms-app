@@ -62,13 +62,32 @@ MISRA=""
 for cand in "${CPPCHECK_MISRA:-}" "$ROOT/scripts/.cppcheck-addons/misra.py" "$(dirname "$CC")/addons/misra.py"; do
     if [ -n "$cand" ] && [ -f "$cand" ]; then MISRA="$cand"; break; fi
 done
+
+# Optional MISRA rule-texts -> print rule descriptions instead of bare IDs.
+# The text is MISRA copyright (CC BY-NC-ND); keep it LOCAL & gitignored, NEVER
+# commit it. See scripts/setup-cppcheck-misra.sh for how to provide it.
+RULETEXTS=""
+for rt in "${CPPCHECK_MISRA_RULETEXTS:-}" "$ROOT/scripts/.cppcheck-addons/misra-rule-texts.txt"; do
+    if [ -n "$rt" ] && [ -f "$rt" ]; then RULETEXTS="$rt"; break; fi
+done
+
 if [ -n "$MISRA" ]; then
     if ! command -v python >/dev/null 2>&1 && ! command -v python3 >/dev/null 2>&1; then
         VENV_SCRIPTS="/d/__00_WorkSpace/__06_Study/bms-workspace/.venv/Scripts"
         [ -x "$VENV_SCRIPTS/python.exe" ] && PATH="$VENV_SCRIPTS:$PATH"
     fi
     if command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1; then
-        ADDON="--addon=$MISRA"
+        if [ -n "$RULETEXTS" ]; then
+            # cppcheck passes addon args only via an addon-config JSON. Its paths
+            # are read by cppcheck (not MSYS-translated), so convert to native.
+            _w() { if command -v cygpath >/dev/null 2>&1; then cygpath -m "$1"; else printf '%s' "$1"; fi; }
+            ADDON_JSON="$ROOT/scripts/.cppcheck-addons/misra-addon.json"
+            printf '{"script":"%s","args":["--rule-texts=%s"]}\n' \
+                "$(_w "$MISRA")" "$(_w "$RULETEXTS")" > "$ADDON_JSON"
+            ADDON="--addon=$ADDON_JSON"
+        else
+            ADDON="--addon=$MISRA"
+        fi
     else
         echo "cppcheck-run: python not found for MISRA addon -- running cppcheck general checks only." >&2
     fi
@@ -81,7 +100,8 @@ fi
 #   severity, so without it cppcheck silently drops every MISRA finding. We skip
 #   only 'information'/'unusedFunction' (need whole-program; noisy per-file).
 #   Tune cppcheck's own style noise via .cppcheck-suppressions, not by dropping style.
-# --addon=<misra.py>: MISRA C:2012 (reports rule IDs; rule text is copyrighted).
+# --addon: MISRA C:2012. Reports rule IDs; with a local rule-texts file (see
+#   above) it also prints rule descriptions. Rule text is MISRA copyright.
 # --inline-suppr: honour '// cppcheck-suppress <id>' annotations in code.
 # Note: $ADDON / $SUPPR_ARG are intentionally unquoted (token-split); the paths
 # they hold contain no spaces (repo + venv live under space-free directories).
