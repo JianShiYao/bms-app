@@ -60,12 +60,11 @@
 
 ### P2 — 通用风格检查（部分落地）
 - [x] `.editorconfig` 已就位（编辑器实时生效）。
-- [x] CI 加 `editorconfig-checker`、`yamllint --strict`（west.yml / *.yml 受益）、
-- [ ] `flake8`（Python 脚本）。
+- [ ] CI 加 `editorconfig-checker`、`yamllint --strict`（west.yml / *.yml 受益）、`flake8`（Python 脚本）。
       → 低成本、可随时补；当前未进 CI。
 
 ### P2 — 文档（可选，未做）
-- [x] Doxygen + GitHub Pages 自动发布——按需后置。
+- [ ] Doxygen + GitHub Pages 自动发布——按需后置。
 
 ### P2 — 供应链 / 产物安全（固件签名 · SBOM · attestation）
 
