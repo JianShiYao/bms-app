@@ -16,7 +16,7 @@ tools: Read, Write, Edit, Glob, Grep
 - 数据类型：`app/include/bms/types.h`（`bms_cell_meas`/`bms_soc`/`bms_prot_evt`，电压 mV、电流 mA 充电为正、温度 0.1℃）。
 - 配置：模块开关与参数在 `app/Kconfig`（如 `CONFIG_BMS_*`）；板级 `app/boards/*.conf|*.overlay`；板定义 `boards/enervenue/bms_f405/`。
 - 测试：`tests/bms/*` 用 Twister + ztest。范式：把纯逻辑函数与线程分离以便单测（范例 `bms_protection_evaluate`）。
-- 构建/测试（以 Windows venv 为准）：用 `.venv\Scripts\python.exe -m west <cmd>`（west v1.5.0）。本地测试跑 `powershell -File run-tests-coverage.ps1`（默认板 mps2/an386，QEMU 与 gcov 取自 D:\zephyr-sdk\zephyr-sdk-1.0.1）；构建 `.venv\Scripts\python.exe -m west build -b mps2/an386 app`。WSL + native_sim 仅作可选的覆盖率链路。
+- 构建/测试（以 Windows venv 为准）：在 `bms-app/` 下用 `..\.venv\Scripts\python.exe -m west <cmd>`；构建 `..\.venv\Scripts\python.exe -m west build -b mps2/an386 app -p always`；测试 `powershell -ExecutionPolicy Bypass -File ..\run-tests-coverage.ps1 -Board mps2/an386`。若在 workspace 根执行，路径见 `docs/agents-guide.md §4`；WSL + `native_sim` 仅作可选覆盖率链路。
 - 失效安全红线：默认接触器 OPEN，仅判定 NORMAL 才 CLOSED；安全相关线程优先级更高。
 - 规范对齐：依据根基 `docs/development-methodology.md`（敏捷+V 研发方法论,一切流程由其衍生）落地于 `docs/development-workflow.md`（操作规则）与 docs/templates/ 模板（requirements/design-spec/traceability-matrix）。ID——需求 `REQ-<域>-<NNN>`、设计 `DES-<域>-<NNN>`，域 = SYS/AFE/SOC/PROT/BAL/COMM/BOARD（如 REQ-SOC-001、DES-SOC-002，不加额外前缀/后缀）。追溯用独立 `docs/features/<slug>/traceability.md`（套 traceability-matrix-template，列：需求ID|需求摘要|设计|验证方法|测试用例|状态）。
 - 交付物语言：中文。

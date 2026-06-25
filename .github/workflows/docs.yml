@@ -1,0 +1,60 @@
+name: Docs (Doxygen -> Pages)
+
+# Build the public-API Doxygen docs; publish to GitHub Pages from master.
+# On PRs the docs are BUILT (validates the Doxyfile/headers) but NOT deployed.
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'app/include/**'
+      - 'docs/Doxyfile'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    paths:
+      - 'app/include/**'
+      - 'docs/Doxyfile'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Only one Pages deploy at a time; a newer run supersedes an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  # Always runs (incl. PRs): generating the docs validates the config + headers.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Doxygen + Graphviz
+        run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+      - name: Generate API docs
+        run: doxygen docs/Doxyfile        # outputs doxygen-out/html
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: doxygen-out/html
+
+  # Deploys only from master (PRs stop after build above).
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        # Pages is already enabled (source = GitHub Actions); no enablement here
+        # since the Actions token cannot create the Pages site (admin-only).
+        uses: actions/configure-pages@v6
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v5

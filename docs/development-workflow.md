@@ -213,12 +213,16 @@ gh pr create --base master      # 开 PR（填模板）
 要点：**调参在本地做**（CI 来回 push 太慢）；**进 CI 第一步必须非阻断**；用 **baseline/suppression 只对新增代码报错**，不必先清零历史问题即可上线。
 
 CI（⑤）当前 6 道**必过**门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(CERT/可读性)。
+另有 `editorconfig`、`yamllint` 两道**阻断作业**(卫生门:尾随空格/末行换行/LF/charset/YAML lint;缩进交由 clang-format 与编辑器,见 `.ecrc`/`.editorconfig`),已去 `continue-on-error`,**待本 PR 合并后加入分支保护必过列 → 8 道**。
 另有 1 个**非阻断观察** job `cppcheck-misra`(②阶梯,`continue-on-error`,不计入必过门、产出报告制品),待噪声稳后升必过。
 各阶段质量管控现状与待补齐的全景见 [quality-management.md](quality-management.md)；SCA/clang-tidy/覆盖率的路线图见 [ci-borrow-checklist.md](ci-borrow-checklist.md)。
 
 ## 9. 分支保护说明
 
 master 受保护，必过检查（6 项）：`format`、`build (mps2/an386)`、`build (native_sim)`、`test-coverage`、`sca-gcc`、`clang-tidy`。
+- **待加入（本 PR 合并后执行）**：`editorconfig`、`yamllint`（已是阻断作业，加入后共 8 项）。命令：
+  `gh api -X POST repos/JianShiYao/bms-app/branches/master/protection/required_status_checks/contexts -f 'contexts[]=editorconfig' -f 'contexts[]=yamllint'`。
+  **须合并后执行**——否则未含这两作业的在途 PR 会因必过检查永不上报而被卡。
 - `clang-tidy` 已**硬门禁**（`.clang-tidy` 开启 `WarningsAsErrors`，当前 0 告警）并加入必过列。
 - **单人项目说明**：必需 reviewer = 0（无法要求他人评审），用「PR + CI 必过 + 自审 diff」替代第二双眼；
   团队化后改 reviewer ≥ 1、启用 `require_code_owner_reviews`、考虑 `enforce_admins`。

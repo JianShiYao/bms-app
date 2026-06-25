@@ -1,6 +1,6 @@
 # REQ-PWR：电源管理 / 关机 / 休眠唤醒 / RTC 时间 / 看门狗 需求规格
 
-> 本域需求是对 `S16100B_Demo` 现有固件**逆向提炼**的结果（描述"代码当前做了什么"）。  
+> 本域需求是对 `S16100B_Demo` 现有固件**逆向提炼**的结果（描述"代码当前做了什么"）。
 > 提炼时间：2026-06-23。
 
 ## 覆盖源文件
@@ -122,7 +122,7 @@
 | 状态 | 存疑（阈值已定义，但触发关机的具体比较逻辑在本批源文件中未找到执行路径，见存疑 O-1） |
 
 **需求描述（EARS 句式）**
-> 当电池总电压低于 `Bms.Para.PoweroffVolt_mV`（默认 10 000 mV / 10 V，可由上位机写入）时，系统应进入关机（PowerOff）流程，切断输出并断电自锁。  
+> 当电池总电压低于 `Bms.Para.PoweroffVolt_mV`（默认 10 000 mV / 10 V，可由上位机写入）时，系统应进入关机（PowerOff）流程，切断输出并断电自锁。
 > 参数上限校验：若 `PoweroffVolt_mV > 2 000 000 mV`（MAX_PWEROFF_MV = 2000 V），则回退至默认值 10 000 mV。
 
 **理由 / 代码依据**
@@ -456,7 +456,7 @@
 | 状态 | 存疑（参数定义和通信接口已实现，但触发休眠的逻辑在 `BMS_Control.c` / `SocTask.c` 中未找到完整实现，见存疑 O-2） |
 
 **需求描述（EARS 句式）**
-> 当 `DayToSleep > 0` 时，系统应在 BMS 处于空闲状态（无充电、无放电、无通信）持续 `DayToSleep` 天后，自动进入休眠（Standby）模式以节省电量。  
+> 当 `DayToSleep > 0` 时，系统应在 BMS 处于空闲状态（无充电、无放电、无通信）持续 `DayToSleep` 天后，自动进入休眠（Standby）模式以节省电量。
 > 默认值 0 表示该功能禁用（不自动休眠）。
 
 **理由 / 代码依据**
@@ -479,7 +479,7 @@
 | 状态 | 存疑（参数定义和通信接口已实现，唤醒逻辑依赖 `start_RTCWK()` 实现，pmu.c 未提供，见存疑 O-3） |
 
 **需求描述（EARS 句式）**
-> 当 `HourToWakeup > 0` 时，系统在进入 Standby 休眠之前应配置 RTC 闹钟，在 `HourToWakeup` 小时后触发唤醒；唤醒后完成初始化，关闭 RTC_ALARM_A（REQ-PWR-016）后继续正常工作。  
+> 当 `HourToWakeup > 0` 时，系统在进入 Standby 休眠之前应配置 RTC 闹钟，在 `HourToWakeup` 小时后触发唤醒；唤醒后完成初始化，关闭 RTC_ALARM_A（REQ-PWR-016）后继续正常工作。
 > 默认值 0 表示不设定定时唤醒（休眠后仅靠按键或通信唤醒）。
 
 **理由 / 代码依据**
@@ -501,8 +501,8 @@
 | 状态 | 已实现 |
 
 **需求描述（EARS 句式）**
-> 系统应在每次 SOC 积分计算中，从充放电电量中扣除自耗电：  
-> `self_discharge_per_step = SelfConsumption × CurrentCap_mAH / 24 / 1000`（mA·ms/step）  
+> 系统应在每次 SOC 积分计算中，从充放电电量中扣除自耗电：
+> `self_discharge_per_step = SelfConsumption × CurrentCap_mAH / 24 / 1000`（mA·ms/step）
 > 其中 `SelfConsumption` 单位为 0.1%/天，默认值 30（即 3.0%/天），可通过 Modbus 寄存器 262 修改。
 
 **理由 / 代码依据**

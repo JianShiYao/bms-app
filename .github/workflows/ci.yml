@@ -10,7 +10,7 @@ jobs:
   format:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -34,7 +34,7 @@ jobs:
       matrix:
         board: [mps2/an386, native_sim]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: bms-app
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -53,7 +53,7 @@ jobs:
     env:
       ZEPHYR_TOOLCHAIN_VARIANT: zephyr
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: bms-app
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -96,7 +96,7 @@ jobs:
     needs: format
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: bms-app
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -119,7 +119,7 @@ jobs:
     needs: format
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: bms-app
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -132,7 +132,11 @@ jobs:
         run: west build -b native_sim bms-app/app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
       - name: Strip gcc-only flags clang rejects
         run: |
-          sed -i -E 's/-fno-(reorder-functions|freestanding|defer-pop|printf-return-value|reorder-blocks-and-partition)//g; s/--param=[^ "]*//g' build/compile_commands.json
+          sed -i -E \
+            -e 's/-fno-(reorder-functions|freestanding|defer-pop|printf-return-value)//g' \
+            -e 's/-fno-reorder-blocks-and-partition//g' \
+            -e 's/--param=[^ "]*//g' \
+            build/compile_commands.json
       - name: Run clang-tidy on app sources
         run: clang-tidy -p build $(find bms-app/app/src -name '*.c')
 
@@ -145,7 +149,7 @@ jobs:
     needs: format
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: bms-app
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -167,3 +171,55 @@ jobs:
         with:
           name: cppcheck-misra-report
           path: cppcheck-report.txt
+
+  # Gate 6: .editorconfig conformance (hygiene only: trailing whitespace / final
+  # newline / LF line endings / charset; indentation checks are disabled in .ecrc).
+  # Blocking gate (§8 ladder step ③). After this merges, add `editorconfig` to the
+  # master branch-protection required checks.
+  editorconfig:
+    needs: format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install editorconfig-checker (pinned)
+        run: |
+          EC_VERSION=3.0.3
+          curl -fsSL -o ec.tar.gz \
+            "https://github.com/editorconfig-checker/editorconfig-checker/releases/download/v${EC_VERSION}/ec-linux-amd64.tar.gz"
+          tar xzf ec.tar.gz
+          sudo install bin/ec-linux-amd64 /usr/local/bin/ec
+          ec --version
+      - name: Run editorconfig-checker
+        run: |
+          set -o pipefail
+          ec 2>&1 | tee editorconfig-report.txt
+      - name: Upload editorconfig report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: editorconfig-report
+          path: editorconfig-report.txt
+
+  # Gate 7: yamllint --strict on repo YAML (west.yml, workflows, dependabot, etc.).
+  # Config in .yamllint. Blocking gate (§8 ladder step ③). After this merges, add
+  # `yamllint` to the master branch-protection required checks.
+  yamllint:
+    needs: format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install yamllint (pinned)
+        run: pip install "yamllint==1.35.1"
+      - name: Run yamllint --strict
+        run: |
+          set -o pipefail
+          yamllint --strict . 2>&1 | tee yamllint-report.txt
+      - name: Upload yamllint report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: yamllint-report
+          path: yamllint-report.txt
