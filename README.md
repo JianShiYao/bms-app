@@ -91,6 +91,10 @@ winget install Cppcheck.Cppcheck      # 或：scoop install cppcheck
   bash scripts/setup-cppcheck-misra.sh
   ```
 - MISRA addon 运行需 **Python 在 PATH**（项目 venv 里即有）。
+- **规则描述（可选）**：MISRA 规则文本受版权保护、**不入库**。默认只报规则号（如 `misra-c2012-13.4`）；
+  若想同时打印规则描述，按机自备一份 rule-texts 文件放到 `scripts\.cppcheck-addons\misra-rule-texts.txt`
+  （cppcheck `--rule-texts` 的「Appendix A」格式，来源：MISRA 官方 cppcheck headlines（CC BY-NC-ND，**商业项目用需注意授权**）或你授权的 MISRA C:2012 PDF）。
+  脚本检测到即自动启用；详见 `bash scripts/setup-cppcheck-misra.sh` 的提示。
 - 运行方式：pre-push 对改动的 `.c` 跑**独立模式**（无需构建、秒级，但无构建上下文会有已知假阳性，**仅告警**）；
   `check.ps1` 用 **mps2/an386 的 `compile_commands.json`** 跑 **project 模式**（准确，假阳性基本消除）。
 - 噪声抑制与 MISRA deviation 集中在 `.cppcheck-suppressions` 维护。
