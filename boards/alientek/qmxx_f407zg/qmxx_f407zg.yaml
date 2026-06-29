@@ -11,3 +11,5 @@ flash: 1024
 supported:
   - gpio
   - uart
+  - canbus
+  - eth
