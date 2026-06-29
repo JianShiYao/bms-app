@@ -18,6 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **当前阶段**：在 PC 上用 **QEMU（`mps2/an386`，Cortex-M4F）** 跑通架构与业务骨架。选 `mps2/an386` 因其与目标 STM32F405 同为 Cortex-M4F（带硬件 FPU）。
 - **下一步**：接入自定义 STM32F405 板 `boards/enervenue/bms_f405/`（当前为模板，dts/defconfig 待完善，CI 中暂注释）。
 - `native_sim` 仅 Linux 可编译；Windows 上做 native_sim 须在 WSL2 下。
+- **真机 bring-up 板**：`boards/alientek/qmxx_f407zg/`（启明欣欣 STM32F407ZGT6 开发板），已入 CI build 矩阵；业务走 `afe_sim`，CAN/以太网/RS485 真机手动验证。
 
 ## Workspace 布局
 
