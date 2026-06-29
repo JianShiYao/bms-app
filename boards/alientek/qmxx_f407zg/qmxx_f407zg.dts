@@ -19,6 +19,60 @@
 		zephyr,flash = &flash0;
 		zephyr,dtcm = &ccm0;
 	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led0: led_0 {
+			gpios = <&gpioe 3 GPIO_ACTIVE_LOW>;
+			label = "LED0";
+		};
+		led1: led_1 {
+			gpios = <&gpioe 4 GPIO_ACTIVE_LOW>;
+			label = "LED1";
+		};
+		led2: led_2 {
+			gpios = <&gpiog 9 GPIO_ACTIVE_LOW>;
+			label = "LED2";
+		};
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+
+		key0: key_0 {
+			gpios = <&gpiof 9 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			label = "KEY0";
+			zephyr,code = <INPUT_KEY_0>;
+		};
+		key1: key_1 {
+			gpios = <&gpiof 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			label = "KEY1";
+			zephyr,code = <INPUT_KEY_1>;
+		};
+		key2: key_2 {
+			gpios = <&gpiof 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			label = "KEY2";
+			zephyr,code = <INPUT_KEY_2>;
+		};
+		key3: key_3 {
+			gpios = <&gpiof 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			label = "KEY3";
+			zephyr,code = <INPUT_KEY_3>;
+		};
+		wkup: key_wkup {
+			gpios = <&gpioa 0 GPIO_ACTIVE_HIGH>;
+			label = "WK_UP";
+			zephyr,code = <INPUT_KEY_WAKEUP>;
+		};
+	};
+
+	aliases {
+		led0 = &led0;
+		led1 = &led1;
+		led2 = &led2;
+		sw0 = &wkup;
+	};
 };
 
 &clk_hse {
