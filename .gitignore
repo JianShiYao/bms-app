@@ -1,7 +1,7 @@
 # Zephyr / west workspace
 .west/
-build/
-build-*/
+# 任意构建目录：build/、build-*/、WSL 的 build_native_wsl/ 等
+build*/
 twister-out/
 twister-out.*/
 
