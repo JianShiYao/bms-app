@@ -103,3 +103,14 @@
 	current-speed = <115200>;
 	status = "okay";
 };
+
+/*
+ * CAN2（PB12=RX / PB13=TX）。选 CAN2 以避开 USB(PA11/12) 与以太网冲突。
+ * 注：STM32 bxCAN 中 CAN2 为从机，真机运行时需 CAN1 时钟使能（CAN1 master）；
+ *     本任务仅验证编译，CAN1-master 依赖在 AC3 真机 CAN 测试时一并处理。
+ */
+&can2 {
+	pinctrl-0 = <&can2_rx_pb12 &can2_tx_pb13>;
+	pinctrl-names = "default";
+	status = "okay";
+};
