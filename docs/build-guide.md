@@ -58,6 +58,38 @@ west --version            # 验证：能打印版本即 OK
 
 > 没激活会报 `west: The term 'west' is not recognized...`。
 
+### 0.4 可选：在 WSL2 下编译 `native_sim`
+
+`native_sim` 是 POSIX（host）架构，**Windows 原生编不了**，须在 **WSL2（Ubuntu）** 下跑。它编译快、跑 ztest 无需 QEMU，是本地复刻 CI 覆盖率口径的途径。
+
+> WSL 是独立的 Linux 环境：Windows 侧的 `..\.venv`（Windows Python）在 WSL 里**用不了**，需在 WSL 内单独建 venv 装 west。下面命令在 **WSL 的 bash** 里执行（非 PowerShell）。
+
+1. **确认构建依赖**（Ubuntu 通常已具备；缺啥按提示 `sudo apt install`）：
+   ```bash
+   for t in gcc cmake ninja dtc gperf git; do command -v $t || echo "MISSING: $t"; done
+   cmake --version    # 需 ≥ 3.20
+   ```
+2. **建 WSL 专属 venv 装 west**（Ubuntu 24.04 有 PEP668，必须用 venv，勿直接 `pip install`）：
+   ```bash
+   python3 -m venv ~/.venv-zephyr
+   source ~/.venv-zephyr/bin/activate          # 每个新 WSL 终端都要先激活
+   pip install west
+   pip install -r /mnt/d/__00_WorkSpace/__06_Study/bms-workspace/zephyr/scripts/requirements.txt
+   ```
+3. **Zephyr SDK**：放在 `~/zephyr-sdk-<ver>`（标准位置，会被自动发现）即可。`native_sim` 实际用**宿主 gcc**，SDK 仅 ARM 目标/gcov 用。
+4. **构建并运行**（用独立 build 目录，避免与 Windows 的 `build/` 冲突）：
+   ```bash
+   cd /mnt/d/__00_WorkSpace/__06_Study/bms-workspace/bms-app
+   west build -p always -b native_sim app -d build_native_wsl
+   ./build_native_wsl/zephyr/zephyr.exe        # 直接运行（Ctrl-C 退出）；不需要 QEMU
+   ```
+5. **跑测试 / 覆盖率**（native_sim 下无 QEMU 超时困扰）：
+   ```bash
+   west twister -T tests -p native_sim -c
+   ```
+
+> ⚠️ **`/mnt/d` 跨盘编译走 9p 协议、较慢**；高频使用建议把工程 `git clone` 到 WSL 家目录（`~/`）的 Linux 文件系统再 `west init -l . && west update`，速度提升明显。
+
 ---
 
 ## 1. 目标板（board）一览
@@ -65,7 +97,7 @@ west --version            # 验证：能打印版本即 OK
 | board | 用途 | 架构 | Windows 原生可编译 | 说明 |
 |-------|------|------|:--:|------|
 | `mps2/an386` | **当前主力**（QEMU 仿真） | Cortex-M4F（带 FPU） | ✅ | 与目标 STM32F405 同核，架构忠实；可在 QEMU 直接 `run` |
-| `native_sim` | Linux 下的快速本地仿真 + 覆盖率 | POSIX（host） | ❌ | POSIX 架构仅 Linux；Windows 须在 **WSL2** 下编译。CI 用它跑测试/覆盖率 |
+| `native_sim` | Linux 下的快速本地仿真 + 覆盖率 | POSIX（host） | ❌ | POSIX 架构仅 Linux；Windows 须在 **WSL2** 下编译（步骤见 §0.4）。CI 用它跑测试/覆盖率 |
 | `bms_f405` | **第二步**：自定义 STM32F405 真机 | Cortex-M4F | ✅（待完善后） | 位于 `boards/enervenue/bms_f405/`，当前为模板，dts/defconfig 待补 |
 
 > 选 `mps2/an386` 而非 `native_sim` 作为 Windows 主力，是因为它与 STM32F405 同为 Cortex-M4F，
@@ -261,7 +293,7 @@ powershell -ExecutionPolicy Bypass -File scripts\check.ps1 -Fast   # 仅 format+
 | 找不到 SDK / 工具链 / `arm-zephyr-eabi-gcc` | Zephyr SDK 未装或未被发现 | `west sdk list` 确认；缺则按 §0.1 装 SDK（`west sdk install ...`） |
 | 改了 `prj.conf`/`Kconfig` 但行为没变 | 增量构建未重新配置 | 用 `-p always` 全新构建；核对 `build/zephyr/.config` |
 | twister 显示 `built (not run)`，测试没真正执行 | Windows 没设 `QEMU_BIN_PATH` | 设环境变量后重跑（§9） |
-| `native_sim` 在 Windows 上配置/编译失败 | POSIX 架构不支持 Windows 原生 | 改用 `mps2/an386`，或在 **WSL2** 下编译 `native_sim` |
+| `native_sim` 在 Windows 上配置/编译失败 | POSIX 架构不支持 Windows 原生 | 改用 `mps2/an386`，或在 **WSL2** 下编译 `native_sim`（步骤见 §0.4） |
 | 构建中途换了 board 报 board 不一致 | 同一 build 目录混用多个 board | `-p always` 重建，或用 `-d` 分目录（§4） |
 | 链接报 region overflow（FLASH/RAM 不够） | 配置开太多/栈太大 | 看 `zephyr.map` 与 `.config`；关无关 `CONFIG_BMS_*` 或调小栈 |
 | 编译卡很久 | 首次/`-p always` 要编整个 Zephyr（约 1–2 分钟） | 正常；日常改代码用增量 `west build` |
