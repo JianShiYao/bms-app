@@ -146,3 +146,15 @@
 		reg = <0x00>;
 	};
 };
+
+/*
+ * RS485（MAX485）数据通道 = USART3（PB10=TX / PB11=RX）。
+ * 方向控制 DE/RE = PG6，由应用以普通 GPIO 控制（spec §7：DE 机制待真机核实）。
+ * 选 USART3 因 USART2(PA2/PA3) 被以太网 MDIO 占用。
+ */
+&usart3 {
+	pinctrl-0 = <&usart3_tx_pb10 &usart3_rx_pb11>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
