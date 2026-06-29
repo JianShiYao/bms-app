@@ -1,0 +1,15 @@
+identifier: qmxx_f407zg
+name: ALIENTEK QMXX STM32F407 (high-config V5.1)
+type: mcu
+arch: arm
+vendor: alientek
+toolchain:
+  - zephyr
+  - gnuarmemb
+ram: 192
+flash: 1024
+supported:
+  - gpio
+  - uart
+  - canbus
+  - eth

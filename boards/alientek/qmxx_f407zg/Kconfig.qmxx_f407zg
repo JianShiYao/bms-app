@@ -1,0 +1,3 @@
+# 板级 Kconfig 入口（HWMv2）
+config BOARD_QMXX_F407ZG
+	select SOC_STM32F407XG

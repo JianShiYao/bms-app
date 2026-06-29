@@ -25,6 +25,7 @@ jobs:
   # Gate 2: build firmware for each compilable target.
   # NOTE: bms_f405 is an incomplete board template — add `enervenue/bms_f405`
   # to the matrix once its dts/defconfig TODOs are resolved.
+  # qmxx_f407zg (ALIENTEK F407ZGT6 dev board) is build-only in CI — no hardware to run.
   build:
     needs: format
     runs-on: ubuntu-24.04
@@ -32,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [mps2/an386, native_sim]
+        board: [mps2/an386, native_sim, qmxx_f407zg]
     steps:
       - uses: actions/checkout@v7
         with:
