@@ -25,6 +25,17 @@
 | **CS-05** | 聚合类型不 `typedef`，直接用 `struct bms_xxx` / `enum bms_xxx` | Zephyr 上游 | 与 Zephyr 惯例一致，类型种类在使用处即可见 | `.clang-tidy`（`StructCase/EnumCase=lower_case`）+ 评审 |
 | **CS-06** | 指针变量无匈牙利前缀；声明时 `*` 紧贴变量名 | Zephyr / clang-format | 命名表达用途而非类型，与内核风格一致 | clang-format（指针对齐）+ 评审 |
 
+**CS-04 合法单位后缀**（物理量变量/成员专用；需新增量纲时在评审中扩充本表）：
+
+| 后缀 | 量纲 | 示例 |
+|---|---|---|
+| `_mv` | 毫伏 mV | `cell_ov_mv` |
+| `_ma` | 毫安 mA | `over_current_ma` |
+| `_mah` | 毫安时 mAh | `pack_capacity_mah` |
+| `_dci` | 0.1℃（deci-℃）| `over_temp_dci` |
+| `_ms` | 毫秒 ms | `timestamp_ms` |
+| `_permille` | ‰（千分比，SOC/SOH）| `soc_permille` |
+
 ## 3. 格式与缩进
 
 | 编号 | 规定 | 出处 | 为什么 | 怎么落实 |
@@ -48,14 +59,14 @@
 
 | 编号 | 规定 | 出处 | 为什么 | 怎么落实 |
 |---|---|---|---|---|
-| **CS-16** | 公开函数加 doxygen：`@brief` 必备；返回非 `void` 必有 `@return`；指针参数用 `@param[in]`/`@param[out]`/`@param[in,out]` 标数据流向，**值传递参数不标方向**；可为 NULL 的入参须在描述中注明 | 项目约定 | 接口契约清晰，调用方无需读实现即可正确使用 | 评审 |
+| **CS-16** | 公开函数加 doxygen：`@brief` 必备；返回非 `void` 必有 `@return`；指针参数用 `@param[in]`/`@param[out]`/`@param[in,out]` 标数据流向，**值传递参数不标方向**；可为 NULL 的入参须在描述中注明 | 项目约定 | 接口契约清晰，调用方无需读实现即可正确使用 | CI clang-tidy `-Wdocumentation`（观察期非阻断，见 `.clang-tidy`）+ 评审 |
 | **CS-17** | `struct`/`enum` 的每个成员加 `/**< ... */` 行内 doxygen 注释 | 项目约定 | 数据结构语义自解释，避免误用字段 | 评审 |
 
 ## 6. 语言用法
 
 | 编号 | 规定 | 出处 | 为什么 | 怎么落实 |
 |---|---|---|---|---|
-| **CS-18** | `switch` 必有 `default`；不写隐式穿透（每个 case 自终结）；`break` 与下一 `case` 间留空行 | 项目约定 | 防漏处理分支、防误穿透 | clang-tidy / cppcheck 兜底 + 评审 |
+| **CS-18** | `switch` 必有 `default`；不写隐式穿透（每个 case 自终结）；`break` 与下一 `case` 间留空行 | 项目约定 | 防漏处理分支、防误穿透 | 编译器 `-Wswitch-default`/`-Wimplicit-fallthrough`（app `-Werror` 硬门）+ 评审 |
 | **CS-19** | 十六进制字面量大写：`0xFF` 而非 `0xff` | 项目约定 | 可读、避免与标识符混淆 | 约定 + cppcheck |
 | **CS-20** | 浮点字面量两侧都带数字（`1.0f` 而非 `1.f`/`.5f`）；优先用 `float` | 项目约定 | 防误读为整型；目标 MCU 有硬件 FPU，`float` 由硬件执行 | 评审 |
 | **CS-21** | 一行只声明/初始化一个变量；尽量定义即初始化，否则注释说明原因 | 项目约定 | 避免使用未初始化值、便于 diff | 评审 |
@@ -76,7 +87,7 @@
  */
 ```
 
-- `@ingroup` 取模块域：`SYS / AFE / SOC / PROT / BAL / COMM / BOARD`（与 `traceability.md` 一致）。
+- `@ingroup` 取模块域：`SYS / AFE / SOC / PROT / BAL / COMM / BOARD`。**权威清单以 `traceability.md` 为准**；`scripts/check-file-headers.py` 的允许域集须与之同步。
 - 若文件有多行设计说明，放在 `@ingroup` 后空一行的 `@details` 块中。
 - 文件头与 include guard / 第一段 `#include` 间留一空行。
 
@@ -97,15 +108,65 @@ int bms_protection_evaluate(const struct bms_cell_meas *meas,
 - 指针参数标方向、值参数不标；可空指针在描述中注明"可为 NULL"。
 - 中文 `@brief` 可接受，但同一文件内保持语言一致。
 
+### 7.3 写法对照（正 / 误）
+
+**CS-18 `switch`**：
+
+```c
+/* 正确：每个 case 自终结（纯映射用 return 直出），default 必备 */
+switch (state) {
+case BMS_STATE_INIT:
+    return BMS_STATE_STANDBY;
+case BMS_STATE_NORMAL:
+    return in->close_allowed ? BMS_STATE_NORMAL : BMS_STATE_STANDBY;
+default:
+    return BMS_STATE_LOCKED;
+}
+
+/* 错误：缺 default（-Wswitch-default 报错）；隐式穿透（-Wimplicit-fallthrough 报错）*/
+switch (state) {
+case A:
+    do_a();      /* 落入 B：未标注的隐式穿透 */
+case B:
+    do_b();
+    break;
+}
+```
+
+**CS-20 浮点字面量**：
+
+```c
+float k = 1.0f; /* 正确：两侧带数字 + f 后缀 */
+float k = 1.f;  /* 错误：小数点后无数字 */
+float k = .5f;  /* 错误：小数点前无数字 */
+```
+
+**CS-22 入参检查（fail-safe，非断言）**：
+
+```c
+int bms_afe_sample(struct bms_cell_meas *out)
+{
+    if (out == NULL) {
+        return -EINVAL; /* 正确：失效安全返回，调用方可处理 */
+    }
+    /* ... */
+}
+
+/* 避免：__ASSERT(out != NULL, ...) —— 触发 halt，违背 BMS 优雅降级 */
+```
+
 ## 8. 强制层级一览
 
 | 层级 | 覆盖条目 |
 |---|---|
 | `.clang-format`（CI `format` 门 + pre-commit） | CS-05/06、CS-07~CS-10 |
 | `.clang-tidy`（CI 硬门） | CS-01/02/05、CS-23 |
+| `.clang-tidy` `-Wdocumentation`（CI **观察期**，非阻断） | CS-16 |
+| 编译器 `-Werror`（app，含 `-Wswitch-default`/`-Wimplicit-fallthrough`） | CS-18 |
 | `.editorconfig`（CI `editorconfig` 门） | CS-12 |
 | CI 文件头卫生门（`scripts/check-file-headers.py`） | CS-13/14 |
-| cppcheck / SCA（观察 + 兜底） | CS-18/19 |
-| 约定 + 代码评审 | CS-03/04、CS-11、CS-15~CS-22 |
+| cppcheck / SCA（观察 + 兜底） | CS-19 |
+| 约定 + 代码评审 | CS-03/04、CS-11、CS-15、CS-17、CS-20~CS-22 |
 
-> 凡工具未机械门禁的条目（CS-03/04、CS-11、CS-15~CS-22 等）由代码评审把关。
+> 工具未硬门禁的条目（CS-03/04、CS-11、CS-15、CS-17、CS-20~CS-22）由代码评审把关。
+> **CS-16 处观察期**：CI clang-tidy 日志可见 `-Wdocumentation` finding，确认干净后删除 `.clang-tidy` 中的豁免即转硬门。
