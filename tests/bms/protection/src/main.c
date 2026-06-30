@@ -211,3 +211,85 @@ ZTEST(bms_protection, test_ov_threshold_boundary)
 	zassert_equal(evt.state, BMS_PROT_NORMAL, "just below ov must be normal");
 	zassert_equal(evt.contactor, BMS_CONTACTOR_CLOSED);
 }
+
+/* 边界：cell_mv == 欠压阈值即触发（`<=`）；阈值+1 不触发。 */
+ZTEST(bms_protection, test_uv_threshold_boundary)
+{
+	struct bms_cell_meas m;
+	struct bms_prot_limits lim;
+	struct bms_prot_evt evt;
+
+	bms_protection_default_limits(&lim);
+
+	make_normal(&m);
+	m.cell_mv[0] = lim.cell_uv_mv; /* 恰好等于阈值 */
+	zassert_ok(bms_protection_evaluate(&m, &lim, &evt));
+	zassert_equal(evt.state, BMS_PROT_UV, "cell_mv == uv threshold must trip (<=)");
+	zassert_equal(evt.contactor, BMS_CONTACTOR_OPEN);
+
+	make_normal(&m);
+	m.cell_mv[0] = lim.cell_uv_mv + 1; /* 阈值上方 */
+	zassert_ok(bms_protection_evaluate(&m, &lim, &evt));
+	zassert_equal(evt.state, BMS_PROT_NORMAL, "just above uv must be normal");
+}
+
+/* 边界：|电流| == 过流阈值即触发（`>=`）；阈值-1 不触发（充放电两侧各验一端）。 */
+ZTEST(bms_protection, test_oc_threshold_boundary)
+{
+	struct bms_cell_meas m;
+	struct bms_prot_limits lim;
+	struct bms_prot_evt evt;
+
+	bms_protection_default_limits(&lim);
+
+	make_normal(&m);
+	m.pack_current_ma = lim.over_current_ma; /* 充电恰好等于阈值 */
+	zassert_ok(bms_protection_evaluate(&m, &lim, &evt));
+	zassert_equal(evt.state, BMS_PROT_OC, "+current == oc threshold must trip (>=)");
+
+	make_normal(&m);
+	m.pack_current_ma = -(lim.over_current_ma - 1); /* 放电阈值内 */
+	zassert_ok(bms_protection_evaluate(&m, &lim, &evt));
+	zassert_equal(evt.state, BMS_PROT_NORMAL, "just inside oc must be normal");
+}
+
+/* 边界：temp_dci == 过温阈值即触发（`>=`）；阈值-1 不触发。 */
+ZTEST(bms_protection, test_ot_threshold_boundary)
+{
+	struct bms_cell_meas m;
+	struct bms_prot_limits lim;
+	struct bms_prot_evt evt;
+
+	bms_protection_default_limits(&lim);
+
+	make_normal(&m);
+	m.temp_dci[0] = lim.over_temp_dci; /* 恰好等于阈值 */
+	zassert_ok(bms_protection_evaluate(&m, &lim, &evt));
+	zassert_equal(evt.state, BMS_PROT_OT, "temp == ot threshold must trip (>=)");
+
+	make_normal(&m);
+	m.temp_dci[0] = lim.over_temp_dci - 1; /* 阈值下方 */
+	zassert_ok(bms_protection_evaluate(&m, &lim, &evt));
+	zassert_equal(evt.state, BMS_PROT_NORMAL, "just below ot must be normal");
+}
+
+/* default_limits 对 NULL 安全返回（覆盖 NULL 守卫分支）。 */
+ZTEST(bms_protection, test_default_limits_null_safe)
+{
+	bms_protection_default_limits(NULL); /* 不应崩溃 */
+}
+
+/* 各指针单独为 NULL 都返回 -EINVAL（覆盖参数校验三个短路分支）。 */
+ZTEST(bms_protection, test_null_each_arg)
+{
+	struct bms_cell_meas m;
+	struct bms_prot_limits lim;
+	struct bms_prot_evt evt;
+
+	make_normal(&m);
+	bms_protection_default_limits(&lim);
+
+	zassert_equal(bms_protection_evaluate(NULL, &lim, &evt), -EINVAL, "meas=NULL");
+	zassert_equal(bms_protection_evaluate(&m, NULL, &evt), -EINVAL, "limits=NULL");
+	zassert_equal(bms_protection_evaluate(&m, &lim, NULL), -EINVAL, "out=NULL");
+}

@@ -71,16 +71,18 @@ jobs:
         # twister's own gcovr is rooted at zephyr/, which excludes our app/ (a
         # sibling dir). Run our own gcovr rooted at the workspace, filtered to
         # app/src + app/include, for a MEANINGFUL number, and gate on it.
-        # Baseline (2026-06-18): lines 61.0%, branches 39.1%. Thresholds are set
-        # below the baseline with margin to catch regressions without flakiness;
-        # raise them as test coverage grows.
+        # Baseline (2026-06-18): lines 61.0%, branches 39.1%. Thresholds sit just
+        # below the live baseline with margin (catch regressions, avoid flakiness);
+        # raise them as coverage grows. Ladder: 55/30 (initial) -> 60/38 (2026-06-30,
+        # after protection boundary/NULL cases). Safety-critical pure functions
+        # (bms_protection_evaluate / bms_soc_* / bms_afe_validate) target 100% branch.
         run: >
           gcovr --root "$GITHUB_WORKSPACE"
           --filter 'bms-app/app/(src|include)/.*'
           --gcov-ignore-parse-errors=all
           --print-summary
-          --fail-under-line 55
-          --fail-under-branch 30
+          --fail-under-line 60
+          --fail-under-branch 38
           twister-out
       - name: Upload coverage report
         if: always()
