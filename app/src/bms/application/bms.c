@@ -7,7 +7,7 @@
 
 enum bms_contactor bms_contactor_for_state(enum bms_state state)
 {
-	return state == BMS_STATE_NORMAL ? BMS_CONTACTOR_CLOSED : BMS_CONTACTOR_OPEN;
+	return (state == BMS_STATE_NORMAL) ? BMS_CONTACTOR_CLOSED : BMS_CONTACTOR_OPEN;
 }
 
 enum bms_state bms_next_state(enum bms_state cur, const struct bms_state_inputs *in)
@@ -16,12 +16,12 @@ enum bms_state bms_next_state(enum bms_state cur, const struct bms_state_inputs 
 		return BMS_STATE_FAULT;
 	}
 
-	if (in->hw_fault_latched || in->diag.latched_mask != 0U ||
-	    in->diag.max_severity >= BMS_DIAG_CRITICAL) {
+	if (in->hw_fault_latched || (in->diag.latched_mask != 0U) ||
+	    (in->diag.max_severity >= BMS_DIAG_CRITICAL)) {
 		return BMS_STATE_LOCKED;
 	}
 
-	if (in->diag.max_severity >= BMS_DIAG_ERROR || in->prot.state != BMS_PROT_NORMAL ||
+	if ((in->diag.max_severity >= BMS_DIAG_ERROR) || (in->prot.state != BMS_PROT_NORMAL) ||
 	    in->open_request) {
 		return BMS_STATE_FAULT;
 	}

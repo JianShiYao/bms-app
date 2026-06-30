@@ -143,11 +143,13 @@ jobs:
       - name: Run clang-tidy on app sources
         run: clang-tidy -p build $(find bms-app/app/src -name '*.c')
 
-  # Observation job (NON-BLOCKING): cppcheck + MISRA addon.
-  # process-workflow.md §8 ladder, step ②: runs in CI and reports findings
-  # but does NOT block merge (continue-on-error; not a required check). Promote
-  # to required (drop continue-on-error + add to branch protection) only after
-  # the noise baseline proves stable.
+  # Gate 9: cppcheck + MISRA C:2012 (project mode). HARD gate (CPPCHECK_FAIL=1),
+  # promoted from observation (process-workflow.md §8 ladder ② -> ③). Local
+  # baseline (cppcheck 2.21) is 0 findings after the suppressions/deviations in
+  # .cppcheck-suppressions. NOTE: CI installs cppcheck from apt, whose version may
+  # differ from local and emit version-specific MISRA findings; if so, tune
+  # .cppcheck-suppressions in the PR before merge. After this merges, add
+  # `cppcheck-misra` to the master branch-protection required checks.
   cppcheck-misra:
     needs: format
     runs-on: ubuntu-24.04
@@ -165,8 +167,9 @@ jobs:
         run: bash bms-app/scripts/setup-cppcheck-misra.sh
       - name: Generate compile_commands.json (mps2/an386)
         run: west build -b mps2/an386 bms-app/app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-      - name: Run cppcheck + MISRA (project mode, non-blocking)
-        continue-on-error: true
+      - name: Run cppcheck + MISRA (project mode, blocking)
+        env:
+          CPPCHECK_FAIL: '1'
         run: bash bms-app/scripts/cppcheck-run.sh --project build/compile_commands.json 2>&1 | tee cppcheck-report.txt
       - name: Upload cppcheck/MISRA report
         if: always()
