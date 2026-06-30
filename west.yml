@@ -23,7 +23,7 @@ manifest:
           - cmsis_6
           - hal_stm32
           - segger          # RTT 日志后端（可选，按需保留）
-          - mcuboot         # secure boot 引导器（真机阶段评估固件签名/启动验签，见 docs/ci-borrow-checklist.md P2 边界）
+          - mcuboot         # secure boot 引导器（真机阶段评估固件签名/启动验签，见 docs/quality-ci-checklist.md P2 边界）
 
   self:
     # 本仓库在 workspace 中的相对路径（workspace 根为本目录的上一级）。

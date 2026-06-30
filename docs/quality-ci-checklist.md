@@ -6,7 +6,7 @@
 
 **状态（2026-06）**：P0 / P1 已全部落地，质量门禁体系已成型。本清单从「待办计划」转为
 **「已完成对照 + 剩余可选项」**。门禁的权威说明见 [../CLAUDE.md](../CLAUDE.md)「质量门禁」与
-[development-workflow.md](development-workflow.md)；本文只记录「门禁做了什么、怎么落地的、还差什么」。
+[process-workflow.md](process-workflow.md)；本文只记录「门禁做了什么、怎么落地的、还差什么」。
 
 ## 门禁能力现状
 
@@ -94,7 +94,7 @@
       ① 本地试跑调参 + 建 suppression/基线（**已完成**）→ ② 进 CI 非阻断（`cppcheck-misra` job，`continue-on-error`，**已完成**）
       → ③ 噪声归零后升必过门禁（待办，需在 GitHub 分支保护加该 check）→ ④ 证明低噪后下放 `pre-push`（`CPPCHECK_FAIL=1`）。
   - 切忌一上来把吵的工具设成 CI 必过门；用 **baseline 只对新增代码报错**。
-  - 详见 [development-workflow.md §8](development-workflow.md) 的「按阻断强度递进」阶梯表。
+  - 详见 [process-workflow.md §8](process-workflow.md) 的「按阻断强度递进」阶梯表。
 
 ## 进度小结
 1. ✅ **CI 骨架 + twister + 格式检查（P0）** —— 已完成。

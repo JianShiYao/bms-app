@@ -12,7 +12,8 @@ extern "C" {
 #endif
 
 /**
- * @brief 初始化均衡模块（启动线程，订阅 chan_cell_meas）。
+ * @brief 初始化均衡模块。
+ * 调度与执行由 bms_task 统一负责。
  * @return 0 成功，负值为 errno。
  */
 int bms_balancing_init(void);

@@ -5,7 +5,7 @@
 > 外加命令语法、构建产物、配置覆盖、清理与排错。
 >
 > **不在本文范围**：分支/提交/PR/发布等开发流程，以及 clang-format/clang-tidy/cppcheck 等
-> **质量门禁工具的安装与使用** —— 见 [development-workflow.md](development-workflow.md) 与
+> **质量门禁工具的安装与使用** —— 见 [process-workflow.md](process-workflow.md) 与
 > [README.md](../README.md)「代码格式化」「静态分析工具依赖」。各项约定的唯一来源是 [../CLAUDE.md](../CLAUDE.md)。
 
 ---
@@ -279,7 +279,7 @@ powershell -ExecutionPolicy Bypass -File scripts\check.ps1
 powershell -ExecutionPolicy Bypass -File scripts\check.ps1 -Fast   # 仅 format+build+test（跳过两个重门）
 ```
 
-> 质量门禁的分层触发、各门含义、工具安装见 [development-workflow.md](development-workflow.md) 与
+> 质量门禁的分层触发、各门含义、工具安装见 [process-workflow.md](process-workflow.md) 与
 > [README.md](../README.md)「静态分析工具依赖」。
 
 ---

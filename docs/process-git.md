@@ -3,7 +3,7 @@
 本文是 bms-app 的 **Git 制度与操作细则**：仓库边界、分支/提交/合并规范、行尾与忽略策略、
 钩子、标准工作流、并行隔离、发布打标签，以及**常见场景的命令示例与恢复操作**。
 
-> **定位**：流程的"为什么/制度定义"以 [development-workflow.md](development-workflow.md) 为**单一事实源**；
+> **定位**：流程的"为什么/制度定义"以 [process-workflow.md](process-workflow.md) 为**单一事实源**；
 > 本文是其 **Git 机制细化 + 操作手册**，不重复定义制度，只把"怎么做、出错怎么救"讲透并举例。
 > 仓库：`github.com/JianShiYao/bms-app`（公开）。
 
@@ -102,7 +102,7 @@ feat: 改了好多东西          # scope 缺失、摘要笼统
 git config core.hooksPath scripts/hooks    # 在 bms-app/ 下执行一次
 ```
 
-启用后两道本地关（详见 [development-workflow.md §8](development-workflow.md)）：
+启用后两道本地关（详见 [process-workflow.md §8](process-workflow.md)）：
 
 | 钩子 | 时机 | 做什么 | 阻断性 |
 |---|---|---|---|
@@ -161,7 +161,7 @@ git worktree remove ../bms-app-soc                        # 合并后清理
 
 - **默认单工作树串行即可**，仅在真有并行需求时才开 worktree（避免过度工程）。
 - **禁止**两个 session 指向同一工作树改同一批文件（丢更新、状态错乱的根源）。
-- 详见 [development-workflow.md §3.1](development-workflow.md)。
+- 详见 [process-workflow.md §3.1](process-workflow.md)。
 
 ---
 
@@ -257,7 +257,7 @@ git merge --abort           # 想放弃整个合并、回到合并前
 
 ### 10.6 误删文件 / 想丢弃本地改动
 ```bash
-git restore docs/architecture.md         # 丢弃该文件的未暂存改动（恢复到 HEAD）
+git restore docs/concept-architecture.md         # 丢弃该文件的未暂存改动（恢复到 HEAD）
 git checkout -- .claude/CLAUDE.md         # 旧写法，恢复被删文件（本会话真实用过）
 git restore --staged file                 # 仅取消暂存，保留改动
 git clean -nd                             # 先预览将删除哪些未跟踪文件（-n 只看不删）
@@ -310,5 +310,5 @@ git show <hash>                # 某次提交的完整 diff
 
 ---
 
-> 相关文档：[development-workflow.md](development-workflow.md)（流程权威）、
-> [build-guide.md](build-guide.md)（构建/运行/测试）、[quality-management.md](quality-management.md)（质量管控全景）。
+> 相关文档：[process-workflow.md](process-workflow.md)（流程权威）、
+> [guide-build.md](guide-build.md)（构建/运行/测试）、[quality-management.md](quality-management.md)（质量管控全景）。

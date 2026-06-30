@@ -5,12 +5,12 @@
 # 开发流程与质量审查体系化 —— 实施计划
 
 > **状态（2026-06-18）**：本计划已执行完成。当前实况见
-> [质量管控全景](quality-management.md) 与 [开发流程](development-workflow.md)；
+> [质量管控全景](quality-management.md) 与 [开发流程](process-workflow.md)；
 > 本文保留为**实施记录**（设计决策、次序、风险规避）。已通过 PR #1–#14 落地，
 > 含 6 道 CI 门禁、分支保护、CD（v0.1.0 / v0.1.1）、clang-tidy 硬化、app 覆盖率门禁。
 >
 > **后续进展（超出本轮计划，2026-06）**：本文「不在本轮范围」中的部分项已陆续落地——
-> cppcheck/MISRA（本地 warn-only，见 [development-workflow.md §8](development-workflow.md)）、
+> cppcheck/MISRA（本地 warn-only，见 [process-workflow.md §8](process-workflow.md)）、
 > afe 单测（20 例）与可切换采样后端（stub/sim/adc）。最新状态以上述两份当前实况文档为准。
 
 ## Context（为什么做这件事）
@@ -47,12 +47,12 @@ CI(GitHub Actions, push+PR): format → [build(mps2/an386), build(native_sim),
 - `.github/CODEOWNERS` — `* @JianShiYao`（注释示范日后按目录细分，如 protection 给 safety 团队）。
 - `.github/dependabot.yml` — `github-actions` 生态、weekly、commit 前缀 `ci:`。
 - `CHANGELOG.md` — Keep a Changelog（中文），`[Unreleased]` + `[0.1.0]` 回填现有提交。
-- `docs/development-workflow.md` — **单一事实源**：分支模型/提交规范/克隆设置(链 README §6)/pre-PR 自检三连/PR 流程/五道质量关表/发布流程/分支保护与 solo 说明。
-- `CONTRIBUTING.md` — 极简转发，仅指向 `docs/development-workflow.md`（GitHub 在 PR 界面会识别它）。
+- `docs/process-workflow.md` — **单一事实源**：分支模型/提交规范/克隆设置(链 README §6)/pre-PR 自检三连/PR 流程/五道质量关表/发布流程/分支保护与 solo 说明。
+- `CONTRIBUTING.md` — 极简转发，仅指向 `docs/process-workflow.md`（GitHub 在 PR 界面会识别它）。
 
 **修改**
 - `.github/workflows/ci.yml` — 由 2 job 扩成 5 道门禁 DAG（见下）。
-- `README.md` — 顶部加一行链到 `docs/development-workflow.md`（其余不动，§6 仍是权威）。
+- `README.md` — 顶部加一行链到 `docs/process-workflow.md`（其余不动，§6 仍是权威）。
 - `TODO.md` — 勾掉 P0-CI，更新 SCA/覆盖率状态。
 - 顺带纳入版本控制：当时 untracked 的 `.editorconfig`、`TODO.md`。
 
@@ -101,7 +101,7 @@ JSON
 ## 实施次序（全程走 PR，注意 bootstrap 次序）
 1. **PR #1**：增强 ci.yml + `.clang-tidy`(软) + `scripts/sca-check.sh` + `scripts/check-version-tag.sh` + `release.yml` + 纳入 `.editorconfig`。**此时 master 尚无保护**,合并后新 check 名才存在并变绿。
 2. **开启分支保护**：跑上面 `gh api` 两条（protection + squash 策略）。此后 master 不可直推。
-3. **PR #2**：`docs/development-workflow.md` + `CONTRIBUTING.md` + PR 模板 + CODEOWNERS + dependabot + `CHANGELOG.md` + README 链接 + 更新 TODO。**走完整受保护 PR 流程**。
+3. **PR #2**：`docs/process-workflow.md` + `CONTRIBUTING.md` + PR 模板 + CODEOWNERS + dependabot + `CHANGELOG.md` + README 链接 + 更新 TODO。**走完整受保护 PR 流程**。
 4. **首发 tag**：`git tag -a v0.1.0` → push → 确认 release.yml 产出 Release + 固件 + SHA256SUMS。
 5. **后续硬化**：盘点后 `.clang-tidy` 翻硬 + 加入必需检查；定覆盖率阈值；bms_f405 完成后进 build 矩阵与 release。
 

@@ -1,23 +1,19 @@
 /*
  * SOC/SOH 估算模块 —— 库仑计数（安时积分）实现
  *
- * 职责：订阅 chan_cell_meas，估算荷电/健康状态，发布到 chan_soc。
+ * 职责：提供 SOC/SOH 估算服务。
+ * 周期调度和 database 写入由 bms_task 统一负责。
  * SOC 用库仑积分（对 pack_current_ma 按帧间 Δt 积分）；首帧用电压线性映射初始化。
  * 设计来源：docs/features/soc-coulomb/03-design.md。
  */
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
 #include "bms/soc.h"
-#include "bms/channels.h"
 
 LOG_MODULE_REGISTER(bms_soc, LOG_LEVEL_INF);
-
-#define SOC_THREAD_STACK 1024
-#define SOC_THREAD_PRIO  7
 
 /* 线性映射端点：3.0V→0%，4.2V→100%（电压映射初值器，REQ-SOC-C04） */
 #define SOC_EMPTY_MV 3000
@@ -45,16 +41,6 @@ LOG_MODULE_REGISTER(bms_soc, LOG_LEVEL_INF);
  * CONFIG_BMS_SOC_INIT_FROM_VOLTAGE 为 bool（默认 y）；本设计取「首帧初始化恒走电压映射」，
  * 该 Kconfig 仅作显式关闭开关，故算法不直接依赖该宏（设计 §5.1）。
  */
-
-/* 该模块作为订阅者，自行向 chan_cell_meas 注册观察 */
-ZBUS_SUBSCRIBER_DEFINE(soc_sub, 4);
-ZBUS_CHAN_ADD_OBS(chan_cell_meas, soc_sub, 3);
-
-/*
- * 库仑积分跨帧状态实例（模块私有，设计 §1.1 / ADR-SOC-C02）。
- * BSS 零初始化 → initialized=false，天然首帧安全态。
- */
-static struct bms_soc_coulomb_state soc_state;
 
 int bms_soc_estimate(const struct bms_cell_meas *meas, struct bms_soc *out)
 {
@@ -195,40 +181,6 @@ int bms_soc_coulomb_step(struct bms_soc_coulomb_state *state, const struct bms_c
 	out->soc_permille = pm;
 	return 0;
 }
-
-static void soc_thread(void *p1, void *p2, void *p3)
-{
-	ARG_UNUSED(p1);
-	ARG_UNUSED(p2);
-	ARG_UNUSED(p3);
-
-	const struct zbus_channel *chan;
-	struct bms_cell_meas meas;
-	struct bms_soc soc;
-
-	/* 跨帧积分状态：复位为未初始化安全态（亦可依赖 BSS 零初始化，设计 §6） */
-	bms_soc_coulomb_state_reset(&soc_state);
-
-	while (zbus_sub_wait(&soc_sub, &chan, K_FOREVER) == 0) {
-		if (chan != &chan_cell_meas) {
-			continue;
-		}
-		if (zbus_chan_read(&chan_cell_meas, &meas, K_MSEC(50)) != 0) {
-			continue;
-		}
-		/* 库仑积分步进；据返回码决定是否发布（设计 §6，REQ-SOC-C05） */
-		int rc = bms_soc_coulomb_step(&soc_state, &meas, &soc);
-
-		if (rc == 0) {
-			/* 发布超时即丢弃，不重试（REQ-SOC-C09 不阻塞安全链） */
-			zbus_chan_pub(&chan_soc, &soc, K_MSEC(50));
-			LOG_DBG("SOC=%u.%u%%", soc.soc_permille / 10, soc.soc_permille % 10);
-		}
-		/* rc == -EAGAIN（跳过帧）/ -EINVAL：不发布，继续下一帧 */
-	}
-}
-
-K_THREAD_DEFINE(bms_soc_tid, SOC_THREAD_STACK, soc_thread, NULL, NULL, NULL, SOC_THREAD_PRIO, 0, 0);
 
 int bms_soc_init(void)
 {

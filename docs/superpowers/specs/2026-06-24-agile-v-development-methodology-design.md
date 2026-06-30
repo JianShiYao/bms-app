@@ -2,21 +2,21 @@
 
 - 日期：2026-06-24
 - 项目：EnerVenue BMS 固件（Zephyr 4.4.0 + CMake）
-- 交付物：新增 `docs/development-methodology.md`（通用敏捷+V 方法论母文档）+ 配套回改
+- 交付物：新增 `docs/concept-methodology.md`（通用敏捷+V 方法论母文档）+ 配套回改
 - 产出语言：中文
 
 ## 1. 目的与背景（为什么做）
 
 项目已有完整的**操作层**文档,但缺一份**指导性的方法论母文档**:
 - `superpowers/specs/2026-06-19-bms-agile-v-agents-design.md` 是 **agent 体系设计**,不是方法论;
-- `agents-guide.md` 是 **agent 用法**;
-- `development-workflow.md` 是 **门禁与集成**(上一轮新增的 §1 仅为小 V 骨架 + 交叉链接);
+- `process-agents.md` 是 **agent 用法**;
+- `process-workflow.md` 是 **门禁与集成**(上一轮新增的 §1 仅为小 V 骨架 + 交叉链接);
 - `templates/` 是 **ID 与追溯模板**。
 
 后果:敏捷+V 的"为什么这么设计""不可违背的原则"散落或缺失,下游各文档**没有共同的依据来源**,
 团队/agent 对方法论的理解无统一出处。development-workflow §1 的"设计依据"目前链向 agent 设计 spec——名不符实。
 
-**意图**:新建 `docs/development-methodology.md` 作为**通用敏捷+V 研发方法论母文档**——它是开发工作流、
+**意图**:新建 `docs/concept-methodology.md` 作为**通用敏捷+V 研发方法论母文档**——它是开发工作流、
 agent 体系、模板等一切下游的**依据(rationale / source of authority)**,所有下游流程**由它衍生**。
 核心价值有二:**统一团队(与 agent)对方法论的认知**;**为下游提供可引用的唯一依据**。
 
@@ -32,7 +32,7 @@ agent 体系、模板等一切下游的**依据(rationale / source of authority)
 5. **组织框架 = 混合(框架3)**:短"为什么" → 核心模型(主干) → 不可违背原则 → 派生关系图。
 6. **核心定位 = 依据**:第 6 节"派生关系"是支点——明确每个下游文档"依据本方法论的哪一部分"。
 
-## 3. 母文档结构（`docs/development-methodology.md`）
+## 3. 母文档结构（`docs/concept-methodology.md`）
 
 通用方法论 + BMS 注脚;中间档深度。七节:
 
@@ -66,15 +66,15 @@ agent 体系、模板等一切下游的**依据(rationale / source of authority)
 ### §5 迭代生命周期与门
 - 通用 **DoR/DoD** 原则(准入:依赖就绪/基线可测/范围界定;准出:产出齐备/追溯无断链/安全项有测试/门全绿/范围受控);
 - 小 V 各阶段与"门即持续合规"的关系;
-- **具体门禁与命令向下指向** `development-workflow.md`(不在母文档复制)。
+- **具体门禁与命令向下指向** `process-workflow.md`(不在母文档复制)。
 
 ### §6 派生关系:本方法论如何落地（支点）
 一张表/图,明确每个下游"依据本方法论的哪一部分":
 
 | 下游产物 | 依据本方法论的 | 承载 |
 |---|---|---|
-| `development-workflow.md` | §3 模型 / §4 原则3·5 / §5 DoR-DoD | 分支/提交/PR、分层质量门、本项目落地规则 |
-| `.claude/agents/*` + `agents-guide.md` | §3 小 V 阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
+| `process-workflow.md` | §3 模型 / §4 原则3·5 / §5 DoR-DoD | 分支/提交/PR、分层质量门、本项目落地规则 |
+| `.claude/agents/*` + `process-agents.md` | §3 小 V 阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
 | `templates/*` | §4 原则3(可追溯性) | REQ/DES ID 规范、追溯矩阵、EARS 模板 |
 | `2026-06-19-...-agents-design.md` | §3 / §4 | agent 体系的设计取舍 |
 | `quality-management.md` | §4 原则2·3·5 | 各阶段质量管控现状与缺口 |
@@ -84,13 +84,13 @@ agent 体系、模板等一切下游的**依据(rationale / source of authority)
 
 ## 4. 配套回改（落地 §6 的"依据"关系）
 
-- **`development-workflow.md` §1 瘦身(决策 A)**:删去与母文档重复的方法论内容(小 V 模型完整阐述、原则、DoR/DoD 的"为什么"),
-  改为:开头一句"本流程依据 [development-methodology.md] 落地",§1 仅保留**本项目操作规则**(小 V 的分支/PR 粒度、
+- **`process-workflow.md` §1 瘦身(决策 A)**:删去与母文档重复的方法论内容(小 V 模型完整阐述、原则、DoR/DoD 的"为什么"),
+  改为:开头一句"本流程依据 [concept-methodology.md] 落地",§1 仅保留**本项目操作规则**(小 V 的分支/PR 粒度、
   `traceability.md` 文件约定、ztest 注释格式、ID 形式)。DoR/DoD 的**具体清单**可留在 §1(作为本项目落地版),
   但"为什么有 DoR/DoD"归母文档。
-- **`agents-guide.md`**:开头"流程模型为敏捷-V 混合"一句改为指向母文档为依据。
+- **`process-agents.md`**:开头"流程模型为敏捷-V 混合"一句改为指向母文档为依据。
 - **`templates/README.md`**:可加一行"本套 ID/追溯规范是方法论原则3(可追溯性)的落地"。
-- **`CLAUDE.md`「开发流程与提交规范」节**:加一句"方法论依据见 docs/development-methodology.md"。
+- **`CLAUDE.md`「开发流程与提交规范」节**:加一句"方法论依据见 docs/concept-methodology.md"。
 - **`quality-management.md` 对齐(本文档早于方法论+工作流重构,需补)**:
   1. 新增一节「**对方法论五原则的符合性**」——逐条给 ✅/⚠️/❌ 与依据,并声明 development-methodology 为依据来源;
   2. **对齐失效安全的"时间态"**:把安全纪律(关联安全需求、测试先行、验证默认态——即 development-workflow §2)从 §四的

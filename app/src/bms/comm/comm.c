@@ -10,16 +10,26 @@
  * 时钟快进时刷屏。高频的逐帧测量数据走 DBG，需要时再开。
  */
 #include <errno.h>
-#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
 #include "bms/comm.h"
-#include "bms/channels.h"
 
 LOG_MODULE_REGISTER(bms_comm, LOG_LEVEL_INF);
 
-#define COMM_THREAD_STACK 1024
-#define COMM_THREAD_PRIO  8
+/* 运行期防御性钳制的边界源——数值必须与 app/Kconfig 中
+ * BMS_COMM_REPORT_PERIOD_MS 的 `range 10 60000` 端点一致（改一处须同步另一处）。
+ * (DES-COMM-003; REQ-COMM-004/005) */
+#define BMS_COMM_PERIOD_MIN_MS 10
+#define BMS_COMM_PERIOD_MAX_MS 60000
+
+/* 生效上报周期 = 对编译期配置值施加运行期防御性钳制后的确定值。
+ * 把 CONFIG_* 注入点收敛到唯一一处，线程与 init 共用，避免散落 k_msleep(CONFIG_*)。
+ * (DES-COMM-003; REQ-COMM-004/005) */
+int32_t bms_comm_effective_period_ms(void)
+{
+	return bms_comm_clamp_period_ms((int32_t)CONFIG_BMS_COMM_REPORT_PERIOD_MS,
+					BMS_COMM_PERIOD_MIN_MS, BMS_COMM_PERIOD_MAX_MS);
+}
 
 static void comm_tx_meas(const struct bms_cell_meas *m)
 {
@@ -28,63 +38,49 @@ static void comm_tx_meas(const struct bms_cell_meas *m)
 		m->temp_dci[0] / 10, m->temp_dci[0] % 10);
 }
 
-static void comm_thread(void *p1, void *p2, void *p3)
+void bms_comm_tx_snapshot(const struct bms_cell_meas *meas, const struct bms_soc *soc,
+			  const struct bms_prot_evt *prot)
 {
-	ARG_UNUSED(p1);
-	ARG_UNUSED(p2);
-	ARG_UNUSED(p3);
-
-	struct bms_cell_meas meas;
-	struct bms_soc soc;
-	struct bms_prot_evt prot;
-
 	/* 上一次已上报值，用于“变化时才 INF”（-1 为不可能的初值，确保首帧打印）。 */
-	int32_t last_soc = -1;
-	int32_t last_soh = -1;
-	int32_t last_state = -1;
-	int32_t last_contactor = -1;
+	static int32_t last_soc = -1;
+	static int32_t last_soh = -1;
+	static int32_t last_state = -1;
+	static int32_t last_contactor = -1;
 
-	while (1) {
-		/*
-		 * 周期性快照上报：直接读取各 channel 最近一次发布的值，
-		 * 与内部各模块的更新节奏解耦，CAN 帧按固定周期对外广播。
-		 */
-		if (zbus_chan_read(&chan_cell_meas, &meas, K_MSEC(50)) == 0) {
-			comm_tx_meas(&meas);
+	if (meas != NULL) {
+		comm_tx_meas(meas);
+	}
+
+	if (soc != NULL) {
+		/* TODO: can_send() SOC/SOH 帧。 */
+		if (soc->soc_permille != last_soc || soc->soh_permille != last_soh) {
+			LOG_INF("CAN TX soc=%u.%u%% soh=%u.%u%%", soc->soc_permille / 10,
+				soc->soc_permille % 10, soc->soh_permille / 10,
+				soc->soh_permille % 10);
+			last_soc = soc->soc_permille;
+			last_soh = soc->soh_permille;
 		}
+	}
 
-		if (zbus_chan_read(&chan_soc, &soc, K_MSEC(50)) == 0) {
-			/* TODO: can_send() SOC/SOH 帧。 */
-			if (soc.soc_permille != last_soc || soc.soh_permille != last_soh) {
-				LOG_INF("CAN TX soc=%u.%u%% soh=%u.%u%%", soc.soc_permille / 10,
-					soc.soc_permille % 10, soc.soh_permille / 10,
-					soc.soh_permille % 10);
-				last_soc = soc.soc_permille;
-				last_soh = soc.soh_permille;
-			}
+	if (prot != NULL) {
+		/* TODO: can_send() 保护状态帧。保护状态变化是安全事件，务必可见。 */
+		if (prot->state != last_state || prot->contactor != last_contactor) {
+			LOG_INF("CAN TX prot state=%d contactor=%s", prot->state,
+				prot->contactor == BMS_CONTACTOR_CLOSED ? "CLOSED" : "OPEN");
+			last_state = prot->state;
+			last_contactor = prot->contactor;
 		}
-
-		if (zbus_chan_read(&chan_prot_state, &prot, K_MSEC(50)) == 0) {
-			/* TODO: can_send() 保护状态帧。保护状态变化是安全事件，务必可见。 */
-			if (prot.state != last_state || prot.contactor != last_contactor) {
-				LOG_INF("CAN TX prot state=%d contactor=%s", prot.state,
-					prot.contactor == BMS_CONTACTOR_CLOSED ? "CLOSED" : "OPEN");
-				last_state = prot.state;
-				last_contactor = prot.contactor;
-			}
-		}
-
-		k_msleep(CONFIG_BMS_COMM_REPORT_PERIOD_MS);
 	}
 }
-
-K_THREAD_DEFINE(bms_comm_tid, COMM_THREAD_STACK, comm_thread, NULL, NULL, NULL, COMM_THREAD_PRIO, 0,
-		0);
 
 int bms_comm_init(void)
 {
 	/* TODO: 取 can1 device、配置位速率、can_start()，注册 RX filter 收命令 */
-	LOG_INF("Comm init: CAN report stub, period=%d ms (no CAN HW in sim)",
-		CONFIG_BMS_COMM_REPORT_PERIOD_MS);
+	/* 打印合法化后生效周期，并列原始配置值，使「配了却被钳制」不再静默。
+	 * (DES-COMM-005; REQ-COMM-007) */
+	int32_t period = bms_comm_effective_period_ms();
+
+	LOG_INF("Comm init: CAN report stub, period=%d ms (configured=%d, no CAN HW in sim)",
+		period, CONFIG_BMS_COMM_REPORT_PERIOD_MS);
 	return 0;
 }

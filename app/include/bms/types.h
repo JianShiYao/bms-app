@@ -25,7 +25,7 @@ extern "C" {
 /**
  * bms_cell_meas.validity 测量有效位（测量数据纪律：值 + 时间戳 + 有效性）。
  *
- * 设计来源：docs/architecture.md「测量数据纪律」。某位为 1 表示对应量本帧通过
+ * 设计来源：docs/concept-architecture.md「测量数据纪律」。某位为 1 表示对应量本帧通过
  * 合理性校验、下游方可采用；为 0 表示无效，下游须失效安全处理（如电流无效则
  * SOC 不积分、保护不据此闭合接触器）。位由 afe 边缘的纯函数 bms_afe_validate() 置位。
  */
@@ -72,6 +72,23 @@ struct bms_prot_evt {
 	enum bms_prot_state state;
 	enum bms_contactor contactor; /**< 期望的接触器状态 */
 	uint8_t cell_index;           /**< 触发保护的单体索引（如适用） */
+};
+
+/** BMS 主状态机状态（foxBMS 2 inspired：集中管理接触器允许条件） */
+enum bms_state {
+	BMS_STATE_INIT = 0,
+	BMS_STATE_STANDBY,
+	BMS_STATE_PRECHARGE,
+	BMS_STATE_NORMAL,
+	BMS_STATE_FAULT,
+	BMS_STATE_LOCKED,
+};
+
+/** BMS 主状态快照（由 bms_bms 写入 database） */
+struct bms_state_snapshot {
+	uint32_t timestamp_ms;
+	enum bms_state state;
+	enum bms_contactor contactor;
 };
 
 #ifdef __cplusplus

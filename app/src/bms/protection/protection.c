@@ -1,26 +1,17 @@
 /*
- * 保护状态机模块 —— 桩实现
+ * 保护状态机模块 —— 判定服务
  *
- * 职责：订阅 chan_cell_meas / chan_soc，评估过压/欠压/过流/过温，
- * 发布 chan_prot_state 并给出期望接触器状态。
+ * 职责：评估过压/欠压/过流/过温，并给出保护判定。
+ * 调度、诊断登记与接触器控制由 bms_task/bms_diag/bms_bms 负责。
  * 失效安全原则：默认接触器 OPEN，仅当判定 NORMAL 时才 CLOSED。
  */
 #include <errno.h>
 #include <stdlib.h>
-#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
 #include "bms/protection.h"
-#include "bms/channels.h"
 
 LOG_MODULE_REGISTER(bms_protection, LOG_LEVEL_INF);
-
-#define PROT_THREAD_STACK 1024
-#define PROT_THREAD_PRIO  4 /* 安全相关，优先级高于其它模块 */
-
-ZBUS_SUBSCRIBER_DEFINE(prot_sub, 8);
-ZBUS_CHAN_ADD_OBS(chan_cell_meas, prot_sub, 2);
-ZBUS_CHAN_ADD_OBS(chan_soc, prot_sub, 2);
 
 void bms_protection_default_limits(struct bms_prot_limits *limits)
 {
@@ -47,7 +38,7 @@ int bms_protection_evaluate(const struct bms_cell_meas *meas, const struct bms_p
 	/*
 	 * 失效安全（REQ-PROT-033）：要闭合接触器必须电压/电流/温度测量全部有效。
 	 * 任一有效位缺失（AFE 故障 / 坏数据）即无法排除越限风险，强制 FAULT → OPEN，
-	 * 绝不据无效数据闭合（对齐 architecture.md「测量数据纪律」）。
+	 * 绝不据无效数据闭合（对齐 concept-architecture.md「测量数据纪律」）。
 	 */
 	if ((meas->validity & BMS_MEAS_VALID_ALL) != BMS_MEAS_VALID_ALL) {
 		out->state = BMS_PROT_FAULT;
@@ -91,40 +82,6 @@ decide:
 		(out->state == BMS_PROT_NORMAL) ? BMS_CONTACTOR_CLOSED : BMS_CONTACTOR_OPEN;
 	return 0;
 }
-
-static void prot_thread(void *p1, void *p2, void *p3)
-{
-	ARG_UNUSED(p1);
-	ARG_UNUSED(p2);
-	ARG_UNUSED(p3);
-
-	const struct zbus_channel *chan;
-	struct bms_cell_meas meas;
-	struct bms_prot_limits limits;
-	struct bms_prot_evt evt;
-
-	bms_protection_default_limits(&limits);
-
-	while (zbus_sub_wait(&prot_sub, &chan, K_FOREVER) == 0) {
-		if (chan != &chan_cell_meas) {
-			continue; /* chan_soc 暂未参与判定，预留 */
-		}
-		if (zbus_chan_read(&chan_cell_meas, &meas, K_MSEC(50)) != 0) {
-			continue;
-		}
-		if (bms_protection_evaluate(&meas, &limits, &evt) == 0) {
-			/* TODO: 此处驱动接触器/MOS GPIO（按 evt.contactor） */
-			if (evt.state != BMS_PROT_NORMAL) {
-				LOG_WRN("protection state=%d cell=%d -> contactor OPEN", evt.state,
-					evt.cell_index);
-			}
-			zbus_chan_pub(&chan_prot_state, &evt, K_MSEC(50));
-		}
-	}
-}
-
-K_THREAD_DEFINE(bms_prot_tid, PROT_THREAD_STACK, prot_thread, NULL, NULL, NULL, PROT_THREAD_PRIO, 0,
-		0);
 
 int bms_protection_init(void)
 {

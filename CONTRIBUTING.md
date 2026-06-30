@@ -1,7 +1,7 @@
 # 贡献指南
 
 完整的开发流程、提交规范、PR 流程、质量门禁与发布流程见
-**[docs/development-workflow.md](docs/development-workflow.md)**。
+**[docs/process-workflow.md](docs/process-workflow.md)**。
 
 环境安装 / 构建 / 运行 / 测试见 [README.md](README.md)。
 
