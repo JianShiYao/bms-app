@@ -128,6 +128,7 @@ git config core.hooksPath scripts/hooks   # 在 bms-app/ 下执行一次
 - **clang-tidy 在 Windows 上标 SKIP**（需 native_sim host flags，Windows 无法配置）；要本地对齐请用 WSL2。
 - cppcheck 的 **MISRA addon 不入库**，本地需 `bash scripts/setup-cppcheck-misra.sh` 拉取；噪声/deviation 在 `.cppcheck-suppressions` 维护。
 - 配置文件：`.clang-format`（LLVM 基、100 列、8 空格缩进）、`.clang-tidy`（cert-* + readability-*，`WarningsAsErrors='*'`，仅分析 `app/include/bms/*.h`）。
+- **编码规范**见 `docs/coding-style.md`（基线 = Zephyr 内核风格；命名/格式/文件结构/接口文档/语言用法各条 `CS-NN`，每条附出处、理由与落实方式）。
 
 ## 开发流程与提交规范
 
