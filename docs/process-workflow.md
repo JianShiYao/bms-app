@@ -3,14 +3,14 @@
 本文是 bms-app 的**开发流程单一事实源**,覆盖**完整研发生命周期**——既包括「如何开发一个特性」(敏捷-V 小 V:需求→架构→设计→编码→测试),
 也包括「如何协作交付」(分支→提交→PR→CI→发版)。环境安装/构建/运行/测试的命令见 [README](../README.md)。
 
-> 小 V 的**执行细节**(怎么调 agent 链、各阶段产出模板)见 [agents-guide.md](agents-guide.md) 与 [templates/](templates/);
+> 小 V 的**执行细节**(怎么调 agent 链、各阶段产出模板)见 [process-agents.md](process-agents.md) 与 [templates/](templates/);
 > 本文只定义**流程骨架与质量门**,不复制那些细节。
 
 ---
 
 ## 1. 特性开发生命周期(敏捷-V 小 V)
 
-本节是**敏捷+V 方法论在本项目的操作落地**;方法论的"为什么/是什么"(模型、五条原则、可追溯性原理、DoR/DoD 的理由)见根基文档 [development-methodology.md](development-methodology.md),此处不再复述。下图为小 V 速查:
+本节是**敏捷+V 方法论在本项目的操作落地**;方法论的"为什么/是什么"(模型、五条原则、可追溯性原理、DoR/DoD 的理由)见根基文档 [concept-methodology.md](concept-methodology.md),此处不再复述。下图为小 V 速查:
 
 ```
 ① 需求 ───────────────────────验证──▶ ⑤ 测试·系统/集成级（合并）
@@ -20,14 +20,14 @@
    贯穿：⑥ CICD 持续验证 · 可追溯链(需求→架构→设计→代码→测试) · 代码评审
 ```
 
-- **方法论依据**：[development-methodology.md](development-methodology.md)（敏捷+V 研发方法论根基；本节为其在本项目的操作落地）
+- **方法论依据**：[concept-methodology.md](concept-methodology.md)（敏捷+V 研发方法论根基；本节为其在本项目的操作落地）
 - **agent 体系设计**：[superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md)
-- **怎么调 agent 链**：[agents-guide.md](agents-guide.md)(orchestrator → requirements → architect → designer → coder/tester → cicd)
+- **怎么调 agent 链**：[process-agents.md](process-agents.md)(orchestrator → requirements → architect → designer → coder/tester → cicd)
 - **端到端样例**：[features/soc-coulomb/](features/soc-coulomb/)
 
 ### 1.1 可追溯性(本项目落地)
 
-> 为什么可追溯性是 V 模型的灵魂,见 [development-methodology.md §4 原则3](development-methodology.md)。本小节只给本项目的 ID 链与格式规则:
+> 为什么可追溯性是 V 模型的灵魂,见 [concept-methodology.md §4 原则3](concept-methodology.md)。本小节只给本项目的 ID 链与格式规则:
 
 ```
 REQ-<域>-NNN  →  DES-<域>-NNN  →  代码位置(file:行/函数)  →  ztest 用例
@@ -49,7 +49,7 @@ REQ-<域>-NNN  →  DES-<域>-NNN  →  代码位置(file:行/函数)  →  ztes
 
 ### 1.3 迭代准入 / 准出(DoR / DoD)
 
-> DoR/DoD 的设立理由见 [development-methodology.md §5](development-methodology.md)。下为本项目落地清单:
+> DoR/DoD 的设立理由见 [concept-methodology.md §5](concept-methodology.md)。下为本项目落地清单:
 
 每个特性默认继承以下通用判据(单特性可在其 `00-iteration-plan.md` 细化,但不得削弱)。
 
@@ -61,7 +61,7 @@ REQ-<域>-NNN  →  DES-<域>-NNN  →  代码位置(file:行/函数)  →  ztes
 **准出(DoD,迭代完成判据)**
 - 小 V 各阶段产出齐备(需求/架构/设计/代码/测试/cicd 交付物);
 - **追溯链无断链**:每条 `REQ-<域>-NNN` 贯通 需求→架构→设计→代码→测试,`traceability.md` 无空链;
-- **变更已再基线**:本迭代若改动既有需求/安全项,其追溯链与受影响的右腿验证已同步更新(否则视为断链;依据 [development-methodology.md §4 原则6](development-methodology.md));
+- **变更已再基线**:本迭代若改动既有需求/安全项,其追溯链与受影响的右腿验证已同步更新(否则视为断链;依据 [concept-methodology.md §4 原则6](concept-methodology.md));
 - 所有 ⚠️ **失效安全**项均有对应需求与测试用例并通过;
 - 构建 + `twister` + 覆盖率达门限,无回归;**CI 6 门全绿**;
 - 范围受控:非目标未被夹带实现。
@@ -91,7 +91,7 @@ protection / 阈值 / 接触器 / 采样等**安全关键**改动,除常规流�
 
 ### 3.1 并行工作:worktree 隔离(默认约定)
 
-> 方法论依据:[development-methodology.md §4 原则5](development-methodology.md)(持续合规)——**用隔离让冲突无从发生;实在要交汇,交给 git 在合并点显式裁决(可控集成)**。
+> 方法论依据:[concept-methodology.md §4 原则5](concept-methodology.md)(持续合规)——**用隔离让冲突无从发生;实在要交汇,交给 git 在合并点显式裁决(可控集成)**。
 
 **约定:同时推进多个不相关任务时,默认用 git worktree 物理隔离——「一任务 = 一 worktree = 一分支 = 一 PR」,`master` 为唯一汇入点。**
 
@@ -215,7 +215,7 @@ gh pr create --base master      # 开 PR（填模板）
 CI（⑤）当前 6 道**必过**门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(CERT/可读性)。
 另有 `editorconfig`、`yamllint` 两道**阻断作业**(卫生门:尾随空格/末行换行/LF/charset/YAML lint;缩进交由 clang-format 与编辑器,见 `.ecrc`/`.editorconfig`),已去 `continue-on-error`,**待本 PR 合并后加入分支保护必过列 → 8 道**。
 另有 1 个**非阻断观察** job `cppcheck-misra`(②阶梯,`continue-on-error`,不计入必过门、产出报告制品),待噪声稳后升必过。
-各阶段质量管控现状与待补齐的全景见 [quality-management.md](quality-management.md)；SCA/clang-tidy/覆盖率的路线图见 [ci-borrow-checklist.md](ci-borrow-checklist.md)。
+各阶段质量管控现状与待补齐的全景见 [quality-management.md](quality-management.md)；SCA/clang-tidy/覆盖率的路线图见 [quality-ci-checklist.md](quality-ci-checklist.md)。
 
 ## 9. 分支保护说明
 

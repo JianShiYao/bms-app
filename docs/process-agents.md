@@ -2,7 +2,7 @@
 
 本文说明 `.claude/agents/` 下这套覆盖**需求→架构→详细设计→编码→测试→CICD**全流程的
 Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方法论依据见根基文档
-[development-methodology.md](development-methodology.md);本文是该方法论"小 V 各阶段"的 agent 执行载体。
+[concept-methodology.md](concept-methodology.md);本文是该方法论"小 V 各阶段"的 agent 执行载体。
 
 - 设计依据：[docs/superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md)
 - 实施计划：[docs/superpowers/plans/2026-06-19-bms-agile-v-agents.md](superpowers/plans/2026-06-19-bms-agile-v-agents.md)
@@ -95,14 +95,14 @@ Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方�
 ### 3.6 并行与 worktree 约束
 
 默认在单一工作树中串行推进一个小 V。确需并行推进多个不相关特性时，遵循
-[development-workflow.md §3.1](development-workflow.md)：
+[process-workflow.md §3.1](process-workflow.md)：
 
 - 一任务 = 一 worktree = 一分支 = 一 PR，最终只通过 `master` 汇合
 - 禁止两个会话/agent 在同一工作树同时改同一批文件
 - `coder` 与 `tester` 若要并行，只能在各自隔离 worktree 中工作；主会话负责合并与冲突裁决
 - 并行分支合并前，必须重新核对 `traceability.md`、测试报告与 CI 门，避免一边的变更使另一边断链
 
-常用开/收命令见 [development-workflow.md §3.1](development-workflow.md)；不要为普通单特性工作强行开 worktree。
+常用开/收命令见 [process-workflow.md §3.1](process-workflow.md)；不要为普通单特性工作强行开 worktree。
 
 ### 3.7 什么时候不用完整小 V
 
@@ -170,12 +170,12 @@ WSL + `native_sim` 仅用于更可靠的覆盖率（CI 即走 native_sim）。
   [traceability-matrix-template.md](templates/traceability-matrix-template.md)。
 - **追溯**：每条需求可追溯到一个验证手段；安全相关需求优先自动化测试；ztest 用
   `/* Verifies REQ-XXX-NNN: ... */` 注释标注。
-- **分支/PR**（见 [development-workflow.md](development-workflow.md)）：从最新 **master** 切
+- **分支/PR**（见 [process-workflow.md](process-workflow.md)）：从最新 **master** 切
   `feat/<kebab>` 分支，PR `--base master`，仅 Squash 合并，master 受 6 道 CI 门保护。
 
 > ⚠️ 已知偏差（仅限历史样例 `soc-coulomb`，规则面向后续新特性）：该样例用了 `REQ-SOC-Cxx`、
 > 把追溯表塞进 `00-iteration-plan.md`、从 `ci/local-quality-layering` 切分支。这三点的**明文规则**现已固化在
-> [development-workflow.md §1.1–1.2、§3](development-workflow.md)（ID 用 `REQ-<域>-NNN`、追溯矩阵独立成 `traceability.md`、
+> [process-workflow.md §1.1–1.2、§3](process-workflow.md)（ID 用 `REQ-<域>-NNN`、追溯矩阵独立成 `traceability.md`、
 > 特性分支从 `master` 切）——后续 agent 的 CKB/契约以该处为准；历史样例不回改。
 >
 > **ID 规范化进展（2026-06-24）**：`REQ-SOC-Cxx` 已规范为 **`REQ-SOC-025..036`**（接续遗留 `soc.md` 001-024，`C0x→0(x+24)`）。

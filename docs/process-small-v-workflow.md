@@ -6,7 +6,7 @@
 - 设计依据：[docs/superpowers/specs/2026-06-30-bms-small-v-workflow-design.md](superpowers/specs/2026-06-30-bms-small-v-workflow-design.md)
 - 实施计划：[docs/superpowers/plans/2026-06-30-bms-small-v-workflow.md](superpowers/plans/2026-06-30-bms-small-v-workflow.md)
 - 借鉴来源：`agency-agents` 的"编排者 agent + QA 门 + 重试"——这里把"编排者"实现为 **Workflow 脚本本身**（绕开 Claude Code subagent 不能嵌套），QA门+重试=tester↔coder 真值门循环，跨阶段交接=`docs/features/<slug>/` 文件（非 MCP memory）。
-- 与手动方式的关系：本工作流是 [agents-guide.md](agents-guide.md) §3.2「方案 A 主会话手动派发」的**自动化版本**；二者产物布局一致。
+- 与手动方式的关系：本工作流是 [process-agents.md](process-agents.md) §3.2「方案 A 主会话手动派发」的**自动化版本**；二者产物布局一致。
 
 ---
 

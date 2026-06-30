@@ -10,12 +10,12 @@
 >
 > | 主题 | 现行权威来源 |
 > |---|---|
-> | 方法论（为什么/是什么：敏捷-V、小 V、五原则 + 变更即再基线） | [development-methodology.md](../../development-methodology.md)（母文档；本规格在其 §6 派生表中被列为下游产物） |
-> | 操作（分支/PR、DoR/DoD、分层质量门、再基线、worktree、流程裁剪） | [development-workflow.md](../../development-workflow.md) |
+> | 方法论（为什么/是什么：敏捷-V、小 V、五原则 + 变更即再基线） | [concept-methodology.md](../../concept-methodology.md)（母文档；本规格在其 §6 派生表中被列为下游产物） |
+> | 操作（分支/PR、DoR/DoD、分层质量门、再基线、worktree、流程裁剪） | [process-workflow.md](../../process-workflow.md) |
 > | 需求基线与编号 | [docs/requirements/](../../requirements/)（按域 `REQ-<域>-NNN`，新特性接续既有域编号） |
-> | agent 操作（阶段门、评审门、何时不用完整小 V） | [agents-guide.md](../../agents-guide.md) §3 |
+> | agent 操作（阶段门、评审门、何时不用完整小 V） | [process-agents.md](../../process-agents.md) §3 |
 >
-> 因此：本规格**不再作为流程模型的事实源**（§2 以 development-methodology.md §3 为准，避免与母文档漂移）；
+> 因此：本规格**不再作为流程模型的事实源**（§2 以 concept-methodology.md §3 为准，避免与母文档漂移）；
 > §6 的需求归属以下方 2026-06-24 补注与 `docs/requirements/` 为准。
 
 ## 1. 目标
@@ -141,7 +141,7 @@ bms-app/
 
 > **更新（2026-06-24）**：需求的**权威基线**是按域的 `docs/requirements/<域>.md`（`REQ-<域>-NNN`，新特性接续既有域编号，如 SOC 接 `soc.md` 的 025+）。
 > feature 文件夹的 `01-requirements.md` 是该特性的**工作副本/增量**，须与域基线保持编号与内容一致；
-> 追溯矩阵独立为 `docs/features/<slug>/traceability.md`（套 `traceability-matrix-template`），不再内嵌进 `00-iteration-plan.md`（见 [agents-guide.md](../../agents-guide.md) §3.8）。
+> 追溯矩阵独立为 `docs/features/<slug>/traceability.md`（套 `traceability-matrix-template`），不再内嵌进 `00-iteration-plan.md`（见 [process-agents.md](../../process-agents.md) §3.8）。
 
 ## 7. Agent 自身的验证
 
