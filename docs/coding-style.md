@@ -59,7 +59,7 @@
 
 | 编号 | 规定 | 出处 | 为什么 | 怎么落实 |
 |---|---|---|---|---|
-| **CS-16** | 公开函数加 doxygen：`@brief` 必备；返回非 `void` 必有 `@return`；指针参数用 `@param[in]`/`@param[out]`/`@param[in,out]` 标数据流向，**值传递参数不标方向**；可为 NULL 的入参须在描述中注明 | 项目约定 | 接口契约清晰，调用方无需读实现即可正确使用 | CI clang-tidy `-Wdocumentation`（观察期非阻断，见 `.clang-tidy`）+ 评审 |
+| **CS-16** | 公开函数加 doxygen：`@brief` 必备；返回非 `void` 必有 `@return`；指针参数用 `@param[in]`/`@param[out]`/`@param[in,out]` 标数据流向，**值传递参数不标方向**；可为 NULL 的入参须在描述中注明 | 项目约定 | 接口契约清晰，调用方无需读实现即可正确使用 | 评审（`-Wdocumentation` 自动门待定，见 `.clang-tidy` 注） |
 | **CS-17** | `struct`/`enum` 的每个成员加 `/**< ... */` 行内 doxygen 注释 | 项目约定 | 数据结构语义自解释，避免误用字段 | 评审 |
 
 ## 6. 语言用法
@@ -161,12 +161,11 @@ int bms_afe_sample(struct bms_cell_meas *out)
 |---|---|
 | `.clang-format`（CI `format` 门 + pre-commit） | CS-05/06、CS-07~CS-10 |
 | `.clang-tidy`（CI 硬门） | CS-01/02/05、CS-23 |
-| `.clang-tidy` `-Wdocumentation`（CI **观察期**，非阻断） | CS-16 |
 | 编译器 `-Werror`（app，含 `-Wswitch-default`/`-Wimplicit-fallthrough`） | CS-18 |
 | `.editorconfig`（CI `editorconfig` 门） | CS-12 |
 | CI 文件头卫生门（`scripts/check-file-headers.py`） | CS-13/14 |
 | cppcheck / SCA（观察 + 兜底） | CS-19 |
-| 约定 + 代码评审 | CS-03/04、CS-11、CS-15、CS-17、CS-20~CS-22 |
+| 约定 + 代码评审 | CS-03/04、CS-11、CS-15~CS-17、CS-20~CS-22 |
 
-> 工具未硬门禁的条目（CS-03/04、CS-11、CS-15、CS-17、CS-20~CS-22）由代码评审把关。
-> **CS-16 处观察期**：CI clang-tidy 日志可见 `-Wdocumentation` finding，确认干净后删除 `.clang-tidy` 中的豁免即转硬门。
+> 工具未硬门禁的条目（CS-03/04、CS-11、CS-15~CS-17、CS-20~CS-22）由代码评审把关。
+> **CS-16 自动门待定**：拟用 clang-tidy `-Wdocumentation`，但其参数注入在当前 CI 下报错（见 `.clang-tidy` 注），需本地 clang-tidy 环境调通后再启用。
