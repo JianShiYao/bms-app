@@ -74,6 +74,23 @@ struct bms_prot_evt {
 	uint8_t cell_index;           /**< 触发保护的单体索引（如适用） */
 };
 
+/** BMS 主状态机状态（foxBMS 2 inspired：集中管理接触器允许条件） */
+enum bms_state {
+	BMS_STATE_INIT = 0,
+	BMS_STATE_STANDBY,
+	BMS_STATE_PRECHARGE,
+	BMS_STATE_NORMAL,
+	BMS_STATE_FAULT,
+	BMS_STATE_LOCKED,
+};
+
+/** BMS 主状态快照（由 bms_bms 写入 database） */
+struct bms_state_snapshot {
+	uint32_t timestamp_ms;
+	enum bms_state state;
+	enum bms_contactor contactor;
+};
+
 #ifdef __cplusplus
 }
 #endif
