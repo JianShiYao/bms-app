@@ -14,12 +14,16 @@ Checks: >
   -readability-avoid-const-params-in-decls,
   -readability-function-cognitive-complexity,
   -clang-diagnostic-declaration-after-statement,
-  -clang-diagnostic-documentation,
   -clang-diagnostic-missing-noreturn,
   -clang-diagnostic-padded,
   -clang-diagnostic-unsafe-buffer-usage,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
-WarningsAsErrors:   '*'
+# CS-16 函数 doxygen 门：启用 -Wdocumentation，校验 @param/@return 与签名一致。
+# 观察期（observe-then-promote，对齐本文件首段 rollout 哲学）：先报为告警、不阻断
+# （从 WarningsAsErrors 排除 clang-diagnostic-documentation），finding 在 CI clang-tidy
+# 作业日志中可见。确认干净后删除下方豁免 + ExtraArgs 即转为硬门。
+WarningsAsErrors:   '*,-clang-diagnostic-documentation'
+ExtraArgs:          ['-Wdocumentation']
 FormatStyle:        file
 # Only diagnose this project's own headers; silence transitively-included Zephyr headers.
 HeaderFilterRegex:  '.*/app/include/bms/.*\.(h|hpp)$'
