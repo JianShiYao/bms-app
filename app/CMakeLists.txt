@@ -7,6 +7,22 @@ project(bms_app LANGUAGES C)
 # 模块公共头（对外接口）
 target_include_directories(app PRIVATE include)
 
+# 把 git 版本编进固件，供现场/日志追溯（呼应 foxBMS VER_VERSION_s）。git describe
+# 在 configure 时取值：--always 无 tag 退化为 hash、--dirty 标记工作树未提交改动、
+# --tags 用最近 tag。非 git 环境回退 "unknown"。应用版本（语义化）由 Zephyr 从
+# app/VERSION 自动生成的 <app_version.h> 提供。
+execute_process(
+  COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} describe --always --dirty --tags --abbrev=12
+  OUTPUT_VARIABLE BMS_GIT_DESCRIBE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  ERROR_QUIET)
+if(NOT BMS_GIT_DESCRIBE)
+  set(BMS_GIT_DESCRIBE "unknown")
+endif()
+set(BMS_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/include/generated)
+configure_file(include/bms/build_info.h.in ${BMS_GENERATED_DIR}/bms/build_info.h @ONLY)
+target_include_directories(app PRIVATE ${BMS_GENERATED_DIR})
+
 # 健壮性：app 自有源码的编译告警视为错误（仅限 app 目标，不波及 Zephyr/modules）。
 # 与 clang-tidy(WarningsAsErrors)/sca-gcc 形成互补，挡住编译器层告警。
 target_compile_options(app PRIVATE -Werror)

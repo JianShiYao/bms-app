@@ -1,0 +1,18 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    build_info.h
+ * @brief   构建期 git 版本信息（由 CMake 从 build_info.h.in 生成，请勿手改）。
+ * @ingroup SYS
+ *
+ * @details 把 git 描述编进固件二进制，供现场/日志追溯（呼应 foxBMS VER_VERSION_s）。
+ *          取值来自 `git describe --always --dirty --tags`：有 tag 时形如
+ *          `v0.1.1-3-gabc123def456`（距上次 tag 3 个提交 + 短 hash），无 tag 退化为
+ *          短 hash；工作树有未提交改动时追加 `-dirty`；非 git 环境为 `unknown`。
+ */
+#ifndef BMS_BUILD_INFO_H_
+#define BMS_BUILD_INFO_H_
+
+#define BMS_BUILD_GIT_VERSION "@BMS_GIT_DESCRIBE@"
+
+#endif /* BMS_BUILD_INFO_H_ */

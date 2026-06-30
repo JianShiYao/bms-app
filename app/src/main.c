@@ -3,11 +3,13 @@
  *
  * main 只做 engine/module 初始化；长期运行逻辑由 bms_task 统一调度。
  */
+#include <app_version.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
 #include "bms/afe.h"
 #include "bms/balancing.h"
+#include "bms/build_info.h"
 #include "bms/comm.h"
 #include "bms/db.h"
 #include "bms/diag.h"
@@ -19,7 +21,9 @@ LOG_MODULE_REGISTER(bms_main, LOG_LEVEL_INF);
 
 int main(void)
 {
-	LOG_INF("==== BMS firmware starting on %s ====", CONFIG_BOARD);
+	/* 版本编进固件：应用语义化版本(app/VERSION) + git 描述(hash/dirty/距离)，供现场追溯 */
+	LOG_INF("==== BMS firmware v%s (git %s) on %s ====", APP_VERSION_STRING,
+		BMS_BUILD_GIT_VERSION, CONFIG_BOARD);
 
 	bms_db_init();
 	bms_diag_init();
