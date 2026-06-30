@@ -226,3 +226,18 @@ jobs:
         with:
           name: yamllint-report
           path: yamllint-report.txt
+
+  # Gate 8: test-presence. Every BMS module under app/src/bms/ must have a
+  # tests/bms/<module>/ suite, or be registered in scripts/check-test-files.py
+  # EXEMPT (tech-debt ledger). Pure-stdlib Python. Blocking gate; after this
+  # merges, add `test-files` to the master branch-protection required checks.
+  test-files:
+    needs: format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check every module has a test suite
+        run: python scripts/check-test-files.py
