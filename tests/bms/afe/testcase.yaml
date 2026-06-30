@@ -3,6 +3,9 @@ tests:
     platform_allow:
       - mps2/an386
       - native_sim
+    # 用例本体 ~0.02s 即跑完；调高超时是为吸收 Windows/QEMU(mps2) 偶发的
+    # 进程退出检测延迟（机器负载高时哨兵打印后 QEMU 迟迟不退出 → 误报 Timeout）。
+    timeout: 120
     tags:
       - bms
       - afe
