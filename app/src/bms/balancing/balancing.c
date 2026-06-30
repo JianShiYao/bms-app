@@ -1,10 +1,15 @@
-/*
- * 单体均衡模块 —— 策略服务
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    balancing.c
+ * @brief   单体均衡模块 —— 策略服务。
+ * @ingroup BAL
  *
- * 职责：计算需均衡的单体位掩码。
- * 调度与执行由 bms_task 统一负责。
- * 当前为被动均衡策略桩：高于最低单体电压 + delta 的单体置位。
+ * @details 职责：计算需均衡的单体位掩码。
+ *          调度与执行由 bms_task 统一负责。
+ *          当前为被动均衡策略桩：高于最低单体电压 + delta 的单体置位。
  */
+
 #include <errno.h>
 #include <string.h>
 #include <zephyr/logging/log.h>

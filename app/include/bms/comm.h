@@ -1,6 +1,11 @@
-/*
- * CAN 通信模块接口
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    comm.h
+ * @brief   CAN 通信模块接口。
+ * @ingroup COMM
  */
+
 #ifndef BMS_COMM_H_
 #define BMS_COMM_H_
 
@@ -20,8 +25,18 @@ extern "C" {
  */
 int bms_comm_init(void);
 
+/**
+ * @brief 取生效的上报周期（ms）：Kconfig 请求值经 clamp 钳制后的结果。
+ * @return 生效上报周期，单位 ms。
+ */
 int32_t bms_comm_effective_period_ms(void);
 
+/**
+ * @brief 发送一帧对外快照（电压/SOC/保护状态）；native_sim 下走日志桩。
+ * @param[in] meas 电芯测量快照（可为 NULL，表示该项不可用）。
+ * @param[in] soc  SOC 快照（可为 NULL，表示该项不可用）。
+ * @param[in] prot 保护事件快照（可为 NULL，表示该项不可用）。
+ */
 void bms_comm_tx_snapshot(const struct bms_cell_meas *meas, const struct bms_soc *soc,
 			  const struct bms_prot_evt *prot);
 

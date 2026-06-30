@@ -1,6 +1,11 @@
-/*
- * BMS database facade.
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    db.c
+ * @brief   BMS 数据库（data-exchange）门面实现。
+ * @ingroup SYS
  */
+
 #include <errno.h>
 #include <string.h>
 #include <zephyr/kernel.h>

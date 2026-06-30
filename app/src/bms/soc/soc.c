@@ -1,11 +1,16 @@
-/*
- * SOC/SOH 估算模块 —— 库仑计数（安时积分）实现
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    soc.c
+ * @brief   SOC/SOH 估算模块 —— 库仑计数（安时积分）实现。
+ * @ingroup SOC
  *
- * 职责：提供 SOC/SOH 估算服务。
- * 周期调度和 database 写入由 bms_task 统一负责。
- * SOC 用库仑积分（对 pack_current_ma 按帧间 Δt 积分）；首帧用电压线性映射初始化。
- * 设计来源：docs/features/soc-coulomb/03-design.md。
+ * @details 职责：提供 SOC/SOH 估算服务。
+ *          周期调度和 database 写入由 bms_task 统一负责。
+ *          SOC 用库仑积分（对 pack_current_ma 按帧间 Δt 积分）；首帧用电压线性映射初始化。
+ *          设计来源：docs/features/soc-coulomb/03-design.md。
  */
+
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>

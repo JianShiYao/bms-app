@@ -1,6 +1,11 @@
-/*
- * BMS diagnosis center.
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    diag.c
+ * @brief   BMS 诊断中心实现。
+ * @ingroup SYS
  */
+
 #include <errno.h>
 #include <zephyr/kernel.h>
 

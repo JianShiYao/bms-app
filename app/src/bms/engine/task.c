@@ -1,6 +1,11 @@
-/*
- * foxBMS 2 inspired task framework, implemented with Zephyr static threads.
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    task.c
+ * @brief   foxBMS 2 inspired 任务框架（Zephyr 静态线程实现）。
+ * @ingroup SYS
  */
+
 #include <stdint.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>

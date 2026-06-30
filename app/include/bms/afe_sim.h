@@ -1,16 +1,21 @@
-/*
- * AFE 仿真后端（afe_sim）—— 纯函数核心接口
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    afe_sim.h
+ * @brief   AFE 仿真后端（afe_sim）—— 纯函数核心接口。
+ * @ingroup AFE
  *
- * 设计来源：docs/architecture.md「数据源后端可切换（afe）」。
- * afe 的「采样实现」与「业务逻辑」分离：本后端在 QEMU / native_sim（无真实
- * ADC/AFE 芯片）下产出"会动"的可复现测量，使 soc / protection / balancing
- * 拿到真实变化的输入；真机后端见 afe_adc.c。
+ * @details 设计来源：docs/architecture.md「数据源后端可切换（afe）」。
+ *          afe 的「采样实现」与「业务逻辑」分离：本后端在 QEMU / native_sim（无真实
+ *          ADC/AFE 芯片）下产出"会动"的可复现测量，使 soc / protection / balancing
+ *          拿到真实变化的输入；真机后端见 afe_adc.c。
  *
- * 延续项目「纯函数 + 薄线程」约定（CLAUDE.md「可测试性约定」）：
- * 仿真模型核心 bms_afe_sim_step() 为有状态纯函数——时钟由入参注入、状态由
- * 调用方持有，无 k_uptime/全局副作用，故对 ztest 完全确定可测；afe_sim.c 的
- * bms_afe_backend_read() 仅做「取 k_uptime + 持有 static 状态」的薄包装。
+ *          延续项目「纯函数 + 薄线程」约定（CLAUDE.md「可测试性约定」）：
+ *          仿真模型核心 bms_afe_sim_step() 为有状态纯函数——时钟由入参注入、状态由
+ *          调用方持有，无 k_uptime/全局副作用，故对 ztest 完全确定可测；afe_sim.c 的
+ *          bms_afe_backend_read() 仅做「取 k_uptime + 持有 static 状态」的薄包装。
  */
+
 #ifndef BMS_AFE_SIM_H_
 #define BMS_AFE_SIM_H_
 
@@ -44,7 +49,7 @@ struct bms_afe_sim_state {
  * @brief 复位仿真状态到确定起点（便于上电/单测）。
  *
  * 置 soc_permille=500（50%）、last_ms=0（下次为首帧）、lcg=固定种子。
- * @param st 为 NULL 时安全返回（无操作）。
+ * @param[out] st 为 NULL 时安全返回（无操作）。
  */
 void bms_afe_sim_state_reset(struct bms_afe_sim_state *st);
 
@@ -58,9 +63,9 @@ void bms_afe_sim_state_reset(struct bms_afe_sim_state *st);
  *  4) 温度：基础 25.0℃ + 随 |电流| 升温 + 小噪声。
  * 首帧（st->last_ms==0）Δt=0：只产出电压/温度快照，不积分。
  *
- * @param st     跨帧状态（非空，调用方持有，单测可栈上构造）。本函数为其唯一读写入口。
- * @param now_ms 当前时刻（ms，由调用方注入；线程传 k_uptime_get_32()）。
- * @param out    输出测量（非空）；out->timestamp_ms 置为 now_ms。
+ * @param[in,out] st     跨帧状态（非空，调用方持有，单测可栈上构造）。本函数为其唯一读写入口。
+ * @param         now_ms 当前时刻（ms，由调用方注入；线程传 k_uptime_get_32()）。
+ * @param[out]    out    输出测量（非空）；out->timestamp_ms 置为 now_ms。
  * @return 0 成功；-EINVAL（st 或 out 为 NULL，不触状态、不写 out）。
  */
 int bms_afe_sim_step(struct bms_afe_sim_state *st, uint32_t now_ms, struct bms_cell_meas *out);

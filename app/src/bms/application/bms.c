@@ -1,6 +1,11 @@
-/*
- * BMS main state machine pure logic.
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    bms.c
+ * @brief   BMS 主状态机纯逻辑。
+ * @ingroup SYS
  */
+
 #include <stddef.h>
 
 #include "bms/bms.h"
