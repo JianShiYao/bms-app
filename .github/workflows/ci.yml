@@ -142,7 +142,7 @@ jobs:
         run: clang-tidy -p build $(find bms-app/app/src -name '*.c')
 
   # Observation job (NON-BLOCKING): cppcheck + MISRA addon.
-  # development-workflow.md §8 ladder, step ②: runs in CI and reports findings
+  # process-workflow.md §8 ladder, step ②: runs in CI and reports findings
   # but does NOT block merge (continue-on-error; not a required check). Promote
   # to required (drop continue-on-error + add to branch protection) only after
   # the noise baseline proves stable.

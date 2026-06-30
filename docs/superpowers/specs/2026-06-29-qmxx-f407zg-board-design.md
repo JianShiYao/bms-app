@@ -92,9 +92,9 @@ dts 派生自 `boards/olimex/stm32_e407`（同 F407ZGT6）；**时钟必须按�
 
 ## 8. 与 BMS 架构的关系
 
-- **数据源后端**：此板无真实 AFE，BMS 业务用 `afe_sim` 后端（见 architecture.md「数据源后端可切换」）。业务层零改动即可在此板运行。
+- **数据源后端**：此板无真实 AFE，BMS 业务用 `afe_sim` 后端（见 concept-architecture.md「数据源后端可切换」）。业务层零改动即可在此板运行。
 - **并存**：与 `mps2/an386`、`native_sim`、`bms_f405` 并存，互不替代；多板矩阵均保留。
-- **通信练手**：可用该板的 CAN2 / 以太网 / RS485 验证 comm 模块的真实链路（对应 architecture.md 跨节点同步、协议边缘讨论）。
+- **通信练手**：可用该板的 CAN2 / 以太网 / RS485 验证 comm 模块的真实链路（对应 concept-architecture.md 跨节点同步、协议边缘讨论）。
 - 不引入接触器/保护真实 GPIO（此板无），保护链路在此板仍走仿真/日志。
 
 ## 9. 集成

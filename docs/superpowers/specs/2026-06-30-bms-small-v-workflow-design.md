@@ -3,9 +3,9 @@
 - 日期：2026-06-30
 - 目标读者：本项目研发者 / 维护 agent
 - 状态：设计已与用户确认（待写实施计划）
-- 关联：[development-methodology.md](../../development-methodology.md)（方法论母文档，§3 小 V）、
-  [agents-guide.md](../../agents-guide.md)（7 个 agent 与 §3.3 阶段门）、
-  [development-workflow.md](../../development-workflow.md)（操作/质量门）
+- 关联：[concept-methodology.md](../../concept-methodology.md)（方法论母文档，§3 小 V）、
+  [process-agents.md](../../process-agents.md)（7 个 agent 与 §3.3 阶段门）、
+  [process-workflow.md](../../process-workflow.md)（操作/质量门）
 
 ## 1. 目标
 

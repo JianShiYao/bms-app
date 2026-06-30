@@ -1,7 +1,7 @@
 # 质量管控全景（需求 → 编码 → 测试 → CI/CD）
 
 本文梳理 bms-app 从需求到交付各阶段**已落地的质量管控**与**待补齐项**，便于评估当前成熟度与规划下一步。
-相关文档：开发流程见 [development-workflow.md](development-workflow.md)；CI 借鉴路线图见 [ci-borrow-checklist.md](ci-borrow-checklist.md)；待办见 [../TODO.md](../TODO.md)。
+相关文档：开发流程见 [process-workflow.md](process-workflow.md)；CI 借鉴路线图见 [quality-ci-checklist.md](quality-ci-checklist.md)；待办见 [../TODO.md](../TODO.md)。
 
 > 当前状态（2026-06-24）：QEMU 阶段骨架 + 完整 CI/CD 质量门禁；cppcheck/MISRA 已上（本地 warn-only）；
 > afe 已补单测（20 例）且采样后端可切换（stub/sim/adc）；尚未接真实硬件（STM32F405）。
@@ -20,12 +20,12 @@
 | 依赖/供应链 | west manifest pin、dependabot(actions) | 软 | pip 依赖、SBOM、依赖漏洞扫描 |
 | 流程治理 | PR 流 + 6 门禁分支保护、Conventional Commits、CODEOWNERS、CHANGELOG | 合并拦截 | 多人评审(单人=0)、需求/缺陷跟踪系统 |
 
-> 流程门补充：特性开发的迭代准入/准出(DoR/DoD)、安全改动路径、追溯 DoD 门见 [development-workflow.md §1.3 / §2 / §7](development-workflow.md)；PR 模板含「追溯链无断链」「安全相关改动」勾选项。本文对应的方法论依据见 [development-methodology.md](development-methodology.md)。
+> 流程门补充：特性开发的迭代准入/准出(DoR/DoD)、安全改动路径、追溯 DoD 门见 [process-workflow.md §1.3 / §2 / §7](process-workflow.md)；PR 模板含「追溯链无断链」「安全相关改动」勾选项。本文对应的方法论依据见 [concept-methodology.md](concept-methodology.md)。
 
 ## 二、分阶段详述
 
 ### 1. 需求与设计
-**现状**：系统设计见 [architecture.md](architecture.md)（三层架构、zbus 数据流、保护优先级、fail-safe 原则）；功能规格散见 `docs/`。模块化由 Kconfig 开关表达（`CONFIG_BMS_*`）。**已提供需求工程模板** [templates/](templates/)（需求规格 + 设计规格 + 需求↔测试追溯，EARS 句式、ID 规范、与 ztest 关联约定）。
+**现状**：系统设计见 [concept-architecture.md](concept-architecture.md)（三层架构、zbus 数据流、保护优先级、fail-safe 原则）；功能规格散见 `docs/`。模块化由 Kconfig 开关表达（`CONFIG_BMS_*`）。**已提供需求工程模板** [templates/](templates/)（需求规格 + 设计规格 + 需求↔测试追溯，EARS 句式、ID 规范、与 ztest 关联约定）。
 **待补齐**：
 - 按模块**填充**需求/设计文档并建立追溯矩阵（模板已就绪，内容待写）；
 - 无成文**设计评审**门槛；API 文档（Doxygen）未搭建。
@@ -45,7 +45,7 @@
 - `sca-gcc`：`-DZEPHYR_SCA_VARIANT=gcc`（`-fanalyzer`），经 [scripts/sca-check.sh](../scripts/sca-check.sh) 只拦 `app/` 的 `-Wanalyzer` 告警。**CI 必过**。
 - `clang-tidy`：硬门禁（`WarningsAsErrors`，当前 0 告警），CERT + 可读性 + snake_case 命名。**CI 必过**。
 - `cppcheck + MISRA`（misra addon）：[scripts/cppcheck-run.sh](../scripts/cppcheck-run.sh)，**warn-only**——pre-push 独立模式粗筛、check.ps1 project 模式精查、**CI `cppcheck-misra` job（`continue-on-error`，非必过，产出报告制品）**;豁免/deviation 在 [.cppcheck-suppressions](../.cppcheck-suppressions) 维护。
-**待补齐**：cppcheck/MISRA **已进 CI（非阻断观察，②阶梯）**，待噪声稳后**升必过门**（③，需在 GitHub 分支保护加该 check；见 [development-workflow.md §8](development-workflow.md)）；圈复杂度等度量。
+**待补齐**：cppcheck/MISRA **已进 CI（非阻断观察，②阶梯）**，待噪声稳后**升必过门**（③，需在 GitHub 分支保护加该 check；见 [process-workflow.md §8](process-workflow.md)）；圈复杂度等度量。
 
 ### 4. 测试与覆盖率（CI 必过）
 **现状**：
@@ -56,7 +56,7 @@
 **待补齐**：
 - **未被测试的模块**：当前 soc/protection/afe/channels 进入测试构建；**balancing/comm/main 无专门单测**；
 - **分支覆盖偏低**（39%），init/线程路径未覆盖；
-- 集成/系统验证当前**合并为一个环节**（对齐 [development-workflow.md §8](development-workflow.md) V 腿表），但**尚无专门的多模块集成测试套件**——现仅靠各模块单测 + `native_sim` 整机运行覆盖；专门集成测试待补。无 **HIL（硬件在环）**、无 fuzz/属性测试。
+- 集成/系统验证当前**合并为一个环节**（对齐 [process-workflow.md §8](process-workflow.md) V 腿表），但**尚无专门的多模块集成测试套件**——现仅靠各模块单测 + `native_sim` 整机运行覆盖；专门集成测试待补。无 **HIL（硬件在环）**、无 fuzz/属性测试。
 
 ### 5. 构建 / CI（必过门禁）
 **现状**：[.github/workflows/ci.yml](../.github/workflows/ci.yml) 6 道门禁 DAG：
@@ -73,7 +73,7 @@
 **待补齐**：pip 依赖（clang-format/gcovr）自动更新；SBOM 生成；依赖漏洞扫描。
 
 ### 8. 流程治理
-**现状**：PR 分支流 + 6 门禁分支保护；Conventional Commits；[CODEOWNERS](../.github/CODEOWNERS)；[PR 模板](../.github/pull_request_template.md)；[CHANGELOG](../CHANGELOG.md)；单一事实源 [development-workflow.md](development-workflow.md)。
+**现状**：PR 分支流 + 6 门禁分支保护；Conventional Commits；[CODEOWNERS](../.github/CODEOWNERS)；[PR 模板](../.github/pull_request_template.md)；[CHANGELOG](../CHANGELOG.md)；单一事实源 [process-workflow.md](process-workflow.md)。
 **待补齐**：多人代码评审（单人项目必需 reviewer=0）；接入需求/缺陷跟踪系统（issue 流程）。
 
 ## 三、待补齐清单（按优先级）
@@ -97,11 +97,11 @@ BMS 属安全相关系统，保护逻辑（过压/过流/过温→接触器）�
 - **FMEA / 危害分析** 与对应的诊断/降级策略；
 - **固件签名 + 安全启动**，防篡改。
 
-其中**安全纪律**——关联安全需求、测试先行、验证失效安全默认态——按 [development-workflow.md §2](development-workflow.md) **现行生效，不分阶段**；**重型工作产物**（FMEA / 危害分析 / ISO 26262 工作产物全集、保护路径 MC-DC 高覆盖、固件签名+安全启动）则待接真实硬件并明确安全目标后纳入规划。
+其中**安全纪律**——关联安全需求、测试先行、验证失效安全默认态——按 [process-workflow.md §2](process-workflow.md) **现行生效，不分阶段**；**重型工作产物**（FMEA / 危害分析 / ISO 26262 工作产物全集、保护路径 MC-DC 高覆盖、固件签名+安全启动）则待接真实硬件并明确安全目标后纳入规划。
 
 ## 五、对方法论五原则的符合性
 
-> 依据 [development-methodology.md](development-methodology.md) §4 的五条原则，评估本项目质量管控的符合度（✅满足 / ⚠️部分 / ❌差距）。本文是该方法论原则2·3·5 的落地与现状映射（见方法论 §6 派生表）。
+> 依据 [concept-methodology.md](concept-methodology.md) §4 的五条原则，评估本项目质量管控的符合度（✅满足 / ⚠️部分 / ❌差距）。本文是该方法论原则2·3·5 的落地与现状映射（见方法论 §6 派生表）。
 
 | 方法论原则 | 结论 | 说明 |
 |---|---|---|

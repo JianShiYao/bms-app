@@ -53,7 +53,7 @@
 
 ### - [ ] ② 架构 —— `bms-architect`
 - 调用 agent：`bms-architect`
-- 输入文件：`01-requirements.md`；`app/src/bms/comm/comm.c`、`app/include/bms/comm.h`、`docs/architecture.md`（comm 模块章节、线程模型/优先级）
+- 输入文件：`01-requirements.md`；`app/src/bms/comm/comm.c`、`app/include/bms/comm.h`、`docs/concept-architecture.md`（comm 模块章节、线程模型/优先级）
 - 预期产出文件：`docs/features/comm-report-period-kconfig/02-architecture.md`（含 ADR）
 - 关键架构决策（待定，需 ADR 记录）：
   - **可测性拆分**：周期取值的合法化逻辑是否抽成纯函数（如 `bms_comm_report_period_ms(void)` 或 `bms_comm_clamp_period(int)`），以脱离线程在 ztest 直测——对齐项目「纯逻辑 + 薄线程包装」范式（参照 `bms_protection_evaluate`）。
@@ -130,7 +130,7 @@
 - 基线可构建可测：Windows venv 下 `..\.venv\Scripts\python.exe -m west build -b mps2/an386 app -p always` 与 `powershell -ExecutionPolicy Bypass -File ..\run-tests-coverage.ps1 -Board mps2/an386` 当前通过（基线 11/11）。
 - 本计划评审通过，第 1 节非目标范围已确认。
 
-**准出（DoD，本迭代完成判据；不低于 development-workflow.md §1.3 通用下限）**
+**准出（DoD，本迭代完成判据；不低于 process-workflow.md §1.3 通用下限）**
 - ① ~ ⑥ 全部复选框勾选，各阶段产出文件齐备。
 - [`traceability.md`](traceability.md) 无空链：每条 `REQ-COMM-NNN` 贯通「需求→设计→验证/测试」，状态推进至「已验证」（或缺口附替代验证说明）。
 - 所有 ⚠️ 失效安全项（周期 > 0 不忙等、不抬优先级、不阻塞安全链）均有对应需求与测试/分析并通过。
