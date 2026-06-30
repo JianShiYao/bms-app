@@ -35,7 +35,8 @@ struct bms_soc_coulomb_state {
 };
 
 /**
- * @brief 初始化 SOC 模块（启动线程，订阅 chan_cell_meas）。
+ * @brief 初始化 SOC 模块。
+ * 调度与 database 写入由 bms_task 统一负责。
  * @return 0 成功，负值为 errno。
  */
 int bms_soc_init(void);

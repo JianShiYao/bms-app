@@ -12,7 +12,7 @@ extern "C" {
 
 /**
  * @brief 初始化 AFE 模块。
- * 启动周期采样线程，向 chan_cell_meas 发布测量数据。
+ * 采样周期由 bms_task 统一调度，本函数只初始化模块服务。
  * @return 0 成功，负值为 errno。
  */
 int bms_afe_init(void);

@@ -19,7 +19,8 @@ struct bms_prot_limits {
 };
 
 /**
- * @brief 初始化保护模块（启动线程，订阅测量/SOC）。失效安全：默认接触器断开。
+ * @brief 初始化保护模块。失效安全：默认接触器断开。
+ * 调度与诊断登记由 bms_task/bms_diag 统一负责。
  * @return 0 成功，负值为 errno。
  */
 int bms_protection_init(void);
