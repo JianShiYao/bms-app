@@ -15,15 +15,32 @@ config BMS_TEMP_SENSOR_COUNT
 	range 1 64
 	default 4
 
+config BMS_TASK_SAFETY_PERIOD_MS
+	int "Safety cyclic task period (ms)"
+	range 1 1000
+	default 10
+	help
+	  foxBMS 2 inspired safety cyclic task period. This task evaluates
+	  measurement/protection/BMS state machine work.
+
+config BMS_TASK_APP_PERIOD_MS
+	int "Application cyclic task period (ms)"
+	range 10 60000
+	default 100
+	help
+	  foxBMS 2 inspired application cyclic task period. This task runs
+	  slower algorithms, balancing decisions, and communication reporting.
+
 config BMS_AFE
 	bool "AFE / 电芯采样模块"
 	default y
 	help
-	  周期采集电压/电流/温度并发布到 zbus。
+	  采集电压/电流/温度并写入 bms_db；周期由 bms_task 统一调度。
 
 config BMS_AFE_SAMPLE_PERIOD_MS
 	int "AFE 采样周期 (ms)"
 	depends on BMS_AFE
+	range 1 60000
 	default 100
 
 choice
@@ -140,7 +157,15 @@ config BMS_COMM
 config BMS_COMM_REPORT_PERIOD_MS
 	int "CAN 上报周期 (ms)"
 	depends on BMS_COMM
+	range 10 60000
 	default 200
+	help
+	  comm 模块对外 CAN 上报的固定周期（毫秒）。
+	  下界 10ms 防止过密上报使最低优先级 comm 线程忙等、间接拖累
+	  protection/afe 等安全相关线程（失效安全，REQ-COMM-005）；
+	  上界 60000ms(60s) 为工程合理上限。默认 200ms 为现状基线。
+	  运行期另有防御性钳制（bms_comm_clamp_period_ms）作第二道防线。
+	  (DES-COMM-001; REQ-COMM-001/002/003/004)
 
 endmenu
 
