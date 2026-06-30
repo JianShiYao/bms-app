@@ -1,181 +1,279 @@
-# BMS 固件架构
+# BMS 固件架构（foxBMS 2 inspired）
 
-> **文档状态约定**：本文档混合「当前实现」与「目标架构」。
-> 📐 标记的小节为**设计原则（演进方向）**，其中引用的 `sys`/`diag`/`chan_diag` 等模块**尚未实现**；未标记的小节描述**当前实现（骨架）**，节内 `🎯 目标` 注指出该节相对目标架构将如何演进。
-> **接触器所有权正在演进**：当前由 `protection` 驱动，目标迁移至 `sys`（`protection` 退化为纯判定器）。
+> **文档定位**：本文档定义目标架构，不再以当前 5 个线程骨架作为主架构。
+> 当前代码仍保留 `afe/soc/protection/balancing/comm` 线程与 zbus channel；它们是迁移起点。
+> 目标架构尽量贴近 foxBMS 2 的任务框架、数据库、诊断、系统监控、BMS/SYS 状态机思想，同时用 Zephyr 原生机制落地。
 
-## 分层
+## 设计目标
+
+- **诊断与安全优先**：故障检测、锁存、恢复条件、接触器控制必须集中、可审计、可测试。
+- **任务框架驱动系统**：长期运行逻辑不得各自随意循环，必须挂入统一任务框架。
+- **数据库作为数据交换中心**：模块之间不直接调用、不共享裸全局变量，通过 database/data-exchange 模块交换快照。
+- **BMS/SYS 状态机集中决策**：整机状态、接触器状态、预充、故障恢复由集中状态机管理。
+- **硬件独立**：应用模块不直接依赖 STM32 HAL/寄存器，硬件差异下沉到 driver wrapper、devicetree、Kconfig。
+- **纯函数可测**：状态转移、诊断判定、测量校验、SOC 计算等核心逻辑可脱离线程单测。
+
+## foxBMS 2 借鉴边界
+
+| foxBMS 2 概念 | 本项目目标模块 | 说明 |
+|---------------|----------------|------|
+| `FTASK` | `bms_task` | 统一任务框架，管理 1ms/10ms/100ms 等周期任务与阻塞任务 |
+| `Database` | `bms_db` | 单生产者、多消费者的数据交换中心，保存最新可信快照 |
+| `Diagnosis` | `bms_diag` | 诊断条目、严重度、锁存、恢复/老化、持久化记录入口 |
+| `System Monitoring` | `bms_sys_mon` | 任务运行时间、心跳、看门狗喂狗门控 |
+| `SYS` | `bms_sys` | 系统模式、初始化、全局命令、硬件安全条件 |
+| `BMS` | `bms_bms` | 电池系统主状态机：INIT/STANDBY/PRECHARGE/NORMAL/FAULT |
+| Driver wrappers | `drivers/` + `bms_hw_*` | AFE、contactor、CAN、watchdog、NVM 等硬件封装 |
+
+> 不照搬 foxBMS 2 的 FreeRTOS、代码生成和目录结构；保留 Zephyr 的 Kconfig、devicetree、device API、ztest、Twister。
+
+## 分层架构
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│ 应用层  app/src/main.c                                      │  初始化 + 编排 + 健康监测
-├──────────────────────────────────────────────────────────┤
-│ BMS 服务层  app/src/bms/*                                   │
-│   afe  soc  protection  balancing  comm                     │  各自独立线程，互不直接调用
-├──────────────────────────────────────────────────────────┤
-│ 设备抽象层（芯片无关，业务层只依赖这一层）                    │
-│   Zephyr 设备 API：<zephyr/drivers/{adc,can,gpio}.h>         │  统一函数 + devicetree 设备模型
-├──────────────────────────────────────────────────────────┤
-│ 驱动实现层                                                  │
-│   Zephyr 内建：adc_stm32 / can_stm32_bxcan / gpio_stm32      │
-│   out-of-tree：专用 AFE 芯片驱动（drivers/，占位）           │
-├──────────────────────────────────────────────────────────┤
-│ 厂商 HAL / 寄存器（业务层不直接调用）                        │
-│   STM32Cube（modules/hal/stm32）/ CMSIS                      │
-└──────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│ Application                                                  │
+│   bms_bms   bms_algorithm   bms_balancing   bms_comm         │
+│   主状态机   SOC/SOH/SOE     均衡策略        CAN/命令/上报      │
+├────────────────────────────────────────────────────────────┤
+│ Engine                                                       │
+│   bms_task  bms_db  bms_diag  bms_sys  bms_sys_mon  bms_time │
+│   任务框架   数据库   诊断      系统服务   任务监控     时间基准   │
+├────────────────────────────────────────────────────────────┤
+│ Measurement / Control                                        │
+│   bms_meas  bms_protection  bms_contactor                    │
+│   测量可信化  阈值判定        接触器/预充执行                  │
+├────────────────────────────────────────────────────────────┤
+│ Hardware Abstraction                                         │
+│   AFE wrapper  CAN wrapper  GPIO/contactor wrapper  NVM/WDT   │
+│   Zephyr device API + devicetree + Kconfig                    │
+├────────────────────────────────────────────────────────────┤
+│ Driver / HAL                                                 │
+│   adc/can/gpio/wdt/flash drivers, STM32 HAL/CMSIS             │
+└────────────────────────────────────────────────────────────┘
 ```
 
-**分层铁律**：BMS 服务层只 `#include <zephyr/drivers/*.h>`（设备抽象层），**绝不**直接调用 STM32 HAL/寄存器。硬件差异下沉到 **devicetree**（引脚、通道、波特率），换芯片只改驱动实现层 + dts，业务层零改动——这也是同一份业务能在 `mps2/an386`、`native_sim`、真机 `bms_f405` 三处复用的前提。
+**依赖方向铁律**：
 
-各模块通过 **zbus 消息总线**通信，互相之间没有编译期依赖，可单独裁剪（Kconfig `BMS_<MODULE>`）与单独测试。
+- Application 可以读写 `bms_db`，可以调用 Engine 的公开服务，但不得调用其它 Application 模块内部函数。
+- Application 不直接访问 Zephyr driver API；硬件访问通过 Measurement/Control 或 Hardware Abstraction。
+- Engine 不依赖具体 AFE/CAN 芯片。
+- Driver/HAL 不反向依赖业务模块。
 
-### 数据源后端可切换（afe）
+## 核心数据流
 
-afe 的「采样实现」与「业务逻辑」分离，按 board/Kconfig 选后端，业务层不变：
+```
+AFE/CAN/GPIO/NVM drivers
+        ↓
+bms_meas / bms_comm_rx / bms_contactor_feedback
+        ↓ 写入
+      bms_db  ←→  bms_diag
+        ↓         ↑
+  bms_algorithm   bms_protection
+        ↓         ↑
+      bms_bms / bms_sys
+        ↓
+ bms_contactor / bms_balancing / bms_comm_tx
+```
 
-| 后端 | 适用 | 数据来源 |
+### 数据库原则
+
+`bms_db` 是系统数据目录，替代“模块之间互相订阅对方内部状态”的架构中心。
+
+- **单一生产者**：每个 database entry 有唯一 owner，例如测量快照只由 `bms_meas` 写入，SOC 只由 `bms_algorithm` 写入。
+- **多消费者**：消费者读快照，不持有生产者内部指针。
+- **数据带 header**：每个 entry 至少包含 `timestamp_ms`、`validity`、`sequence`、`source` 或等价元信息。
+- **一致性快照**：同一采样周期内必须一致的数据放在同一 entry 中原子更新。
+- **zbus 降级为实现细节**：目标架构中，zbus 可用于 database 更新通知或事件唤醒，但模块契约以 `bms_db_read/write` 为准。
+
+示例 entry：
+
+| Entry | Producer | Consumers | 内容 |
+|-------|----------|-----------|------|
+| `DB_CELL_MEAS` | `bms_meas` | algorithm, protection, balancing, comm | 单体电压、电流、温度、时间戳、有效位 |
+| `DB_SOC_STATE` | `bms_algorithm` | bms, comm, diag | SOC/SOH/SOE |
+| `DB_PROT_STATE` | `bms_protection` | diag, bms, comm | 阈值判定结果 |
+| `DB_DIAG_STATE` | `bms_diag` | bms, sys, comm | 聚合故障、锁存、严重度 |
+| `DB_BMS_STATE` | `bms_bms` | comm, balancing, sys_mon | 主状态机状态 |
+| `DB_COMMAND` | `bms_comm_rx` | bms, sys | 外部请求、复位、闭合/断开命令 |
+| `DB_CONTACTOR_FB` | `bms_contactor` | bms, diag | 接触器反馈、预充状态 |
+
+## 任务框架
+
+目标任务框架参考 foxBMS 2 的 `FTASK`：系统由少量明确任务驱动，任务再调用模块主函数。模块不自行创建长期线程。
+
+### 任务类型
+
+| 类型 | 周期/触发 | 约束 |
+|------|-----------|------|
+| 1ms fast cyclic | 1ms | 时间敏感测量、诊断快路径、CAN RX 消化、系统监控时间戳 |
+| 10ms cyclic | 10ms | BMS/SYS 状态机、保护判定、接触器控制、均衡调度 |
+| 100ms cyclic | 100ms | SOC 慢算法、CAN TX 周期上报、诊断老化、NVM 低频任务 |
+| blocking task | 队列/中断/event | CAN RX、NVM/flash、日志等可能阻塞的工作 |
+| zero-latency path | 硬件中断 | 严重短路/硬件 ALERT，仅执行最小安全动作 |
+
+### 目标任务表
+
+| Task | 类型 | 优先级 | 调用模块 |
+|------|------|--------|----------|
+| `tsk_fast_1ms` | cyclic | 2 | `bms_meas_1ms`, `bms_diag_1ms`, `bms_sys_mon_enter/exit` |
+| `tsk_safety_10ms` | cyclic | 3 | `bms_protection_10ms`, `bms_bms_10ms`, `bms_contactor_10ms` |
+| `tsk_app_100ms` | cyclic | 5 | `bms_algorithm_100ms`, `bms_balancing_100ms`, `bms_comm_tx_100ms` |
+| `tsk_comm_rx` | blocking | 6 | `bms_comm_rx_process` |
+| `tsk_engine` | cyclic/blocking | 4 | `bms_db_process`, `bms_diag_process`, `bms_sys_mon_check` |
+| `tsk_background` | cyclic | 8 | health print、低优先级维护 |
+
+> 当前各模块 `K_THREAD_DEFINE` 是过渡形态。目标是改为集中任务表：名称、周期、优先级、栈、最大运行时间、心跳超时都在一处声明。
+
+### 任务健康与看门狗
+
+- 每个 cyclic task 进入/退出时由 `bms_sys_mon` 记录时间戳与运行时间。
+- 超过最大运行时间或心跳超时，`bms_sys_mon` 创建诊断条目。
+- 看门狗只由 engine/monitor 统一喂狗；只有安全关键任务全部健康时才喂狗。
+- 任务健康故障进入 `bms_diag`，再由 `bms_bms`/`bms_sys` 决定 OPEN/LOCKED。
+
+## 诊断架构
+
+`bms_diag` 是唯一诊断登记中心，不允许模块各自私有处理安全故障。
+
+诊断条目建议包含：
+
+```c
+struct bms_diag_entry {
+    enum bms_diag_id id;
+    enum bms_diag_severity severity;
+    enum bms_diag_latch latch;
+    uint32_t first_seen_ms;
+    uint32_t last_seen_ms;
+    uint16_t occurrence_count;
+    bool active;
+};
+```
+
+诊断来源：
+
+- `bms_meas`：测量无效、过期、冗余不一致、AFE 通信错误。
+- `bms_protection`：过压、欠压、过流、过温、绝缘/互锁等安全阈值。
+- `bms_contactor`：接触器反馈不一致、预充超时、粘连检测失败。
+- `bms_comm`：命令非法、通信超时、CAN bus-off。
+- `bms_sys_mon`：任务超时、栈余量不足、看门狗门控失败。
+
+严重度建议：
+
+| Severity | 含义 | BMS 反应 |
+|----------|------|----------|
+| `INFO` | 非安全信息 | 记录/上报 |
+| `WARNING` | 可继续运行但需上报 | 限功率或提示 |
+| `ERROR` | 不允许进入 NORMAL | 断开或保持 STANDBY |
+| `CRITICAL` | 必须立即 OPEN/锁存 | FAULT/LOCKED |
+
+## BMS/SYS 状态机
+
+目标架构中，`bms_bms` 是电池系统主状态机，`bms_sys` 是系统服务/全局条件管理。接触器最终控制权归状态机，不归 protection。
+
+### 主状态
+
+```
+INIT
+  ↓
+STANDBY  ←────────────┐
+  ↓ close request      │ reset/recover
+PRECHARGE              │
+  ↓ success            │
+NORMAL                 │
+  ↓ fault/open request │
+FAULT ─────→ LOCKED ───┘
+```
+
+| 状态 | 接触器 | 说明 |
+|------|--------|------|
+| `INIT` | OPEN | 初始化 database、诊断、驱动、任务框架 |
+| `STANDBY` | OPEN | 安全待机，等待合法闭合命令 |
+| `PRECHARGE` | 预充路径 | 执行预充，检查电压爬升与超时 |
+| `NORMAL` | CLOSED | 允许充放电，持续监控故障 |
+| `FAULT` | OPEN | 故障打开，等待诊断恢复或锁存 |
+| `LOCKED` | OPEN | 锁存故障，仅显式维护/上层命令可复位 |
+
+### 状态机输入
+
+- `DB_DIAG_STATE`
+- `DB_COMMAND`
+- `DB_CONTACTOR_FB`
+- `DB_CELL_MEAS`
+- 硬件故障 latch
+- 时间/超时条件
+
+状态转移写成纯函数：
+
+```c
+enum bms_state bms_next_state(enum bms_state cur, const struct bms_state_inputs *in);
+```
+
+线程/任务只负责读取 database、调用纯函数、执行 entry/exit 动作、写回 database。
+
+## 测量与保护
+
+### 测量可信化
+
+`bms_meas` 不是简单采样线程，而是测量可信化模块：
+
+```
+driver read → raw frame → validate/merge → DB_CELL_MEAS
+```
+
+每帧测量必须包含：
+
+- 值：cell voltage、pack current、temperature 等。
+- 时间戳：产生时刻。
+- 有效性：电压/电流/温度/通信/冗余一致性。
+- 序号：用于丢帧/重复帧判断。
+
+### protection 角色
+
+`bms_protection` 只做阈值判定，不直接驱动接触器：
+
+```
+DB_CELL_MEAS + limits → DB_PROT_STATE → bms_diag → bms_bms
+```
+
+硬件严重故障例外：zero-latency IRQ 可直接 OPEN，并置 latch；随后由 `bms_diag` 和 `bms_bms` 接管上报与锁存恢复。
+
+## 通信架构
+
+`bms_comm` 拆成 RX 与 TX：
+
+- RX：解析 CAN/上位机命令，写 `DB_COMMAND`，不得直接改 BMS 状态。
+- TX：从 database 取快照，按配置周期上报。
+- CAN bus-off、超时、非法命令进入 `bms_diag`。
+- 后续 CAN 报文建议表驱动，类似 foxBMS 2 对通信信号的配置化管理。
+
+## 配置与硬件抽象
+
+- 系统规模：`CONFIG_BMS_CELL_COUNT`、`CONFIG_BMS_TEMP_SENSOR_COUNT`。
+- 任务周期：`CONFIG_BMS_TASK_FAST_MS`、`CONFIG_BMS_TASK_SAFETY_MS`、`CONFIG_BMS_TASK_APP_MS`。
+- 诊断阈值：Kconfig 或 board/profile 配置。
+- 硬件绑定：devicetree 描述 AFE、CAN、GPIO、接触器反馈、预充电阻控制。
+- driver wrapper 暴露稳定接口，业务模块不直接依赖具体芯片。
+
+## 当前实现到目标架构的迁移路径
+
+| 阶段 | 目标 | 主要动作 |
 |------|------|----------|
-| `afe_sim`（桩/仿真） | QEMU、native_sim | 桩数据或充放电模型，可复现，供单测注入 |
-| `afe_adc`（真实） | `bms_f405` 真机 | `DEVICE_DT_GET` 取 ADC/专用 AFE 芯片，走设备 API |
+| M0 | 保留现状可构建 | 当前 `afe/soc/protection/balancing/comm` 继续工作 |
+| M1 | 引入 `bms_db` | 把 zbus channel 映射为 database entry，模块先通过 DB 读写 |
+| M2 | 引入 `bms_task` | 把各模块线程收敛到 1ms/10ms/100ms 任务框架 |
+| M3 | 引入 `bms_diag` | protection/afe/comm/sys_mon 故障统一登记 |
+| M4 | 引入 `bms_bms`/`bms_sys` | 接触器所有权迁移到主状态机 |
+| M5 | 引入 `bms_sys_mon`/WDT | 任务运行时间监控与看门狗门控 |
+| M6 | 硬件安全闭环 | 接触器 GPIO、反馈、预充、zero-latency IRQ、NVM 故障记录 |
 
-> native_sim 还可用 Zephyr emul 外设（`adc_emul` / `gpio_emul` / 总线 EMUL）让真实驱动路径在 PC 上跑测试。
+迁移期间允许 zbus 与 database 共存，但目标架构契约以 database 为准。
 
-## 数据流（zbus channels）
+## 参考
 
-```
-            ┌──────────┐  chan_cell_meas   ┌──────────┐
-   ADC/AFE →│   afe    │──────────┬───────→│   soc    │─┐
-            └──────────┘          │        └──────────┘ │ chan_soc
-                                  │                      ↓
-                                  │        ┌──────────────────┐  控制接触器/MOS (GPIO)
-                                  ├───────→│   protection     │──────────────────────→
-                                  │        └──────────────────┘  chan_prot_state
-                                  │                      │
-                                  │        ┌──────────┐  │
-                                  ├───────→│balancing │  │ 计算均衡位
-                                  │        └──────────┘  │
-                                  │        ┌──────────┐  │
-                                  └───────→│  comm    │←─┘  CAN 上报/收命令
-                                           └──────────┘
-```
-
-| Channel            | 发布者      | 订阅者                          | 负载类型              |
-|--------------------|-------------|---------------------------------|-----------------------|
-| `chan_cell_meas`   | afe         | soc, protection, balancing, comm| `struct bms_cell_meas`|
-| `chan_soc`         | soc         | protection, comm                | `struct bms_soc`      |
-| `chan_prot_state`  | protection  | comm                            | `struct bms_prot_evt` |
-
-> 🎯 目标：删除 `chan_prot_state`，新增 `chan_prot_eval`（protection→diag）、`chan_diag`（diag→sys/comm）、`chan_sys_state`（sys→comm）；afe 测量增 `timestamp`/`validity` 字段。
-
-## 控制平面 / 数据平面分界
-
-> 📐 设计原则。
-
-zbus 是**控制平面（control-plane）**总线：承载「谁需要知道什么变了 / 当前状态是什么」——事件、状态、结构化快照、命令。它采用**值拷贝语义**（`zbus_chan_pub`/`read` 各做一次 memcpy，且在 channel 信号量保护下完成），适合**小而结构化**的消息，**不承载大块 / 流式数据**。
-
-**设计铁律**：控制走 zbus；批量字节走专用**数据平面**原语，后者只把「摘要 / 句柄」用 zbus 小事件广播出来。
-
-| 平面 | 典型内容 | 机制 |
-|------|----------|------|
-| 控制平面（zbus） | 测量快照、SOC、diag 故障态、sys 状态、命令 | `zbus_chan_pub/read` + observer |
-| 数据平面（非 zbus） | ADC 原始波形/录波、跨节点帧缓冲、黑匣子/OTA 固件块 | `ring_buf`+DMA、`k_mem_slab`/`net_buf` 池、flash/文件系统 |
-
-- **尺度校准**：BMS 的结构化测量快照（16 串 ≈ 几十字节，400 串大簇全量 ≈ 1~2KB）在 F405（168MHz）上拷贝是 µs 级、而发布周期 10~100ms，**对 zbus 不算大**，照走 zbus。真正不该入 zbus 的是 KB~MB、kHz 级的原始流。
-- **消化模式**：DMA/驱动灌进 `ring_buf` 或缓冲池 → 处理线程消化 → 仅把摘要/句柄经 zbus 发出。例：afe 消化原始采样后只发 `chan_cell_meas`；comm 解码现场总线帧后只发结构化结果。
-- **必须经 zbus 传大块时**：消息内只放 `net_buf`/池句柄（传引用，不传负载），大缓冲存共享池，所有权/生命周期自行管理。
-- **拷贝成本提醒**：`msg_subscriber` 在发布时**每个订阅者各拷一份**进 net_buf，大消息 + 多订阅者最吃 RAM；listener 锁内零拷贝访问但在发布者上下文同步执行。
-
-> 跨节点同步（多簇 → 主控、对 EMS/PCS）属**通信协议**问题，由 comm 层经 CAN/RS485/以太网收发，再桥接进各自节点的 zbus——zbus 不跨 MCU。
-
-## 状态机与模块间协调
-
-> 📐 设计原则（引用的 `sys`/`diag` 为目标模块，尚未实现）。
-
-两类「状态」问题用两种**正交**机制，不要混用——**消息总线不是状态机引擎**：
-
-| 问题 | 机制 | 说明 |
-|------|------|------|
-| 模块**内**状态机（FSM 写法） | **Zephyr SMF**（`<zephyr/smf.h>`） | 层次状态 + `entry/run/exit`，公共逻辑提到 parent；替代手写 `switch(state/substate)` + 手动 timer 计数。线程循环跑 `smf_run_state()`，转移用 `smf_set_state()` |
-| 模块**间**状态转移（耦合/传输） | **zbus** | 各模块发布自身状态（单一发布者），关心者订阅、事件驱动反应；替代「轮询共享状态 + 调 request 函数」式耦合 |
-
-**安全状态机铁律**：
-
-- **事件唤醒 + 电平驱动**：zbus 事件只负责*唤醒*状态机；醒来后**读当前所有权威输入快照**（最新 diag/接触器反馈/命令）重新计算应处状态，**绝不依赖「看全每一次变化」**。原因：zbus channel 只存最新值，普通 subscriber 可能漏掉中间状态。这同时保留了轮询式状态机的幂等/鲁棒优点。
-- **唯一权威 owner**：安全相关状态机集中在**一个模块（sys）**计算决策，不让整机行为「涌现」自多模块互相对发消息——分布式涌现的状态极难验证/测试。zbus 只负责把输入汇入、把决定播出，决策始终在一处。
-- **纯函数判定**：转移判定写成纯函数 `bms_sys_next(cur, inputs) → 期望状态` 供 ztest 直测，SMF 仅做编排骨架（延续「纯函数 + 薄线程」约定）。
-
-典型范式（以 sys 为例）：
-
-```
-zbus 事件 ─唤醒→ 读最新快照(电平驱动) → 纯函数判定下一状态(可测) → SMF 执行 entry/exit → 发布 chan_sys_state + 驱动接触器
-```
-
-> 注：路径 B 的零延迟硬故障锁存优先于一切软件状态机；SMF 状态机在 `g_hw_fault_latched` 为真时绝不闭合接触器（见「保护：双路径 + 失效安全」）。
-
-## 测量数据纪律（值 + 时间戳 + 有效性）
-
-> 📐 设计原则（`timestamp`/`validity` 字段尚未加入 `bms_cell_meas`）。
-
-借鉴 foxBMS database 的 header 纪律与冗余测量（MRC）范式——**不照搬其中央 broker，只采纳数据纪律**。afe 的职责由「采个值发出去」升级为「产出**可信**测量」。
-
-**铁律**：
-
-- **每个测量 = 值 + `timestamp` + `validity`**：核心结构（`bms_cell_meas` 等）统一带「产生时刻」与「有效位」，不只是数值。下游据此做过期检测；本地发布新鲜度可另用 `zbus_chan_pub_stats_msg_age()`（需 `CONFIG_ZBUS_CHANNEL_PUBLISH_STATS`）。
-- **一致的数据一起原子发布**：必须保持一致的量**打包进同一个 channel/struct 一次发出**（如同一采样周期的 cell 电压 + 电流 + 时间戳进同一 `chan_cell_meas`），不拆成多 channel 再重新对齐——跨 channel 读非原子（与 foxBMS 跨数据块读非原子同理）。
-- **校验与采集分离**：三段解耦，校验段为纯函数：
-  ```
-  acquire(原始, 可能多源) → validate/merge(合并 + 合理性, 纯函数) → 发 chan_cell_meas{值, 时间戳, validity}
-  ```
-- **冗余要多样性**：用**不同手段**测同一物理量（单体电压累加和 vs 直测总压、不同量程电流传感器）才能抓**系统性**故障；纯重复同一传感器无效。
-- **下游尊重 validity（失效安全）**：validity 无效时下游**绝不照用**——电流无效则 SOC 不积分、保护不据此闭合接触器；越界 / 不一致 / 过期一律上报诊断（diag）。
-
-冗余 / 合理性校验是**纯函数阶段**而非独立线程，由数据源「边缘」调用——契合「数据源后端可切换（afe）」：真机后端（`afe_adc`，直测多源）或仿真后端各自在采集后调同一 `validate/merge` 函数，业务层只看到已校验的可信值。
-
-> 不引入 foxBMS 的中央 database/broker：zbus 的 **channel 列表本身就是「系统数据目录」**，per-channel 信号量比单一 broker 任务更细粒度、更低延迟。
-
-## 模块职责
-
-> 🎯 目标：新增 `sys`（整机状态机，独占接触器）与 `diag`（集中式诊断登记表）；`protection` 退化为纯阈值判定器（只把违例发给 diag，不再驱动接触器）。下列为当前 5 模块实现。
-
-- **afe（电芯采样）**：周期采集每串电压、总电流、温度，发布 `chan_cell_meas`。采样实现按后端切换（`afe_sim` 仿真 / `afe_adc` 真机，见上「数据源后端可切换」），业务逻辑共用。
-- **soc（SOC/SOH 估算）**：订阅测量值，估算荷电/健康状态，发布 `chan_soc`。算法接口预留（库仑积分/卡尔曼，桩实现）。
-- **protection（保护状态机）**：订阅测量值+SOC，运行过压/欠压/过流/过温状态机，**失效安全：默认断开接触器**，发布 `chan_prot_state`。
-- **balancing（均衡）**：订阅测量值，计算需均衡的单体（被动/主动接口预留）。
-- **comm（CAN 通信）**：订阅各 channel，对外 CAN 上报；接收外部命令。native_sim 下无真实 CAN，走日志桩。
-
-## 保护：双路径 + 失效安全
-
-> 🎯 目标：路径 A 的接触器闭合/断开所有权迁至 `sys` 状态机，`prot_thread` 仅做判定并上报 diag；路径 B（零延迟 IRQ 硬锁存）不变，仍直接 OPEN。下文描述当前实现。
-
-保护按故障严重度分两条响应路径，**慢路径可测试、快路径有确定性**：
-
-```
-            过压/欠压/过温、常规过流
-路径 A ─┐   afe采样 → zbus → prot_thread(prio 4)判定 → 断接触器GPIO + 发 chan_prot_state
-（软实时）   延迟 ≈ 采样周期 + 调度(µs级)；逻辑在纯函数 bms_protection_evaluate()，可单测
-
-            严重短路 / 严重过流（catastrophic）
-路径 B ─┘   硬件报警(AFE ALERT引脚/分流比较器) → GPIO中断(zero-latency IRQ) → ISR直接断接触器
-（硬实时）   延迟 ≈ 中断延迟(亚µs级)，不经调度器、不被 irq_lock 屏蔽
-```
-
-**路径 B（zero-latency IRQ）设计约束**——这是它能"确定性"的代价：
-
-- `CONFIG_ZERO_LATENCY_IRQS=y`；中断用 `IRQ_CONNECT(irq, prio, isr, arg, IRQ_ZERO_LATENCY)` 注册，被放到内核保留的最高优先级（priority 0，在 BASEPRI 屏蔽线之上），**`irq_lock()`/内核临界区无法屏蔽它**。
-- 因可在内核临界区中途抢入，**ISR 内禁止调用任何内核 API**（无 `k_*`、无 zbus、无 LOG）。ISR 只允许：① 直接写接触器 GPIO 到 OPEN（失效安全，优先用最轻的端口寄存器写，确认驱动 ISR 安全后再调 `gpio_pin_set_dt`）；② 置一个 `volatile` 锁存标志 `g_hw_fault_latched`。
-- **两路协同**：路径 B 只会强制 OPEN；锁存后，路径 A 的 `prot_thread` 必须遵守该 latch——`g_hw_fault_latched` 为真时**绝不重新闭合**接触器，并补发 `chan_prot_state`（`state=BMS_PROT_FAULT, contactor=OPEN`）让 comm 上报、写日志。复位需显式 re-arm（人工/上层命令）。
-
-**失效安全总则**：
-
-- 上电默认安全态（接触器断开），仅所有条件正常才闭合；硬件锁存故障优先于一切软件判定。
-- 关键线程异常由看门狗（后续接入）捕获并强制进入安全态。
-
-## 线程模型
-
-每个模块用 `K_THREAD_DEFINE` 自启动独立线程；优先级 protection(4) > afe(6) > soc/balancing(7) > comm(8)，确保安全决策先于上报（🎯 目标加入 sys/diag 后为 sys(3) > protection(4) > diag(5) > afe(6) > soc/balancing(7) > comm(8)）。main 仅做初始化与健康打印。路径 B 的 ISR 在线程之上，不参与线程优先级排序。
-
-## 实时性约定
-
-- **tick 粒度**：`mps2/an386` 默认 `SYS_CLOCK_TICKS_PER_SEC=100`（10ms，限制 `k_msleep/k_timer` 超时精度）。真机 `bms_f405` 应提到 **1000（1ms）或 10000（100µs）**，否则保护去抖/采样分辨率受限；`CONFIG_TICKLESS_KERNEL=y` 下提高 tick 几乎无额外开销。
-- **实时指标必须在真机实测**：QEMU 非周期精确（且跑在 25MHz，真机 168MHz），中断延迟/上下文切换须在 STM32F405 上用 DWT 周期计数器测量；栈峰值用 `CONFIG_THREAD_ANALYZER`。
-- **资源基线**（mps2 当前固件实测）：Flash ≈ 27KB、RAM ≈ 14KB（其中线程栈占 ~11.6KB），相对 F405 的 1MB/192KB 余量充足；RAM 增长主要来自新增线程栈。
+- foxBMS 2 Software Architecture: https://iisb-foxbms.iisb.fraunhofer.de/foxbms/gen2/docs/html/v1.8.0/software/architecture/architecture.html
+- foxBMS 2 Operating System Configuration: https://docs.foxbms.org/software/structure/operating-system-configuration.html
+- foxBMS 2 Software Modules: https://iisb-foxbms.iisb.fraunhofer.de/foxbms/docs/latest/software/modules/modules.html
+- foxBMS 2 Database Module: https://iisb-foxbms.iisb.fraunhofer.de/foxbms/docs/latest/software/modules/engine/database/database.html
+- foxBMS 2 FTASK Module: https://iisb-foxbms.iisb.fraunhofer.de/foxbms/docs/latest/software/modules/task/ftask/ftask.html
+- foxBMS 2 System Monitoring Module: https://iisb-foxbms.iisb.fraunhofer.de/foxbms/docs/latest/software/modules/engine/sys_mon/sys_mon.html
+- foxBMS 2 BMS Module: https://iisb-foxbms.iisb.fraunhofer.de/foxbms/docs/latest/software/modules/application/bms/bms.html
