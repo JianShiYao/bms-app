@@ -29,7 +29,7 @@
 | `aging` | 锁存条目的老化/清除策略（授权复位 / 上电 / 计数老化 / 不可自动老化） | 安全锁存默认"仅授权复位"，见 §8 |
 | `reaction`（派生） | 对 `bms_bms` 的影响 | **不得**弱于该 severity 的默认反应（§3） |
 
-> 时间/阈值/去抖计数是**标定参数**，其治理（版本、单位、合法范围、默认值）见 `concept-configuration-calibration.md`（待建）；本文只规定字段语义与不变量。
+> 时间/阈值/去抖计数是**标定参数**，其治理（版本、单位、合法范围、默认值）见 [configuration-calibration.md](configuration-calibration.md)；本文只规定字段语义与不变量。
 
 ## 3. severity 语义与反应映射（契约）
 

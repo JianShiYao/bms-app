@@ -253,13 +253,15 @@ DB_CELL_MEAS + limits -> DB_PROT_STATE -> bms_diag -> bms_bms
 - **板级绑定**：AFE、CAN、GPIO、接触器反馈、预充控制，使用 devicetree 和 wrapper。
 - **运行/标定参数**：保护阈值、滤波参数、容量、诊断老化、通信周期等需要版本、单位、合法范围、默认值、变更验证。
 
-Kconfig 可以作为早期参数载体，但不得把“参数治理”简化为“加一个 Kconfig”。后续应补 `concept-configuration-calibration.md` 或等价标准文档。
+Kconfig 可以作为早期参数载体，但不得把“参数治理”简化为“加一个 Kconfig”。参数/标定治理契约见 [configuration-calibration.md](configuration-calibration.md)。
 
 ### 硬件抽象
 
 - 业务模块不直接依赖 STM32 HAL/寄存器。
 - 业务模块不直接操作未经 wrapper 的 GPIO/CAN/ADC/WDT/flash。
 - wrapper 暴露稳定接口，隐藏具体芯片、devicetree 节点和驱动差异。
+
+wrapper 边界、接口契约、ISR/zero-latency 与仿真桩化的权威契约见 [hardware-abstraction.md](hardware-abstraction.md)。
 
 ## 11. 当前状态与迁移路径
 
@@ -291,8 +293,8 @@ Kconfig 可以作为早期参数载体，但不得把“参数治理”简化为
 | `data-model.md` | 细化 DB entry、owner、validity、sequence、stale、copy-by-value | M1 前 |
 | `runtime-model.md` | 细化任务表、周期、优先级、blocking 边界、sys_mon | M2 前 |
 | `diagnostics-fault-model.md` | 细化 severity、latch、clear、aging、故障到状态机路径 | M3 前 |
-| `concept-configuration-calibration.md` | 细化参数/标定治理 | 引入可变安全参数前 |
-| `concept-hardware-abstraction.md` | 细化 AFE/CAN/GPIO/NVM/WDT wrapper 边界 | 真板 bring-up 前 |
+| `configuration-calibration.md` | 细化参数/标定治理 | 引入可变安全参数前 |
+| `hardware-abstraction.md` | 细化 AFE/CAN/GPIO/NVM/WDT wrapper 边界 | 真板 bring-up 前 |
 
 ## 13. 参考
 
