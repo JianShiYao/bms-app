@@ -67,6 +67,7 @@
 ## 5. 安全目标 → 安全功能 / 需求 追溯
 
 > 闭合 methodology 原则3 的链：`SG → 安全需求 → 代码 → 测试`。「当前实现」列反映 `bms-app` 骨架现状（区别于 `reference/legacy-requirements/` 中 S16100B 参考需求）。
+> ⚠️ **勿误读**：「安全需求（参考/目标）」列的 `REQ-PROT-NNN` 等来自 `reference/legacy-requirements/`（S16100B 逆向），标示"目标应覆盖什么"，**非活仓库已承诺需求**；活仓库承诺现状以 [work/traceability.md](../work/traceability.md) 为准。只有「bms-app 当前实现」列代表已落地行为，"未实现"即尚未承诺落地。
 
 | SG | 安全需求（参考/目标） | bms-app 当前实现 | 测试 |
 |---|---|---|---|

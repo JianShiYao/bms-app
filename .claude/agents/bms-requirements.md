@@ -10,14 +10,14 @@ tools: Read, Write, Edit, Glob, Grep
 - 边界：不做架构或实现决策；只定义"做什么"和"如何验收"，不定义"怎么做"。
 
 ## 项目知识（BMS·Zephyr）
-- 项目：EnerVenue BMS 固件，Zephyr 4.4.0 + CMake，板 `bms_f405`(STM32F405)，仿真目标 `native_sim`。
-- 架构：zbus 总线解耦，5 模块 afe/soc/protection/balancing/comm；`app/src/main.c` 只做 init，模块用 `K_THREAD_DEFINE` 自启工作线程。
-- 通信：发布用 `zbus_chan_pub`；订阅用 `ZBUS_SUBSCRIBER_DEFINE` + `ZBUS_CHAN_ADD_OBS` + `zbus_sub_wait`；通道在 `app/src/bms/channels.c` 用 `ZBUS_CHAN_DEFINE` 定义，头 `app/include/bms/channels.h`。
-- 数据类型：`app/include/bms/types.h`（`bms_cell_meas`/`bms_soc`/`bms_prot_evt`，电压 mV、电流 mA 充电为正、温度 0.1℃）。
-- 配置：模块开关与参数在 `app/Kconfig`（如 `CONFIG_BMS_*`）；板级 `app/boards/*.conf|*.overlay`；板定义 `boards/enervenue/bms_f405/`。
-- 测试：`tests/bms/*` 用 Twister + ztest。范式：把纯逻辑函数与线程分离以便单测（范例 `bms_protection_evaluate`）。
+- 项目：EnerVenue BMS 固件，Zephyr 4.4.0 + CMake。执行/仿真验证以 `native_sim` 与 QEMU `mps2/an386` 为主；`qmxx_f407zg`(STM32F407) 为 CI bring-up 构建目标；`bms_f405`(STM32F405) 目标板 dts/defconfig 待完善。
+- 架构基线（权威，新设计以此为准）：engine core——`bms_task`(集中调度长期逻辑)、`bms_db`(数据交换中心，每 entry 单一 owner、读者拿值快照)、`bms_diag`(诊断中心)、`bms_bms`(主状态机 + 接触器期望态 owner)，配 `bms_meas`/`bms_protection`/`bms_contactor`、`bms_sys`/`bms_sys_mon`/`bms_time`。分层与决策见 `docs/concept/architecture.md`；细化契约见 `runtime-model.md`(任务/调度/看门狗)、`data-model.md`(entry/owner/validity/sequence/stale)、`diagnostics-fault-model.md`(severity/去抖/锁存)、`safety.md`(危害/安全目标)。
+- 过渡实现（迁移起点，非契约）：当前代码仍有 `afe/soc/protection/balancing/comm` 过渡模块 + zbus 通道（`app/src/bms/channels.{c,h}`、`zbus_chan_pub`、`ZBUS_SUBSCRIBER_DEFINE`+`ZBUS_CHAN_ADD_OBS`+`zbus_sub_wait`）、`K_THREAD_DEFINE` 自启线程。zbus 允许作过渡/通知层，但**模块契约以 `bms_db` entry 为准，新长期逻辑不得新增私有线程**（迁移路径 M0–M6 见 architecture §11）。
+- 数据类型：过渡类型在 `app/include/bms/types.h`（`bms_cell_meas`/`bms_soc`/`bms_prot_evt`，电压 mV、电流 mA 充电为正、温度 0.1℃）；目标数据契约（entry header/validity/stale）见 `data-model.md`。
+- 配置：模块开关与参数在 `app/Kconfig`（如 `CONFIG_BMS_*`）；板级 `app/boards/*.conf|*.overlay`；板定义在 `boards/<vendor>/<board>/`（`enervenue/bms_f405`、`alientek/qmxx_f407zg`）。
+- 测试：`tests/bms/*` 用 Twister + ztest。范式：把纯逻辑函数与线程/IO 分离以便单测（范例 `bms_protection_evaluate`）。
 - 构建/测试（以 Windows venv 为准）：在 `bms-app/` 下用 `..\.venv\Scripts\python.exe -m west <cmd>`；构建 `..\.venv\Scripts\python.exe -m west build -b mps2/an386 app -p always`；测试 `powershell -ExecutionPolicy Bypass -File ..\run-tests-coverage.ps1 -Board mps2/an386`。若在 workspace 根执行，路径见 `docs/process/agents.md §4`；WSL + `native_sim` 仅作可选覆盖率链路。
-- 失效安全红线：默认接触器 OPEN，仅判定 NORMAL 才 CLOSED；安全相关线程优先级更高。
+- 失效安全红线：默认接触器 OPEN，仅判定 NORMAL 才 CLOSED；安全相关任务优先级更高（safety cyclic > app/comm/background）。
 - 规范对齐：依据根基 `docs/concept/methodology.md`（敏捷+V 研发方法论,一切流程由其衍生）落地于 `docs/process/workflow.md`（操作规则）与 docs/templates/ 模板（requirements/design-spec/traceability-matrix）。ID——需求 `REQ-<域>-<NNN>`、设计 `DES-<域>-<NNN>`，域 = SYS/AFE/SOC/PROT/BAL/COMM/BOARD（如 REQ-SOC-001、DES-SOC-002，不加额外前缀/后缀）。追溯用独立 `docs/work/features/<slug>/traceability.md`（套 traceability-matrix-template，列：需求ID|需求摘要|设计|验证方法|测试用例|状态）。
 - 交付物语言：中文。
 

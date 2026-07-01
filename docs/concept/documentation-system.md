@@ -116,14 +116,11 @@ methodology.md
 
 ## 7. 当前薄弱环节
 
-按本文骨架衡量，当前优先补强顺序为：
+早期骨架标注的待补文档均已建立：模块接口 [`standard/module-interface.md`](../standard/module-interface.md)、评审门 [`process/design-review.md`](../process/design-review.md)、集成测试策略 [`quality/integration-test-strategy.md`](../quality/integration-test-strategy.md)、参数治理 [`concept/configuration-calibration.md`](configuration-calibration.md)，以及 `bms_task`/`bms_db`/`bms_diag`/`bms_bms` 的概念契约（[architecture.md](architecture.md) 及其细化契约 runtime-model / data-model / diagnostics-fault-model）。当前重心从"补文档"转为"按契约落地"：
 
-1. `module-interface.md`：先把 foxBMS 2 inspired 模块接口契约定住。
-2. `design-review.md`：让架构/安全/接口改动有明确评审门。
-3. `bms_task` / `bms_db` / `bms_diag` / `bms_bms` 的需求、设计、追溯。
-4. `integration-test-strategy.md` 与首批多模块集成测试。
-5. `standard-config-calibration.md`：保护阈值、周期、容量、诊断参数的治理。
-6. 安全案例继续重型化：FMEA/HARA/FTA/HIL 证据。
+1. 按 [architecture.md](architecture.md) §11 迁移路径 **M1–M6** 实现 engine core，代码向 concept 契约对齐（不从既有过渡代码反推设计）。
+2. **追溯回填**：protection/afe 等既有测试映射到 `REQ-*` 并汇入 [`work/traceability.md`](../work/traceability.md)。
+3. **安全案例重型化**：FMEA / HARA / FTA / HIL 证据（触发与阶梯见 [safety.md](safety.md) §7、[methodology.md](methodology.md) §6）。
 
 ## 8. 维护
 

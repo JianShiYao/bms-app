@@ -111,10 +111,10 @@ if (!reqs.ok) return { status: 'BLOCKED', stage: 'requirements', gaps: reqs.gaps
 
 const arch = await stageWithDocGate(
   'architect', 'architect',
-  `读 ${FEAT}/01-requirements.md，写 ${FEAT}/02-architecture.md（ADR：zbus通道/线程优先级/模块边界/失效安全；每条 ADR 标注服务的 REQ-ID）。`,
+  `读 ${FEAT}/01-requirements.md，写 ${FEAT}/02-architecture.md（ADR：bms_db entry(owner/validity)/任务优先级与阻塞边界/模块边界/失效安全，对齐 architecture.md 与 runtime-model/data-model；每条 ADR 标注服务的 REQ-ID）。`,
   '02-architecture.md',
   '- 每条架构决策(ADR)标注其服务的 REQ-ID。\n' +
-  '- 明确 zbus 通道/数据结构变更、线程与优先级（安全线程更高）、失效安全影响。'
+  '- 明确 bms_db entry/数据结构变更、任务优先级与阻塞边界（safety cyclic 更高）、失效安全影响；zbus 视为过渡通知层。'
 )
 if (!arch.ok) return { status: 'BLOCKED', stage: 'architect', gaps: arch.gaps }
 
@@ -170,7 +170,7 @@ for (let attempt = 1; attempt <= 3; attempt++) {
     : ''
   // coder：实现 + 构建自检（返回真值）
   const buildV = await agent(rolePrompt('coder',
-    `按 ${FEAT}/03-design.md 实现代码（遵循 zbus/K_THREAD_DEFINE 范式、失效安全默认态、注释回链 REQ-/DES-ID）。` +
+    `按 ${FEAT}/03-design.md 实现代码（数据经 bms_db entry、不新增私有长期线程、失效安全默认态、注释回链 REQ-/DES-ID；过渡期兼容既有 zbus/K_THREAD_DEFINE 范式）。` +
     `实现后在 bms-app/ 下运行 \`..\\.venv\\Scripts\\python.exe -m west build -b mps2/an386 app -p always\` 自检。` +
     `返回 {passed=构建退出码0, gaps[], evidence=构建末尾关键行}。把本次结果一行追加到 ${FEAT}/gate-log.md（[coder#${attempt}] build passed=..）。` + fix),
     { label: `coder#${attempt}`, phase: 'TDD实现', schema: BUILD_VERDICT })
