@@ -24,6 +24,8 @@
 
 基于 **Zephyr RTOS** 的电池管理系统（BMS）固件。所有开发在 **`bms-app/`**（应用 + west manifest，唯一 git 仓库）下进行；命令默认在此目录、已激活 venv 的 PowerShell 中执行（`zephyr/`、`modules/` 由 `west update` 拉到上一级）。
 
+**参考 foxBMS 2**（Fraunhofer 开源模块化 BMS，原生 TMS570/Cortex-R5 + FreeRTOS）：借鉴其**设计理念而非代码**——分层模块化、状态机驱动、单生产者/多消费者数据流（对应本项目 zbus + `bms_db`）、失效安全默认态、CAN 上报；差异在于本项目用 STM32F405/Cortex-M4 + Zephyr，当前单 AFE、暂无其 SBC/interlock/IMD 与冗余测量。其**文档与质量体系方法论**（文档即单一事实源、需求可追溯、编码规范＋静态分析＋单元测试＋CI 分层门、功能安全对齐）亦为范本，多数已落地（见 §2 与 [docs/quality/gates.md](docs/quality/gates.md)）。
+
 ## 2. 必读权威文档
 
 - [docs/README.md](docs/README.md) —— 文档索引与关系图（入口，先看这个）
