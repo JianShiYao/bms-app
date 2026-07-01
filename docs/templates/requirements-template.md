@@ -1,5 +1,5 @@
 <!--
-  需求规格模板。复制本文件到 docs/work/requirements/<模块>.md 后填写。
+  需求规格模板。新固件需求随小 V 落在 docs/work/features/<slug>/01-requirements.md（复制本文件填写）。
   ID/句式/工作流见 ./README.md。一条需求一个小节，用 EARS 句式，验收标准必须可度量。
 -->
 # <模块> 需求规格

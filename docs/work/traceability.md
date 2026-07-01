@@ -1,7 +1,7 @@
 <!--
   活仓库（Zephyr 新固件）需求追溯矩阵 —— 权威。格式见 docs/templates/traceability-matrix-template.md。
   原则（methodology.md 原则3）：每条需求至少一个验证手段，安全相关优先自动化测试。
-  与 docs/work/requirements/ 的区别：后者是逆向旧 S16100B 固件的「移植参考」（REQ-<域>-001 起），
+  与 docs/reference/legacy-requirements/ 的区别：后者是逆向旧 S16100B 固件的「移植参考」（REQ-<域>-001 起），
   本表是新固件「已实现并被测试链接」的需求。两者同域 ID 不冲突——新固件需求接续编号（SOC 从 025 起）。
 -->
 # 需求追溯矩阵（活仓库）
@@ -48,7 +48,7 @@
 
 ## PROT 模块（保护，新固件需求）
 
-> 接续遗留 `docs/work/requirements/prot.md` 的 001-032（逆向旧固件）编号；以下为新固件实现并被测试链接的安全需求。
+> 接续遗留 `docs/reference/legacy-requirements/prot.md` 的 001-032（逆向旧固件）编号；以下为新固件实现并被测试链接的安全需求。
 
 | 需求 ID | 需求摘要 | 设计 | 验证方法 | 测试用例 | 状态 |
 |---|---|---|---|---|---|

@@ -11,9 +11,9 @@ bms-app 的文档导航。**目录即分类**——打开一个子目录，先�
 | [standard/](standard/) | 必须遵守的工程契约（接口、编码） | `module-interface.md` |
 | [quality/](quality/) | 如何证明做得够好 | `gates.md` |
 | [guide/](guide/) | 具体操作怎么做 | `build.md` |
-| [work/](work/) | 活的工程产物（需求 / 特性 / 追溯矩阵） | `traceability.md` |
+| [work/](work/) | 活的工程产物（特性交付物 / 追溯矩阵） | `traceability.md` |
 | [archive/](archive/) | 历史归档（设计 spec / 实施 plan，按日期沉淀） | —（快照） |
-| [reference/](reference/) | 参考阅读资料（硬件原理图/BOM/数据手册） | `hardware/__00_readme.md` |
+| [reference/](reference/) | 参考资料（硬件原理图/BOM/数据手册；旧固件逆向需求参考） | `hardware/__00_readme.md` |
 | [templates/](templates/) | 可复制的产出骨架 | `README.md` |
 | `Doxyfile` | doxygen 工具配置（生成 API 文档，留 `docs/` 根） | — |
 
@@ -36,9 +36,9 @@ concept/methodology.md     方法论根基（Why）— 以下由它衍生
       └─ guide/      build
 
 产物 / 参考（非常青规范，不在上面的派生链里）：
-   work/      requirements · features/<slug> · traceability
+   work/      features/<slug> · traceability
    archive/   specs · plans（YYYY-MM-DD 快照）
-   templates/ 可复制骨架        reference/ 硬件资料
+   templates/ 可复制骨架        reference/ 硬件资料 · legacy-requirements（S16100B 逆向）
 
 ★ architecture = 软件架构基线；runtime-model/data-model/diagnostics-fault-model/configuration-calibration/hardware-abstraction/safety 与 standard/module-interface 细化它
 ☆ workflow = 流程单一事实源(SSOT)；git/design-review/agents/small-v-workflow 细化或落地它
@@ -52,6 +52,6 @@ concept/methodology.md     方法论根基（Why）— 以下由它衍生
 - 模块接口怎么写 → **standard/module-interface**；编码风格 → **standard/coding-style**。
 - 门禁与阈值 → **quality/gates**；质量现状全景 → **quality/management**；集成测试怎么补 → **quality/integration-test-strategy**；CI 借鉴清单 → **quality/ci-checklist**。
 - 怎么编译/跑（含 WSL native_sim）→ **guide/build**。
-- 需求验证到哪 → **work/traceability**；某特性证据链 → **work/features/<slug>**（如 `engine-core-architecture`）；需求基线 → **work/requirements**。
+- 需求验证到哪 → **work/traceability**；某特性证据链 → **work/features/<slug>**（如 `engine-core-architecture`）；旧固件 S16100B 逆向参考需求 → **reference/legacy-requirements**。
 - 历史设计/实施计划 → **archive/specs** · **archive/plans**。
 - 硬件资料 → **reference/hardware**；文档模板 → **templates/**。
