@@ -56,7 +56,7 @@ enum bms_state bms_next_state(enum bms_state cur,
 - 模块函数返回 `0` 表示成功，负值使用 `-errno`。
 - 安全相关故障不得只打日志，必须进入 `bms_diag`。
 - `LOG_*` 是观测手段，不是状态机输入。
-- 诊断 ID、严重度、锁存策略应由 `standard-diagnostics.md` 后续统一定义；在该文件完成前，以 `bms/diag.h` 为临时权威。
+- 诊断 ID、严重度、去抖/锁存/老化策略以 [diagnostics-fault-model.md](../concept/diagnostics-fault-model.md) 为权威（诊断条目登记表契约）；代码侧接口见 `bms/diag.h`。
 
 ## 6. 安全默认态
 

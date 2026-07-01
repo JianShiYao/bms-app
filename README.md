@@ -139,8 +139,9 @@ scoop install llvm                    # 或：winget install LLVM.LLVM
 ## 五、质量门禁与验证
 
 分层门禁（编辑器 → pre-commit → pre-push → `check.ps1` → CI，**CI 为权威**）。完整说明见
-[质量管控全景 docs/quality/management.md](docs/quality/management.md) 与
-[验证策略与工具关键性分级 docs/quality-verification.md](docs/quality-verification.md)。
+[质量管控全景 docs/quality/management.md](docs/quality/management.md)；门与阈值事实表见
+[docs/quality/gates.md](docs/quality/gates.md)，验证策略与风险分级验证强度见
+[docs/concept/methodology.md](docs/concept/methodology.md) §3–§4。
 
 CI 必过门（[.github/workflows/ci.yml](.github/workflows/ci.yml)）：
 
