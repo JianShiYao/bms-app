@@ -82,26 +82,25 @@ static void publish_prot_compat(const struct bms_prot_evt *prot)
 
 static void run_measurement(uint32_t now)
 {
-	ARG_UNUSED(now);
-
 #if defined(CONFIG_BMS_AFE)
 	struct bms_cell_meas meas;
 
 	if (bms_afe_sample(&meas) != 0) {
-		(void)bms_diag_report(BMS_DIAG_INVALID_MEAS, BMS_DIAG_ERROR, true, false);
+		(void)bms_diag_report(BMS_DIAG_INVALID_MEAS, true, now);
 		return;
 	}
 
 	(void)bms_db_write_cell_meas(&meas);
 	publish_cell_compat(&meas);
 
-	(void)bms_diag_report(BMS_DIAG_INVALID_MEAS, BMS_DIAG_ERROR,
-			      (meas.validity & BMS_MEAS_VALID_ALL) != BMS_MEAS_VALID_ALL, false);
+	(void)bms_diag_report(BMS_DIAG_INVALID_MEAS,
+			      (meas.validity & BMS_MEAS_VALID_ALL) != BMS_MEAS_VALID_ALL, now);
 #else
+	ARG_UNUSED(now);
 #endif
 }
 
-static void run_protection_and_bms(void)
+static void run_protection_and_bms(uint32_t now_ms)
 {
 #if defined(CONFIG_BMS_PROTECTION)
 	struct bms_cell_meas meas;
@@ -118,10 +117,11 @@ static void run_protection_and_bms(void)
 	if (bms_protection_evaluate(&meas, &task_prot_limits, &prot) == 0) {
 		(void)bms_db_write_prot(&prot);
 		publish_prot_compat(&prot);
-		(void)bms_diag_report(BMS_DIAG_PROTECTION_ACTIVE, BMS_DIAG_CRITICAL,
-				      prot.state != BMS_PROT_NORMAL, prot.state != BMS_PROT_NORMAL);
+		(void)bms_diag_report(BMS_DIAG_PROTECTION_ACTIVE, prot.state != BMS_PROT_NORMAL,
+				      now_ms);
 	}
 #else
+	ARG_UNUSED(now_ms);
 	struct bms_prot_evt prot = {
 		.timestamp_ms = bms_time_now_ms(),
 		.state = BMS_PROT_NORMAL,
@@ -157,7 +157,7 @@ void bms_task_safety_step(uint32_t now_ms)
 	if (bms_time_due(now_ms, &next_sample, CONFIG_BMS_AFE_SAMPLE_PERIOD_MS)) {
 		run_measurement(now_ms);
 	}
-	run_protection_and_bms();
+	run_protection_and_bms(now_ms);
 }
 
 void bms_task_app_step(uint32_t now_ms)

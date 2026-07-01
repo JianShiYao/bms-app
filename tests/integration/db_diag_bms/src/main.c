@@ -82,7 +82,7 @@ ZTEST(bms_integration, test_diag_error_blocks_normal)
 	struct bms_state_inputs inputs;
 
 	reset_engine_core();
-	zassert_ok(bms_diag_report(BMS_DIAG_INVALID_MEAS, BMS_DIAG_ERROR, true, false));
+	zassert_ok(bms_diag_report(BMS_DIAG_INVALID_MEAS, true, 0));
 
 	inputs = normal_inputs();
 
