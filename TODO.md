@@ -4,7 +4,7 @@
 现状全景见 [docs/quality/management.md](docs/quality/management.md)；流程见 [docs/process/workflow.md](docs/process/workflow.md)。
 
 出处缩写：**QM**=[management.md](docs/quality/management.md)、**WF**=[workflow.md](docs/process/workflow.md)、
-**RP**=[quality-system-rollout-plan.md](docs/quality-system-rollout-plan.md)、**CL**=[ci-checklist.md](docs/quality/ci-checklist.md)、
+**RP**=[quality-system-rollout-plan.md](docs/archive/plans/quality-system-rollout-plan.md)、**CL**=[ci-checklist.md](docs/quality/ci-checklist.md)、
 **ARCH**=[architecture.md](docs/concept/architecture.md)、**CLAUDE**=[CLAUDE.md](CLAUDE.md)、
 **DOCSYS**=[documentation-system.md](docs/concept/documentation-system.md)、**STD**=[module-interface.md](docs/standard/module-interface.md)、
 **DR**=[design-review.md](docs/process/design-review.md)、**INT**=[integration-test-strategy.md](docs/quality/integration-test-strategy.md)。

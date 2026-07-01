@@ -12,33 +12,36 @@
 - 让当前原型阶段能快速迭代，同时为真板、HIL、量产和安全案例留好接口。
 - 让新增文档知道该放哪里、依据谁、完成标准是什么。
 
-## 2. 五类顶层文档
+## 2. 五类规范目录
 
-| 类别 | 文件前缀 | 回答的问题 | 典型文件 |
-|------|----------|------------|----------|
-| 概念 | `concept-` | 为什么这么做、目标模型是什么 | `methodology.md`、`architecture.md`、`safety.md` |
-| 流程 | `process-` | 研发活动怎么走、门在哪里 | `workflow.md`、`git.md`、`design-review.md` |
-| 指南 | `guide-` | 某个操作怎么做 | `build.md` |
-| 标准 | `standard-` | 必须遵守的工程契约 | `module-interface.md` |
-| 质量 | `quality-` | 如何证明做得够好 | `management.md`、`ci-checklist.md`、`integration-test-strategy.md` |
+**目录即分类**：文件放进哪个目录就表达了它是哪类；文件名**不带类别前缀**（如 `concept/architecture.md`）。
 
-判断一个新文档该用哪个前缀：
+| 目录 | 回答的问题 | 典型文件 |
+|------|------------|----------|
+| `concept/` | 为什么这么做、目标模型是什么 | `methodology.md`、`architecture.md`、`safety.md` |
+| `process/` | 研发活动怎么走、门在哪里 | `workflow.md`、`git.md`、`design-review.md` |
+| `guide/` | 某个操作怎么做 | `build.md` |
+| `standard/` | 必须遵守的工程契约 | `module-interface.md`、`coding-style.md` |
+| `quality/` | 如何证明做得够好 | `gates.md`、`ci-checklist.md`、`integration-test-strategy.md`、`management.md` |
 
-- 讲原则与模型，用 `concept-`。
-- 讲流程顺序、准入准出、评审门，用 `process-`。
-- 讲命令和操作步骤，用 `guide-`。
-- 讲接口、命名、数据结构、配置、诊断这些硬约束，用 `standard-`。
-- 讲测试、覆盖率、门禁、证据、成熟度，用 `quality-`。
+判断一个新文档该进哪个目录：
 
-## 2b. 学科目录（与命名前缀正交）
+- 讲原则与模型 → `concept/`。
+- 讲流程顺序、准入准出、评审门 → `process/`。
+- 讲命令和操作步骤 → `guide/`。
+- 讲接口、命名、数据结构、配置、诊断这些硬约束 → `standard/`。
+- 讲测试、覆盖率、门禁、证据、成熟度 → `quality/`。
 
-命名前缀回答「这是哪类文档」，**目录**回答「这属于哪个学科」，两者正交：
+## 2b. 产物与参考目录（非常青规范）
 
-- `docs/design/` —— **软件设计契约**：架构、运行时、数据、安全概念、模块接口标准等 agent 据以实现/重构代码的权威件（`concept-` 与 `standard-` 前缀混居于此）。
-- `docs/reference/hardware/` —— 硬件资料（原理图/BOM/数据手册），与 `design/` 并行。
-- `docs/` 根 —— 跨学科的流程/方法/质量/指南（`process-`/`guide-`/`quality-` 及方法论、文档体系两篇 `concept-`）。
+除上面 5 类规范目录外，还有 4 类**不参与"依据谁"派生链**的目录：
 
-因此完整路径形如 `design/architecture.md`、`design/module-interface.md`；新增软件设计契约放 `design/`，其余按前缀留根。目录随学科增长（如将来 `systems/`），前缀不变。
+- `work/` —— 活的工程产物：需求基线、每个小 V 的交付物、需求↔测试追溯矩阵。
+- `archive/` —— 历史归档：设计 spec、实施 plan，按 `YYYY-MM-DD` 沉淀。
+- `templates/` —— 可复制的产出骨架（非参考阅读）。
+- `reference/` —— 参考阅读资料（硬件原理图/BOM/数据手册）。
+
+每个顶层目录都有自己的 `README.md`（三段式：放什么/不放什么/权威文件）——**先看目录 README，再进文件**。
 
 ## 3. 权威链
 
@@ -49,19 +52,19 @@
 methodology.md
   方法论母文档：敏捷 + 小 V + 安全案例
         │
-        ├─ architecture.md
+        ├─ concept/architecture.md
         │    目标软件架构：foxBMS 2 inspired / Zephyr native
         │
-        ├─ safety.md
+        ├─ concept/safety.md
         │    安全概念：Hazard → Safety Goal → Safety Function
         │
-        ├─ workflow.md
+        ├─ process/workflow.md
         │    生命周期流程、DoR/DoD、PR、发布
         │
-        ├─ standard-*.md
-        │    模块接口、诊断、配置、编码等工程契约
+        ├─ standard/*
+        │    模块接口、编码等工程契约
         │
-        └─ quality-*.md
+        └─ quality/*
              测试、CI、覆盖率、集成/HIL、证据包
 ```
 

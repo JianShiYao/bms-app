@@ -1,5 +1,7 @@
 # 质量管控全景（需求 → 编码 → 测试 → CI/CD）
 
+> **定位**：本文仅为质量全景**总览**。门禁与阈值的事实以 [gates.md](gates.md) 为准，**不在此复制**。
+
 本文梳理 bms-app 从需求到交付各阶段**已落地的质量管控**与**待补齐项**，便于评估当前成熟度与规划下一步。
 相关文档：开发流程见 [workflow.md](../process/workflow.md)；当前门禁事实表见 [gates.md](gates.md)；CI 对照清单见 [ci-checklist.md](ci-checklist.md)；待办见 [../TODO.md](../../TODO.md)。
 

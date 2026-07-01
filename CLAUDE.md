@@ -55,4 +55,4 @@ powershell -ExecutionPolicy Bypass -File scripts\format.ps1   # 格式化（-Che
 
 ## 8. 文档命名约定
 
-新增 `docs/` 顶层文档须遵守 [docs/README.md](docs/README.md) 的命名约定（`<category>-<topic>.md`）。
+新增文档按**目录即分类**放置（`concept/`·`process/`·`standard/`·`quality/`·`guide/` + 产物/参考 `work/`·`archive/`·`templates/`·`reference/`），文件名**不带类别前缀**；详见 [docs/README.md](docs/README.md)。
