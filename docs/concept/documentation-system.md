@@ -93,7 +93,7 @@ methodology.md
 |------|------|------|
 | 系统活仓库追溯 | `docs/work/traceability.md` | 当前新固件已实现需求的权威总表 |
 | 特性追溯 | `docs/work/features/<slug>/traceability.md` | 单个小 V 的局部闭环 |
-| 旧固件参考需求 | `docs/work/requirements/*.md` | S16100B 逆向参考，不自动等同于新固件承诺 |
+| 旧固件参考需求 | `docs/reference/legacy-requirements/*.md` | S16100B 逆向参考，不自动等同于新固件承诺 |
 
 新增代码时优先更新“特性追溯”；合并稳定后，将已实现且可验证的需求汇入系统活仓库追溯。
 

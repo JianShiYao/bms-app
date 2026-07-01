@@ -2,7 +2,7 @@
 
 > **文档定位**：本项目的**安全概念（safety concept）**——[methodology.md](methodology.md) §6.1「风险分析与安全需求」要求的产物。它为"安全案例驱动"方法论提供地基：把**危害 → 安全目标 → 安全功能/需求 → 代码/测试**的链条显式化，使下游需求、保护设计、测试强度都能回指安全目标。
 > **状态**：**轻量初版（draft）**。按 methodology §6.1「早期可轻量，但必须能追溯到安全需求」。本版给出危害清单与安全目标的**首个基线**；HARA 风险定级（S/E/C → ASIL 或等价）、FMEA/FTA、保护响应时间预算等**重型分析**待接真板、明确安全目标后按 methodology §6 补强。
-> **依据来源**：危害与阈值取材于既有保护需求 [requirements/prot.md](../work/requirements/prot.md)（逆向自 S16100B，**参考性**）与跨域风险清单 [requirements/risks-and-gaps.md](../work/requirements/risks-and-gaps.md)；安全态/状态机取自 [architecture.md](architecture.md)。权威约定见 [../CLAUDE.md](../../CLAUDE.md)。
+> **依据来源**：危害与阈值取材于既有保护需求 [requirements/prot.md](../reference/legacy-requirements/prot.md)（逆向自 S16100B，**参考性**）与跨域风险清单 [requirements/risks-and-gaps.md](../reference/legacy-requirements/risks-and-gaps.md)；安全态/状态机取自 [architecture.md](architecture.md)。权威约定见 [../CLAUDE.md](../../CLAUDE.md)。
 
 ## 1. 范围与 Item 定义
 
