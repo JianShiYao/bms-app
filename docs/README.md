@@ -8,7 +8,7 @@ bms-app 的文档导航。**目录即分类**——打开一个子目录，先�
 |------|--------|----------|
 | [concept/](concept/) | 为什么这么做 / 目标模型（方法论、架构/运行时/数据/诊断/安全设计契约） | `methodology.md` |
 | [process/](process/) | 研发活动怎么走、门在哪 | `workflow.md` |
-| [standard/](standard/) | 必须遵守的工程契约（接口、编码） | `module-interface.md` |
+| [standard/](standard/) | 必须遵守的工程契约（接口、代码布局、编码） | `module-interface.md` |
 | [quality/](quality/) | 如何证明做得够好 | `gates.md` |
 | [guide/](guide/) | 具体操作怎么做 | `build.md` |
 | [work/](work/) | 活的工程产物（特性交付物 / 追溯矩阵） | `traceability.md` |
@@ -30,7 +30,7 @@ bms-app 的文档导航。**目录即分类**——打开一个子目录，先�
 concept/methodology.md     方法论根基（Why）— 以下由它衍生
       |
       ├─ concept/    architecture ★ · runtime-model · data-model · diagnostics-fault-model · configuration-calibration · hardware-abstraction · safety · documentation-system
-      ├─ standard/   module-interface · coding-style
+      ├─ standard/   module-interface · code-layout · coding-style
       ├─ process/    workflow ☆ · git · design-review · agents · small-v-workflow
       ├─ quality/    gates ● · ci-checklist · integration-test-strategy · management
       └─ guide/      build
@@ -49,7 +49,7 @@ concept/methodology.md     方法论根基（Why）— 以下由它衍生
 
 - 为什么这么做 → **concept/methodology**；系统怎么设计 → **concept/architecture**；运行时/任务/调度/看门狗 → **concept/runtime-model**；诊断/故障/severity/锁存 → **concept/diagnostics-fault-model**；参数/标定/阈值治理 → **concept/configuration-calibration**；硬件 wrapper/AFE/CAN/GPIO 边界 → **concept/hardware-abstraction**；DB 数据契约 → **concept/data-model**；危害/安全目标/失效安全 → **concept/safety**；文档体系怎么理解 → **concept/documentation-system**。
 - 怎么走流程 → **process/workflow**（Git 细节 → **process/git**）；用 agent/workflow 开发特性 → **process/agents** · **process/small-v-workflow**；设计评审 → **process/design-review**。
-- 模块接口怎么写 → **standard/module-interface**；编码风格 → **standard/coding-style**。
+- 模块接口怎么写 → **standard/module-interface**；代码按层怎么放 → **standard/code-layout**；编码风格 → **standard/coding-style**。
 - 门禁与阈值 → **quality/gates**；质量现状全景 → **quality/management**；集成测试怎么补 → **quality/integration-test-strategy**；CI 借鉴清单 → **quality/ci-checklist**。
 - 怎么编译/跑（含 WSL native_sim）→ **guide/build**。
 - 需求验证到哪 → **work/traceability**；某特性证据链 → **work/features/<slug>**（如 `engine-core-architecture`）；旧固件 S16100B 逆向参考需求 → **reference/legacy-requirements**。

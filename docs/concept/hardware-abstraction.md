@@ -1,14 +1,14 @@
 # BMS 硬件抽象模型 v0（设计契约）
 
-> **定位**：本文细化 [architecture.md](architecture.md) 的 ADR-ARCH-006（硬件边界），是硬件抽象层（HAL wrapper）的**权威设计契约**——规定 AFE/CAN/GPIO/ADC/NVM/WDT/硬件时间等 wrapper 的**边界、接口契约、错误与失效安全、ISR/zero-latency 边界、devicetree/Kconfig 绑定与仿真桩化**。**agent 据此实现或重构 wrapper 与其消费方，代码向本契约对齐**；本文不描述现状实现。
+> **定位**：本文细化 [architecture.md](architecture.md) 的 ADR-ARCH-006（硬件边界），是硬件抽象层（HAL wrapper）的**权威设计契约**——规定 AFE / 通信(CAN|RS485) / 执行器(接触器·MOS) / ADC / NVM / WDT / 硬件时间 等 wrapper 的**边界、接口契约、错误与失效安全、ISR/zero-latency 边界、devicetree/Kconfig 绑定与仿真桩化**。**agent 据此实现或重构 wrapper 与其消费方，代码向本契约对齐**；本文不描述现状实现。
 >
-> **现状与差距**不在此维护：见 [architecture.md](architecture.md) §11 迁移路径（本契约在"**真板 bring-up 前**"落地——当前以 `afe_sim`/`native_sim`/QEMU 为主，真实外设 wrapper 随 `bms_f405` bring-up 增量实现，M6 收口）。
+> **现状与差距**不在此维护：见 [architecture.md](architecture.md) §11 迁移路径（本契约在"**真板 bring-up 前**"落地——当前以 `afe_sim`/`native_sim`/QEMU 为主，真实外设 wrapper 随 `bms_f405` bring-up 增量实现，M6 收口）。**`bms_f405` 真板即 S16100B / STM32F405RGT6**，其具体外设/引脚/协议规格见 [../reference/hardware/software-interface.md](../reference/hardware/software-interface.md)。
 >
 > **规范措辞**：**必须 / 应 / 不得** 表示契约要求。相关：架构 [architecture.md](architecture.md) §3·§9·§10，数据契约 [data-model.md](data-model.md)（wrapper 出原始、bms_meas 可信化后入 DB），运行时 [runtime-model.md](runtime-model.md)（ISR/zero-latency、watchdog），诊断 [diagnostics-fault-model.md](diagnostics-fault-model.md)（外设错误入诊断），配置 [configuration-calibration.md](configuration-calibration.md)（板级绑定层），接口 [../standard/module-interface.md](../standard/module-interface.md)。
 
 ## 1. 硬件抽象设计原则
 
-- **分层铁律**：业务模块（application/measurement/control）**不得**直接依赖 STM32 HAL、CMSIS 或寄存器，**不得**直接调用未经 wrapper 的 Zephyr driver（GPIO/CAN/ADC/WDT/flash）。硬件访问必须经 **wrapper + devicetree + Kconfig**（ADR-ARCH-006）。
+- **分层铁律**：业务模块（application/measurement/control）**不得**直接依赖 STM32 HAL、CMSIS 或寄存器，**不得**直接调用未经 wrapper 的 Zephyr driver（GPIO/CAN/UART/ADC/WDT/flash）。硬件访问必须经 **wrapper + devicetree + Kconfig**（ADR-ARCH-006）。
 - **wrapper 隐藏差异**：wrapper 暴露**稳定、与芯片无关**的接口，隐藏具体芯片、devicetree 节点与驱动差异；更换 MCU/板卡**应**只改 wrapper 与 dts，不改业务逻辑。
 - **单向依赖**：上层调下层 wrapper 公开接口；wrapper **不得**反向依赖业务状态机、保护策略或诊断策略（Driver/HAL 层不含业务）。
 - **wrapper 只做搬运，不做判定**：wrapper 返回**原始数据 + 错误码**；有效性、可信化、安全判定在其上层（`bms_meas`/`bms_protection`/`bms_bms`）完成。wrapper **不得**自行决定系统安全或直接跑业务状态机（zero-latency 最小安全动作例外，见 §6）。
@@ -16,17 +16,19 @@
 
 ## 2. wrapper 集与边界（契约）
 
-每类外设一个 wrapper，边界如下（具体命名/文件在实现时定，遵循 [../standard/module-interface.md](../standard/module-interface.md)）：
+每类外设一个 wrapper，按**能力**分类（与具体芯片/总线无关；具体命名/文件在实现时定，遵循 [../standard/module-interface.md](../standard/module-interface.md)）：
 
 | wrapper | 职责（搬运） | 上层消费者 | 里程碑 |
 |---------|--------------|-----------|--------|
 | AFE | 单体电压/温度/电流原始帧读取、AFE 硬件保护标志(OCD/短路)、ALERT 中断 | `bms_meas` | M6（现 `afe_sim`） |
-| CAN | 帧收发、bus-off/错误状态 | `bms_comm` | M6 |
-| GPIO/contactor | 接触器/预充输出、反馈电平读取 | `bms_contactor` | M6 |
+| 通信 (CAN \| RS485/UART) | 帧收发、总线错误(bus-off / 帧错误 / 超时)状态 | `bms_comm` | M6 |
+| 执行器 (接触器·MOS) | 接触器/预充/MOS 输出、反馈读取；**可经 GPIO 或经 AFE 驱动**（按板） | `bms_contactor` | M6 |
 | ADC（辅助） | 绝缘/进水/板载辅助模拟量 | `bms_meas` | M6 |
-| NVM/flash | 标定参数与故障/日志持久化 | 参数(§configuration-calibration)、diag | M6 |
+| NVM/flash | 标定参数与故障/日志持久化 | 参数([configuration-calibration.md](configuration-calibration.md))、diag | M6 |
 | WDT | 硬件看门狗喂狗/配置 | `bms_sys_mon`（[runtime-model.md](runtime-model.md) §7） | M5/M6 |
 | 硬件时间源 | 单调计时后端 | `bms_time`（[runtime-model.md](runtime-model.md) §2） | M2/M6 |
+
+> **按板取用**：wrapper 集是**能力清单**，非每板全用。通信可能是 CAN（如 `qmxx_f407zg`）或 RS485（如 `bms_f405`/S16100B）；执行器可能直连 GPIO 或经 AFE（S16100B 的充放电 MOS 由 SH3673520 驱动）。板卡可按同一 wrapper 纪律扩展加热/充电 PWM、存储(SD/FatFs)、RTC、指示灯/按键、电源自锁等——`bms_f405` 的具体外设集见 [../reference/hardware/software-interface.md](../reference/hardware/software-interface.md) §2·§6。
 
 ## 3. wrapper 接口契约（通用）
 
