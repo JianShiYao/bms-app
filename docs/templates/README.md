@@ -1,9 +1,9 @@
 # 需求工程模板
 
 本目录提供从**需求 → 设计 → 测试 → 追溯**的轻量模板，用于落地
-[质量管控全景](../quality-management.md)中标注的「需求管理 / 验收标准 / 需求↔测试追溯」。
+[质量管控全景](../quality/management.md)中标注的「需求管理 / 验收标准 / 需求↔测试追溯」。
 
-> 本套 ID / 追溯规范是研发方法论**原则3(可追溯性)**的落地;方法论根基见 [../concept-methodology.md](../concept-methodology.md)。
+> 本套 ID / 追溯规范是研发方法论**原则3(可追溯性)**的落地;方法论根基见 [../methodology.md](../concept/methodology.md)。
 
 ## 模板清单
 
@@ -33,6 +33,6 @@
 
 ## 与现有体系的关系
 
-- 验证手段落到 CI：测试由 [twister](../process-workflow.md) 跑、覆盖率门禁见 [quality-management](../quality-management.md)。
+- 验证手段落到 CI：测试由 [twister](../process/workflow.md) 跑、覆盖率门禁见 [quality-management](../quality/management.md)。
 - 安全相关需求（保护/接触器路径）应有高覆盖率，见 quality-management 的「功能安全视角」。
 - 这些模板是**过程脚手架**，非强制门禁；随项目接入真实硬件/认证目标再决定严格程度。

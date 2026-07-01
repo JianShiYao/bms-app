@@ -1,6 +1,6 @@
 # BMS 数据模型基线 v0
 
-> **定位**：本文定义 `bms_db` 的数据契约基线，承接 [concept-architecture.md](concept-architecture.md) 的 ADR-ARCH-002。它先冻结 entry、owner、header、validity、sequence、stale 和 copy-by-value 规则；具体 C API 可在后续实现中逐步贴合本文。
+> **定位**：本文定义 `bms_db` 的数据契约基线，承接 [architecture.md](architecture.md) 的 ADR-ARCH-002。它先冻结 entry、owner、header、validity、sequence、stale 和 copy-by-value 规则；具体 C API 可在后续实现中逐步贴合本文。
 >
 > **当前代码状态**：`app/include/bms/db.h` / `app/src/bms/engine/db.c` 已有 `bms_cell_meas`、`bms_soc`、`bms_prot_evt`、`bms_state_snapshot` 的线程安全读写、`sequence` 和 `valid` 元数据。本文是 M1 迁移前的目标契约，不要求一次提交完成全部实现。
 
@@ -30,7 +30,7 @@
 
 - 只有 owner 可以调用对应 write API。
 - 非 owner 需要改变数据时，必须通过自己的 entry 表达请求或状态，由 owner 消化。
-- owner 变更属于架构变更，必须更新本文、`standard-module-interface.md` 和追溯矩阵。
+- owner 变更属于架构变更，必须更新本文、`module-interface.md` 和追溯矩阵。
 - 过渡期若由 `bms_task` 代写某 entry，必须在代码注释或设计文档中说明“代 owner”关系和退出条件。
 
 ## 3. Entry header
@@ -123,7 +123,7 @@ stale = !entry_valid || age_ms > max_age_ms
 | `DB_CONTACTOR_FB` | 1-2 个 feedback 周期 | stale 视为诊断故障 |
 | `DB_TASK_HEALTH` | 1 个 monitor 周期 | stale 视为任务健康未知 |
 
-具体阈值属于配置/运行时模型，后续在 `concept-runtime-model.md` 或配置文档中细化。
+具体阈值属于配置/运行时模型，后续在 `runtime-model.md` 或配置文档中细化。
 
 ### stale 的安全含义
 
@@ -182,7 +182,7 @@ stale = !entry_valid || age_ms > max_age_ms
 
 ## 12. 参考
 
-- [concept-architecture.md](concept-architecture.md)
-- [standard-module-interface.md](standard-module-interface.md)
-- [quality-integration-test-strategy.md](../quality-integration-test-strategy.md)
-- [docs/traceability.md](../traceability.md)
+- [architecture.md](architecture.md)
+- [module-interface.md](../standard/module-interface.md)
+- [integration-test-strategy.md](../quality/integration-test-strategy.md)
+- [docs/work/traceability.md](../work/traceability.md)

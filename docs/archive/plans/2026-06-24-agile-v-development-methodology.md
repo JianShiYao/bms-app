@@ -130,7 +130,7 @@ Expected: 切到新分支 `docs/agile-v-methodology`。
 |---|---|---|
 | [process-workflow.md](process-workflow.md) | §3 模型 / §4 原则3·4·5 / §5 DoR-DoD | 分支/提交/PR、分层质量门、DoR/DoD 本项目清单、安全改动路径、发布 |
 | [process-agents.md](process-agents.md) + `.claude/agents/*` | §3 小 V 各阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
-| [templates/](templates/) | §4 原则3(可追溯性) | REQ/DES ID 规范、追溯矩阵、EARS 模板 |
+| [templates/](templates) | §4 原则3(可追溯性) | REQ/DES ID 规范、追溯矩阵、EARS 模板 |
 | CI(`.github/workflows/ci.yml`) | §4 原则2·5 | 自动化验证门 |
 | [superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md) | §3 模型 / §4 | agent 体系的设计取舍 |
 | [quality-management.md](quality-management.md) | §4 原则2·3·5 | 各阶段质量管控现状与缺口、对五原则的符合性 |

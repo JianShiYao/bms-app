@@ -46,15 +46,15 @@
 
 ### - [ ] ① 需求 —— `bms-requirements`
 - 调用 agent：`bms-requirements`
-- 输入文件：本计划 `docs/features/comm-report-period-kconfig/00-iteration-plan.md`；`app/Kconfig`（§BMS_COMM 段）、`app/src/bms/comm/comm.c`、`app/include/bms/comm.h`
-- 预期产出文件：`docs/features/comm-report-period-kconfig/01-requirements.md`
+- 输入文件：本计划 `docs/work/features/comm-report-period-kconfig/00-iteration-plan.md`；`app/Kconfig`（§BMS_COMM 段）、`app/src/bms/comm/comm.c`、`app/include/bms/comm.h`
+- 预期产出文件：`docs/work/features/comm-report-period-kconfig/01-requirements.md`
 - 内容要点：功能需求（上报周期由 `CONFIG_BMS_COMM_REPORT_PERIOD_MS` 决定、默认 200ms、`depends on BMS_COMM`）、取值范围与边界（下限 > 0 的具体下界、工程上界、越界时的编译期/运行期行为）、周期合法化/钳制的逻辑语义、⚠️ 失效安全需求（见第 4 节：周期配置不得阻塞或拖累安全链、不得退化为忙等）、可量化验收判据（默认值、边界值、钳制结果）
 - 准出判据：每条需求有唯一 `REQ-COMM-NNN` ID、可测试、含明确数值（默认 200、range 上下界）；⚠️ 失效安全需求齐备；同步把「需求ID/需求摘要」回填 [`traceability.md`](traceability.md)
 
 ### - [ ] ② 架构 —— `bms-architect`
 - 调用 agent：`bms-architect`
-- 输入文件：`01-requirements.md`；`app/src/bms/comm/comm.c`、`app/include/bms/comm.h`、`docs/design/concept-architecture.md`（comm 模块章节、线程模型/优先级）
-- 预期产出文件：`docs/features/comm-report-period-kconfig/02-architecture.md`（含 ADR）
+- 输入文件：`01-requirements.md`；`app/src/bms/comm/comm.c`、`app/include/bms/comm.h`、`docs/concept/architecture.md`（comm 模块章节、线程模型/优先级）
+- 预期产出文件：`docs/work/features/comm-report-period-kconfig/02-architecture.md`（含 ADR）
 - 关键架构决策（待定，需 ADR 记录）：
   - **可测性拆分**：周期取值的合法化逻辑是否抽成纯函数（如 `bms_comm_report_period_ms(void)` 或 `bms_comm_clamp_period(int)`），以脱离线程在 ztest 直测——对齐项目「纯逻辑 + 薄线程包装」范式（参照 `bms_protection_evaluate`）。
   - **越界处理归属**：`range` 在 Kconfig 层硬约束 vs 运行期纯函数再钳制（防御性）——决策二者边界，避免双重真相。
@@ -65,7 +65,7 @@
 ### - [ ] ③ 详细设计 —— `bms-designer`
 - 调用 agent：`bms-designer`
 - 输入文件：`02-architecture.md`；`app/src/bms/comm/comm.c`、`app/include/bms/comm.h`、`app/Kconfig`
-- 预期产出文件：`docs/features/comm-report-period-kconfig/03-design.md`
+- 预期产出文件：`docs/work/features/comm-report-period-kconfig/03-design.md`
 - 内容要点：`app/Kconfig` 中 `BMS_COMM_REPORT_PERIOD_MS` 的最终定义（`range <下界> <上界>`、`default 200`、`depends on BMS_COMM`、help 文案）；周期合法化纯函数签名与原型（入参/返回/钳制规则）；`comm_thread` 调用点改造（调用纯函数取周期）；`bms_comm_init` 日志；边界与异常分支（越界值如何钳制、下界保证 > 0）；单元可测点清单；每个设计项分配 `DES-COMM-NNN` 并回链 `REQ-COMM-NNN`
 - 准出判据：设计项可直接编码；`range` 上下界有工程依据；周期合法化逻辑给出确定性钳制规则（可断言）；回填 [`traceability.md`](traceability.md)「设计」列（`DES-COMM-NNN`）
 
@@ -92,7 +92,7 @@
 ### - [ ] ⑥ CICD —— `bms-cicd`
 - 调用 agent：`bms-cicd`
 - 输入文件：`run-tests-coverage.ps1`、`tests/bms/comm/testcase.yaml`、`.github/workflows/ci.yml`
-- 预期产出文件：`docs/features/comm-report-period-kconfig/06-cicd.md`；确认新 `bms.comm` 套件被 Twister 自动发现并纳入 CI（`tests/` 通配，通常无需改 CI，验证即可）
+- 预期产出文件：`docs/work/features/comm-report-period-kconfig/06-cicd.md`；确认新 `bms.comm` 套件被 Twister 自动发现并纳入 CI（`tests/` 通配，通常无需改 CI，验证即可）
 - 准出判据：`bms.comm` 测试在流水线（CI native_sim / 本地 Windows venv 板 `mps2/an386`）自动执行并通过；构建 + 测试 + 覆盖率链路绿；CI 6 门全绿；无回归
 
 ---
@@ -130,7 +130,7 @@
 - 基线可构建可测：Windows venv 下 `..\.venv\Scripts\python.exe -m west build -b mps2/an386 app -p always` 与 `powershell -ExecutionPolicy Bypass -File ..\run-tests-coverage.ps1 -Board mps2/an386` 当前通过（基线 11/11）。
 - 本计划评审通过，第 1 节非目标范围已确认。
 
-**准出（DoD，本迭代完成判据；不低于 process-workflow.md §1.3 通用下限）**
+**准出（DoD，本迭代完成判据；不低于 workflow.md §1.3 通用下限）**
 - ① ~ ⑥ 全部复选框勾选，各阶段产出文件齐备。
 - [`traceability.md`](traceability.md) 无空链：每条 `REQ-COMM-NNN` 贯通「需求→设计→验证/测试」，状态推进至「已验证」（或缺口附替代验证说明）。
 - 所有 ⚠️ 失效安全项（周期 > 0 不忙等、不抬优先级、不阻塞安全链）均有对应需求与测试/分析并通过。

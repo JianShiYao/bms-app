@@ -1,7 +1,7 @@
 <!--
   活仓库（Zephyr 新固件）需求追溯矩阵 —— 权威。格式见 docs/templates/traceability-matrix-template.md。
-  原则（concept-methodology.md 原则3）：每条需求至少一个验证手段，安全相关优先自动化测试。
-  与 docs/requirements/ 的区别：后者是逆向旧 S16100B 固件的「移植参考」（REQ-<域>-001 起），
+  原则（methodology.md 原则3）：每条需求至少一个验证手段，安全相关优先自动化测试。
+  与 docs/work/requirements/ 的区别：后者是逆向旧 S16100B 固件的「移植参考」（REQ-<域>-001 起），
   本表是新固件「已实现并被测试链接」的需求。两者同域 ID 不冲突——新固件需求接续编号（SOC 从 025 起）。
 -->
 # 需求追溯矩阵（活仓库）
@@ -11,7 +11,7 @@
 
 ## Engine Core 架构（`engine-core-architecture`）
 
-> 证据包见 [features/engine-core-architecture/](features/engine-core-architecture/)；首批 `DB→DIAG→BMS` 集成测试已补到 [../tests/integration/db_diag_bms/](../tests/integration/db_diag_bms/)。
+> 证据包见 [features/engine-core-architecture/](features/engine-core-architecture)；首批 `DB→DIAG→BMS` 集成测试已补到 [../tests/integration/db_diag_bms/](../../tests/integration/db_diag_bms)。
 > 当前 Windows 本地 `mps2/an386` 为 built-only，`native_sim` 被静态过滤；执行型验证留给 CI/WSL native_sim。
 
 | 需求 ID | 需求摘要 | 设计 | 验证方法 | 测试用例 | 状态 |
@@ -27,7 +27,7 @@
 ## SOC 模块（库仑计数特性，`soc-coulomb`）
 
 > **ID 规范化说明**：本特性早期用工作码 `REQ-SOC-C01..C12`；现规范为 **`REQ-SOC-025..036`**（接续遗留 `soc.md` 的 001-024，避免撞号；映射 `C0x → 0(x+24)`）。
-> 活代码（`tests/bms/soc/`）已用规范 ID；`docs/features/soc-coulomb/` 过程文档保留原始 `Cxx` 工作码作为历史记录（不回改，另见 [process-agents.md §5](process-agents.md)）。
+> 活代码（`tests/bms/soc/`）已用规范 ID；`docs/work/features/soc-coulomb/` 过程文档保留原始 `Cxx` 工作码作为历史记录（不回改，另见 [agents.md §5](../process/agents.md)）。
 
 | 需求 ID | 需求摘要 | 设计 | 验证方法 | 测试用例 | 状态 |
 |---|---|---|---|---|---|
@@ -48,11 +48,11 @@
 
 ## PROT 模块（保护，新固件需求）
 
-> 接续遗留 `docs/requirements/prot.md` 的 001-032（逆向旧固件）编号；以下为新固件实现并被测试链接的安全需求。
+> 接续遗留 `docs/work/requirements/prot.md` 的 001-032（逆向旧固件）编号；以下为新固件实现并被测试链接的安全需求。
 
 | 需求 ID | 需求摘要 | 设计 | 验证方法 | 测试用例 | 状态 |
 |---|---|---|---|---|---|
-| ⚠️ REQ-PROT-033 | 无效测量 ⇒ 失效安全（测量有效位不齐时绝不闭合，强制 FAULT→OPEN） | `protection.c:bms_protection_evaluate`（validity 早返 FAULT；对齐 `concept-architecture.md`「测量数据纪律」） | 测试 | `bms.protection.test_invalid_validity_opens`、`bms.protection.test_partial_validity_opens`、`bms.protection.test_invariant_closed_iff_normal` | 已验证 |
+| ⚠️ REQ-PROT-033 | 无效测量 ⇒ 失效安全（测量有效位不齐时绝不闭合，强制 FAULT→OPEN） | `protection.c:bms_protection_evaluate`（validity 早返 FAULT；对齐 `architecture.md`「测量数据纪律」） | 测试 | `bms.protection.test_invalid_validity_opens`、`bms.protection.test_partial_validity_opens`、`bms.protection.test_invariant_closed_iff_normal` | 已验证 |
 
 > 红线不变量「接触器 CLOSED ⟺ NORMAL」由 `test_invariant_closed_iff_normal` 扫描覆盖（电压/电流/温度/有效位组合）。
 
@@ -62,6 +62,6 @@
 |---|---|---|
 | protection（OV/UV/OC/OT） | 6 个阈值 ztest + REQ-PROT-033 失效安全测试；OV/UV/OC/OT 用例**尚无 `REQ-PROT-NNN` 注释** | 把 OV/UV/OC/OT 等用例映射到遗留 `prot.md` 的 `REQ-PROT-NNN` 并补注释 + 入本表 |
 | afe | 有 20 个 ztest（`tests/bms/afe/`），同样**无 REQ 注释** | 同上，映射到 `REQ-AFE-NNN` |
-| balancing / comm / main | 无专门单测 | 先补单测（见 [quality-management.md](quality-management.md) 待补齐清单） |
+| balancing / comm / main | 无专门单测 | 先补单测（见 [management.md](../quality/management.md) 待补齐清单） |
 
-> 说明：protection/afe 的测试已存在但未带 REQ 注释，链接需逐用例映射到遗留需求，属独立后续项（增量 backfill，见 [concept-methodology.md §4 原则3 立场](concept-methodology.md)）。
+> 说明：protection/afe 的测试已存在但未带 REQ 注释，链接需逐用例映射到遗留需求，属独立后续项（增量 backfill，见 [methodology.md §4 原则3 立场](../concept/methodology.md)）。

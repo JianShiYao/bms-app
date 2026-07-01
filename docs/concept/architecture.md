@@ -1,6 +1,6 @@
 # BMS 软件架构基线 v0
 
-> **定位**：本文是当前 BMS 固件的软件架构决策基线（ADR 风格）。它冻结“先按什么架构实现”的共识，避免在代码演进中同时改变目标。本文定义 v0 决策、边界、暂不做事项和迁移顺序；详细接口约束见 [standard-module-interface.md](standard-module-interface.md)。
+> **定位**：本文是当前 BMS 固件的软件架构决策基线（ADR 风格）。它冻结“先按什么架构实现”的共识，避免在代码演进中同时改变目标。本文定义 v0 决策、边界、暂不做事项和迁移顺序；详细接口约束见 [module-interface.md](../standard/module-interface.md)。
 >
 > **当前代码状态**：代码仍保留 `afe/soc/protection/balancing/comm` 的过渡实现和 zbus channel；它们是迁移起点，不是最终架构契约。
 >
@@ -32,9 +32,9 @@
 ### 非目标（v0 暂不做）
 
 - 不实现完整 foxBMS 2 目录、命名前缀、FreeRTOS 抽象或代码生成体系。
-- 不把 HIL、FMEA、MCUboot、安全启动作为每个 PR 的默认硬门；触发条件见 [concept-methodology.md](../concept-methodology.md)。
+- 不把 HIL、FMEA、MCUboot、安全启动作为每个 PR 的默认硬门；触发条件见 [methodology.md](methodology.md)。
 - 不在 v0 一次性铺开所有硬件 wrapper；先定义边界，随真板 bring-up 增量实现。
-- 不在 `concept-architecture.md` 维护 CI 门禁和阈值；当前门禁事实见 [quality-gates.md](../quality-gates.md)。
+- 不在 `architecture.md` 维护 CI 门禁和阈值；当前门禁事实见 [gates.md](../quality/gates.md)。
 
 ## 3. 分层基线
 
@@ -288,9 +288,9 @@ Kconfig 可以作为早期参数载体，但不得把“参数治理”简化为
 
 | 文档 | 目的 | 触发 |
 |---|---|---|
-| `concept-data-model.md` | 细化 DB entry、owner、validity、sequence、stale、copy-by-value | M1 前 |
-| `concept-runtime-model.md` | 细化任务表、周期、优先级、blocking 边界、sys_mon | M2 前 |
-| `concept-diagnostics-fault-model.md` | 细化 severity、latch、clear、aging、故障到状态机路径 | M3 前 |
+| `data-model.md` | 细化 DB entry、owner、validity、sequence、stale、copy-by-value | M1 前 |
+| `runtime-model.md` | 细化任务表、周期、优先级、blocking 边界、sys_mon | M2 前 |
+| `diagnostics-fault-model.md` | 细化 severity、latch、clear、aging、故障到状态机路径 | M3 前 |
 | `concept-configuration-calibration.md` | 细化参数/标定治理 | 引入可变安全参数前 |
 | `concept-hardware-abstraction.md` | 细化 AFE/CAN/GPIO/NVM/WDT wrapper 边界 | 真板 bring-up 前 |
 

@@ -8,7 +8,7 @@
  * @details 职责：采集电压/电流/温度，并执行测量可信化。
  *          周期调度由 bms_task 统一负责，本模块不再自启动线程。
  *          采样实现按 Kconfig 选后端（afe_stub / afe_sim / afe_adc），业务逻辑不变，
- *          见 docs/design/concept-architecture.md「数据源后端可切换（afe）」。
+ *          见 docs/concept/architecture.md「数据源后端可切换（afe）」。
  */
 
 #include <errno.h>
@@ -34,7 +34,7 @@ int bms_afe_sample(struct bms_cell_meas *out)
 	}
 
 	/* 数据源边缘：acquire（所选后端）→ validate（纯函数置 validity）→ 交业务层。
-	 * 见 docs/design/concept-architecture.md「测量数据纪律」：业务层只看到带有效位的可信帧。 */
+	 * 见 docs/concept/architecture.md「测量数据纪律」：业务层只看到带有效位的可信帧。 */
 	int ret = bms_afe_backend_read(out);
 
 	if (ret != 0) {

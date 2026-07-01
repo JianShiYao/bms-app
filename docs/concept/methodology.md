@@ -78,13 +78,13 @@
 4. **失效安全 / 安全红线先行** — 安全相关改动必须关联安全需求、默认安全态、测试先行、显式验证。
    > BMS:接触器**默认 OPEN**,仅判定 NORMAL 才 CLOSED;保护线程最高优先级;SOC 等信息流不得参与保护决策。
    >
-   > **立场(纪律不分阶段)**:安全**纪律**——关联安全需求、测试先行、验证失效安全默认态(见 [process-workflow.md §2](process-workflow.md))——**现行生效,不分项目阶段**。仅 FMEA / 危害分析 / ISO 26262 工作产物全集等**重型**项可随"接真板、明确安全目标"后置。
+   > **立场(纪律不分阶段)**:安全**纪律**——关联安全需求、测试先行、验证失效安全默认态(见 [workflow.md §2](../process/workflow.md))——**现行生效,不分项目阶段**。仅 FMEA / 危害分析 / ISO 26262 工作产物全集等**重型**项可随"接真板、明确安全目标"后置。
 
 5. **持续合规(自动化是桥)** — 验证、追溯与证据靠自动化**持续**满足,而非阶段末人工补;门要前移、高频、自动。这是 §2 调和洞察的落地。
-   > BMS:pre-commit/pre-push/`check.ps1`/CI 分层门禁 + DoD 追溯门;**当前 CI 阻断门与阈值以 [quality-gates.md](quality-gates.md) 为准**(本文不复制);后续接入真板/HIL 后,硬件相关验证结果也应进入同一证据链。
+   > BMS:pre-commit/pre-push/`check.ps1`/CI 分层门禁 + DoD 追溯门;**当前 CI 阻断门与阈值以 [gates.md](../quality/gates.md) 为准**(本文不复制);后续接入真板/HIL 后,硬件相关验证结果也应进入同一证据链。
 
 6. **变更即再基线(变更不破坏追溯)** — 需求或安全相关项在迭代中途 / 跨迭代变更时,必须**连带更新**其追溯链(需求→架构→设计→代码→测试)与**受影响的右腿验证**;未同步即视为**断链**。这是原则3在"变化"维度的延伸,也是 §2 调和洞察的第二个轴——变更的完备性靠"连带传播"维持。
-   > BMS:改 `REQ-PROT-*` 阈值 → 同步对应 `DES-*`、代码与 ztest 并更新 `traceability.md`,重跑受影响用例;失效安全项变更按 [process-workflow.md §2](process-workflow.md)。
+   > BMS:改 `REQ-PROT-*` 阈值 → 同步对应 `DES-*`、代码与 ztest 并更新 `traceability.md`,重跑受影响用例;失效安全项变更按 [workflow.md §2](../process/workflow.md)。
 
 7. **风险分级 / 安全案例驱动** — 危险分析决定验证强度,安全目标决定证据组织方式;每个安全相关目标都应能回指一组可审计证据(需求、设计、代码、测试、评审、分析、发布基线)。没有风险分级,测试容易平均用力;没有证据包,追溯链难以支撑审核。
    > BMS:过压/过流/过温、采样异常、接触器粘连、预充失败、通信丢失等场景应进入危险分析;高风险项至少要求边界测试、故障注入、默认安全态验证,接真板后逐步补 HIL/台架证据。
@@ -95,13 +95,13 @@
   - **准入(DoR)原则**:依赖就绪、基线可构建可测、范围(含非目标)已界定。
   - **准出(DoD)原则**:小 V 各阶段产出齐备;**追溯链无断链**;**变更已再基线**(改动的需求/安全项,其追溯链与受影响右腿同步更新);安全相关项有对应测试并通过;风险分级与证据包已更新;自动化门全绿;范围受控。
 - **门即持续合规**:把 V 的"阶段门"从"开会才过"变成"每次提交都过"——前移、高频、自动(原则5)。
-- **具体门禁、命令、DoR/DoD 的本项目落地清单**见 [process-workflow.md](process-workflow.md),本文不复制。
+- **具体门禁、命令、DoR/DoD 的本项目落地清单**见 [workflow.md](../process/workflow.md),本文不复制。
 
 ## 6. BMS 功能安全增强层(从原型到量产的补足)
 
 本节定义在现有敏捷小 V 之上逐步补强的能力。它们不要求在原型第一天全部重型化,但一旦进入真板验证、客户交付、量产准备或功能安全目标明确阶段,就应成为 DoR/DoD 与发布基线的一部分。
 
-> **范围提示**:本节中的 HIL/FMEA/HARA/FTA/MCUboot 等**不是当前每个 PR 的默认硬门**,除非改动触发安全/硬件/发布基线要求。当前现行强制项以 §4 原则与 [quality-gates.md](quality-gates.md) 为准。
+> **范围提示**:本节中的 HIL/FMEA/HARA/FTA/MCUboot 等**不是当前每个 PR 的默认硬门**,除非改动触发安全/硬件/发布基线要求。当前现行强制项以 §4 原则与 [gates.md](../quality/gates.md) 为准。
 
 ### 6.1 风险分析与安全需求
 
@@ -168,17 +168,17 @@ BMS 固件不仅要"算对",还要"及时、安全、资源可控"。建议**视
 
 | 下游产物 | 依据本方法论的 | 承载(落地了什么) |
 |---|---|---|
-| [process-workflow.md](process-workflow.md) | §3 模型 / §4 原则3·4·5·6·7 / §5 DoR-DoD / §6 增强层 | 分支/提交/PR、分层质量门、DoR/DoD 本项目清单、安全改动路径、变更再基线、发布 |
-| [concept-documentation-system.md](concept-documentation-system.md) | §3 证据层 / §4 原则3·5·6·7 / §6.6 | 文档体系骨架、权威链、小 V 证据包、文档变更治理 |
-| [process-design-review.md](process-design-review.md) | §4 原则4·6·7 / §5 DoD / §6.6 | 架构/安全/任务/DB/诊断改动的设计评审门与记录方式 |
-| [standard-module-interface.md](design/standard-module-interface.md) | §4 原则2·3·4 / §6.5 | 模块接口、数据 owner、任务 owner、诊断路径、安全默认态 |
-| [quality-integration-test-strategy.md](quality-integration-test-strategy.md) | §4 原则2·3·5 / §6.3 | 多模块集成测试分层、首批集成场景、CI 演进 |
-| [process-agents.md](process-agents.md) + `.claude/agents/*` | §3 小 V 各阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
-| [templates/](templates/) | §4 原则3·7 / §6.2 | REQ/DES ID 规范、追溯矩阵、EARS 模板、需求元数据 |
+| [workflow.md](../process/workflow.md) | §3 模型 / §4 原则3·4·5·6·7 / §5 DoR-DoD / §6 增强层 | 分支/提交/PR、分层质量门、DoR/DoD 本项目清单、安全改动路径、变更再基线、发布 |
+| [documentation-system.md](documentation-system.md) | §3 证据层 / §4 原则3·5·6·7 / §6.6 | 文档体系骨架、权威链、小 V 证据包、文档变更治理 |
+| [design-review.md](../process/design-review.md) | §4 原则4·6·7 / §5 DoD / §6.6 | 架构/安全/任务/DB/诊断改动的设计评审门与记录方式 |
+| [module-interface.md](../standard/module-interface.md) | §4 原则2·3·4 / §6.5 | 模块接口、数据 owner、任务 owner、诊断路径、安全默认态 |
+| [integration-test-strategy.md](../quality/integration-test-strategy.md) | §4 原则2·3·5 / §6.3 | 多模块集成测试分层、首批集成场景、CI 演进 |
+| [agents.md](../process/agents.md) + `.claude/agents/*` | §3 小 V 各阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
+| [templates/](../templates) | §4 原则3·7 / §6.2 | REQ/DES ID 规范、追溯矩阵、EARS 模板、需求元数据 |
 | CI(`.github/workflows/ci.yml`) | §4 原则2·5 / §6.3·6.4·6.6 | 自动化验证门、实时/资源/证据归档的后续承载点 |
-| [quality-gates.md](quality-gates.md) | §4 原则5 / §6.3·6.4·6.6 | 当前 CI/本地门禁事实表、阈值与阻断状态 |
-| [superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md) | §3 模型 / §4 | agent 体系的设计取舍 |
-| [quality-management.md](quality-management.md) | §4 原则2·3·5·7 / §6 | 各阶段质量管控现状与缺口、对七原则与功能安全增强层的符合性 |
+| [gates.md](../quality/gates.md) | §4 原则5 / §6.3·6.4·6.6 | 当前 CI/本地门禁事实表、阈值与阻断状态 |
+| [superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](../archive/specs/2026-06-19-bms-agile-v-agents-design.md) | §3 模型 / §4 | agent 体系的设计取舍 |
+| [management.md](../quality/management.md) | §4 原则2·3·5·7 / §6 | 各阶段质量管控现状与缺口、对七原则与功能安全增强层的符合性 |
 
 ## 8. 术语表
 
@@ -202,7 +202,7 @@ BMS 固件不仅要"算对",还要"及时、安全、资源可控"。建议**视
 
 本文是下游一切流程的依据,其自身变更也须治理,否则"改了根、下游不知"缺一个闭环。
 
-- **Owner**:由 [.github/CODEOWNERS](../.github/CODEOWNERS) 指定(当前单人项目即维护者),PR 自动请其评审。
-- **版本**:`v1.2.1`(2026-07-01,注脚校正:原则1 架构改 engine core、§3 验证目标口径纳入 `qmxx_f407zg`、原则5 门禁改引 quality-gates.md、§6 范围提示、§6.4 改"视阶段纳入"、§7 增补 quality-gates.md 行;上版 `v1.2` 2026-06-30 +原则7 风险分级/安全案例驱动,+§6 BMS 功能安全增强层)。**原则/模型(§3·§4·§5·§6)** 变更升次版本,措辞/注脚/术语补充升修订。
+- **Owner**:由 [.github/CODEOWNERS](../../.github/CODEOWNERS) 指定(当前单人项目即维护者),PR 自动请其评审。
+- **版本**:`v1.2.1`(2026-07-01,注脚校正:原则1 架构改 engine core、§3 验证目标口径纳入 `qmxx_f407zg`、原则5 门禁改引 gates.md、§6 范围提示、§6.4 改"视阶段纳入"、§7 增补 gates.md 行;上版 `v1.2` 2026-06-30 +原则7 风险分级/安全案例驱动,+§6 BMS 功能安全增强层)。**原则/模型(§3·§4·§5·§6)** 变更升次版本,措辞/注脚/术语补充升修订。
 - **变更流程**:标准 docs PR(从 `master` 切 `docs/<kebab>` → PR → 评审 → Squash);**根文档改动的 PR 须在描述中评估对 §7 派生表所列下游的影响**。
-- **下游对齐(闭环)**:合并后按 §7 派生表逐项核对/更新下游;不能同 PR 完成的登记为 [TODO](../TODO.md) 跟踪项——**母文档与下游不得长期不一致**。
+- **下游对齐(闭环)**:合并后按 §7 派生表逐项核对/更新下游;不能同 PR 完成的登记为 [TODO](../../TODO.md) 跟踪项——**母文档与下游不得长期不一致**。

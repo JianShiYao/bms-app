@@ -15,7 +15,7 @@
 |---|---|
 | 类型 | 接口 / 架构 |
 | 优先级 / 安全等级 | 高 |
-| 来源 | `concept-architecture.md` database 原则 |
+| 来源 | `architecture.md` database 原则 |
 | 验证方法 | 测试 |
 | 关联设计 | DES-ENG-001 |
 | 关联测试 | `bms.integration.test_db_write_read_snapshot`（已补；待执行型验证） |
@@ -37,7 +37,7 @@
 |---|---|
 | 类型 | 架构约束 |
 | 优先级 / 安全等级 | 高 |
-| 来源 | `standard-module-interface.md` |
+| 来源 | `module-interface.md` |
 | 验证方法 | 检视 |
 | 关联设计 | DES-ENG-001 |
 | 关联测试 | — |
@@ -59,7 +59,7 @@
 |---|---|
 | 类型 | 安全 |
 | 优先级 / 安全等级 | 高 |
-| 来源 | `concept-safety.md` / `concept-architecture.md` |
+| 来源 | `safety.md` / `architecture.md` |
 | 验证方法 | 测试 |
 | 关联设计 | DES-ENG-002 |
 | 关联测试 | `bms.integration.test_diag_error_blocks_normal`（已补；待执行型验证） |
@@ -82,7 +82,7 @@
 |---|---|
 | 类型 | 安全 |
 | 优先级 / 安全等级 | 高 |
-| 来源 | `concept-safety.md` SG-06/SG-12，`concept-architecture.md` BMS/SYS 状态机 |
+| 来源 | `safety.md` SG-06/SG-12，`architecture.md` BMS/SYS 状态机 |
 | 验证方法 | 测试 |
 | 关联设计 | DES-ENG-003 |
 | 关联测试 | `bms.integration.test_bms_fault_opens_contactor`（已补；待执行型验证） |
@@ -104,7 +104,7 @@
 |---|---|
 | 类型 | 安全 |
 | 优先级 / 安全等级 | 高 |
-| 来源 | `concept-safety.md` 运行模式与安全态 |
+| 来源 | `safety.md` 运行模式与安全态 |
 | 验证方法 | 测试 |
 | 关联设计 | DES-ENG-003 |
 | 关联测试 | `bms.integration.test_bms_default_open`（已补；待执行型验证） |
@@ -127,7 +127,7 @@
 |---|---|
 | 类型 | 架构 / 实时性 |
 | 优先级 / 安全等级 | 高 |
-| 来源 | foxBMS 2 FTASK 思路，`standard-module-interface.md` |
+| 来源 | foxBMS 2 FTASK 思路，`module-interface.md` |
 | 验证方法 | 检视 / 集成测试 |
 | 关联设计 | DES-ENG-004 |
 | 关联测试 | `bms.integration.test_task_pipeline_smoke`（待补） |

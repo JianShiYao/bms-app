@@ -44,10 +44,10 @@ scripts/.cppcheck-addons/
 *.ctu-info
 
 # 硬件资料：体积大的二进制（数据手册 PDF / BOM xlsx / CubeMX ioc）不入库，
-# 另存网盘或 Git LFS；仅保留 docs/hardware/ 下的文本说明（.md/.txt）。
-docs/hardware/**/*.pdf
-docs/hardware/**/*.xlsx
-docs/hardware/**/*.ioc
+# 另存网盘或 Git LFS；仅保留 docs/reference/hardware/ 下的文本说明（.md/.txt）。
+docs/reference/hardware/**/*.pdf
+docs/reference/hardware/**/*.xlsx
+docs/reference/hardware/**/*.ioc
 
 # Doxygen 生成输出（CI 发布到 Pages，不入库）
 doxygen-out/

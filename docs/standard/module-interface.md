@@ -1,6 +1,6 @@
 # 模块接口标准
 
-> **文档定位**：本文定义 BMS 业务模块、engine 模块、硬件抽象模块的接口契约。目标是让代码逐步靠拢 [concept-architecture.md](concept-architecture.md) 的 foxBMS 2 inspired 架构，并避免模块重新退回“互相直接调用/各自开线程”的旧形态。
+> **文档定位**：本文定义 BMS 业务模块、engine 模块、硬件抽象模块的接口契约。目标是让代码逐步靠拢 [architecture.md](../concept/architecture.md) 的 foxBMS 2 inspired 架构，并避免模块重新退回“互相直接调用/各自开线程”的旧形态。
 
 ## 1. 模块分类
 
@@ -41,7 +41,7 @@ enum bms_state bms_next_state(enum bms_state cur,
 
 ## 4. 数据所有权
 
-目标架构以 `bms_db` 为数据交换中心。entry 清单、唯一 owner、validity、sequence、stale 与 copy-by-value 规则以 [concept-data-model.md](concept-data-model.md) 为权威；本文只规定模块接口必须遵守的数据边界。
+目标架构以 `bms_db` 为数据交换中心。entry 清单、唯一 owner、validity、sequence、stale 与 copy-by-value 规则以 [data-model.md](../concept/data-model.md) 为权威；本文只规定模块接口必须遵守的数据边界。
 
 规则：
 

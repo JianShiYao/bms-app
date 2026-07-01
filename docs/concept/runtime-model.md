@@ -1,10 +1,10 @@
 # BMS 运行时模型 v0（设计契约）
 
-> **定位**：本文细化 [concept-architecture.md](concept-architecture.md) 的 ADR-ARCH-003（运行时由 `bms_task` 集中调度），是运行时的**权威设计契约**——规定 `bms_task` / `bms_time` / `bms_sys_mon` / watchdog 的**目标形态**。**agent 据此实现或重构代码，代码向本契约对齐**；本文不描述现状实现。
+> **定位**：本文细化 [architecture.md](architecture.md) 的 ADR-ARCH-003（运行时由 `bms_task` 集中调度），是运行时的**权威设计契约**——规定 `bms_task` / `bms_time` / `bms_sys_mon` / watchdog 的**目标形态**。**agent 据此实现或重构代码，代码向本契约对齐**；本文不描述现状实现。
 >
-> **现状与差距**不在此维护：见 [concept-architecture.md](concept-architecture.md) §11 迁移路径（本契约主要在 **M2** 与 **M5** 落地）。
+> **现状与差距**不在此维护：见 [architecture.md](architecture.md) §11 迁移路径（本契约主要在 **M2** 与 **M5** 落地）。
 >
-> **规范措辞**：**必须 / 应 / 不得** 表示契约要求，可在评审、实现、测试中引用。相关：数据契约 [concept-data-model.md](concept-data-model.md)、接口 [standard-module-interface.md](standard-module-interface.md)、诊断 [concept-diagnostics-fault-model.md](concept-diagnostics-fault-model.md)。
+> **规范措辞**：**必须 / 应 / 不得** 表示契约要求，可在评审、实现、测试中引用。相关：数据契约 [data-model.md](data-model.md)、接口 [module-interface.md](../standard/module-interface.md)、诊断 [diagnostics-fault-model.md](diagnostics-fault-model.md)。
 
 ## 1. 运行时设计原则
 
@@ -52,7 +52,7 @@
 
 - 每个被监控的 cyclic 任务在**进入/退出**调用 `bms_sys_mon_enter(id)` / `bms_sys_mon_exit(id)`，记录：`last_seen_ms`（心跳）、本次运行时间、峰值运行时间。
 - 判据：**心跳超时**（超过 N×周期未 enter）、**运行超时**（> 声明 WCET）、**栈余量不足** → 生成对应 `bms_diag` 条目。
-- 聚合写入 **`DB_TASK_HEALTH`** entry（owner = `bms_sys_mon`，见 [concept-data-model.md](concept-data-model.md)），供 diag / sys / comm 消费。
+- 聚合写入 **`DB_TASK_HEALTH`** entry（owner = `bms_sys_mon`，见 [data-model.md](data-model.md)），供 diag / sys / comm 消费。
 - `bms_sys_mon` 自身必须高优先级、极简、不阻塞，以保证能观察到其他任务失联。
 
 ## 7. watchdog 喂狗门控（契约）
@@ -64,7 +64,7 @@
 
 ## 8. stale（数据过期）判定（契约）
 
-- **stale 定义**：`bms_time_now_ms() − entry.timestamp_ms > 期望周期 × 容忍系数`；辅以 `sequence` 变化检测丢帧/重复。各 entry 的**期望周期与容忍系数**在 [concept-data-model.md](concept-data-model.md) 逐条定义。
+- **stale 定义**：`bms_time_now_ms() − entry.timestamp_ms > 期望周期 × 容忍系数`；辅以 `sequence` 变化检测丢帧/重复。各 entry 的**期望周期与容忍系数**在 [data-model.md](data-model.md) 逐条定义。
 - **消费即校验**：任何消费者读取 DB entry **必须**检查 `validity` 与 stale；**stale 或无效数据不得作为 NORMAL 依据**（失效安全）——例如电流无效/过期时 SOC 不积分、保护不据此闭合接触器。
 - stale 命中必须触发 `bms_diag`（如测量过期）。
 - 比较同样用有符号差值（§2）。
@@ -76,7 +76,7 @@
 
 ## 10. 迁移
 
-本契约的落地阶段见 [concept-architecture.md](concept-architecture.md) §11：
+本契约的落地阶段见 [architecture.md](architecture.md) §11：
 - **M2**：`bms_task` 任务表、`bms_time` 时间基准、绝对节拍、blocking 隔离。
 - **M5**：`bms_sys_mon` 心跳/运行时间监控、watchdog 门控。
 
@@ -84,5 +84,5 @@
 
 ## 11. 参考
 
-- [concept-architecture.md](concept-architecture.md) §6（ADR-ARCH-003）、§11、§12。
+- [architecture.md](architecture.md) §6（ADR-ARCH-003）、§11、§12。
 - foxBMS 2 FTASK / System Monitoring（链接见 concept-architecture §13）。

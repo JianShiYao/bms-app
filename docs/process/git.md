@@ -3,7 +3,7 @@
 本文是 bms-app 的 **Git 制度与操作细则**：仓库边界、分支/提交/合并规范、行尾与忽略策略、
 钩子、标准工作流、并行隔离、发布打标签，以及**常见场景的命令示例与恢复操作**。
 
-> **定位**：流程的"为什么/制度定义"以 [process-workflow.md](process-workflow.md) 为**单一事实源**；
+> **定位**：流程的"为什么/制度定义"以 [workflow.md](workflow.md) 为**单一事实源**；
 > 本文是其 **Git 机制细化 + 操作手册**，不重复定义制度，只把"怎么做、出错怎么救"讲透并举例。
 > 仓库：`github.com/JianShiYao/bms-app`（公开）。
 
@@ -12,7 +12,7 @@
 ## 1. 仓库拓扑与边界（什么进 git，什么不进）
 
 本项目用 west **T2 拓扑**：**只有 `bms-app/` 是 git 仓库**（既是应用，又是 west manifest）。
-Zephyr 与 HAL 模块由 `west update` 按 [west.yml](../west.yml) 拉到 workspace 上一级目录，**不属于本仓库**。
+Zephyr 与 HAL 模块由 `west update` 按 [west.yml](../../west.yml) 拉到 workspace 上一级目录，**不属于本仓库**。
 
 ```
 bms-workspace/            # 非 git 仓库（仅工作区容器）
@@ -23,9 +23,9 @@ bms-workspace/            # 非 git 仓库（仅工作区容器）
 
 **进 git 的**：`app/`、`boards/`、`drivers/`、`tests/`、`docs/`、`scripts/`、`.github/`、
 `west.yml`、`VERSION`、`CHANGELOG.md` 及各配置文件。
-**不进 git 的**（见 [.gitignore](../.gitignore)）：构建产物（`build*/`、`*.o/*.elf/*.bin/*.hex/*.map`）、
+**不进 git 的**（见 [.gitignore](../../.gitignore)）：构建产物（`build*/`、`*.o/*.elf/*.bin/*.hex/*.map`）、
 west 拉取的 `zephyr/*`·`modules/`·`tools/`、`twister-out/`、`.venv/`、cppcheck addon（`scripts/.cppcheck-addons/`）、
-Doxygen 输出（`doxygen-out/`）、硬件大二进制（`docs/hardware/**/*.pdf|*.xlsx|*.ioc` → 另存网盘/LFS）。
+Doxygen 输出（`doxygen-out/`）、硬件大二进制（`docs/reference/hardware/**/*.pdf|*.xlsx|*.ioc` → 另存网盘/LFS）。
 
 > 例外：`zephyr/module.yml`（模块注册文件）**必须入库**，故 `.gitignore` 用 `/zephyr/*` + `!/zephyr/module.yml` 放行。
 
@@ -82,14 +82,14 @@ feat: 改了好多东西          # scope 缺失、摘要笼统
 ## 4. 行尾（.gitattributes）与忽略（.gitignore）
 
 ### 4.1 行尾统一 LF
-[.gitattributes](../.gitattributes) 强制**仓库内一律 LF**（`* text=auto eol=lf`），Windows 工作副本可为 CRLF。
+[.gitattributes](../../.gitattributes) 强制**仓库内一律 LF**（`* text=auto eol=lf`），Windows 工作副本可为 CRLF。
 这解决两类坑：① clang-format/diff 因行尾"假改动"churn；② `.sh` 脚本带 CRLF 在 Linux/CI 跑不起来。
 
 > 历史教训：曾因 CRLF 导致 clang-format 把 `K_THREAD_DEFINE` 改坏；`.gitattributes` 落地后根治。
 > 二进制资产（`*.bin/*.elf/*.hex/*.png/*.pdf` 等）标 `binary`，永不转换。
 
 ### 4.2 忽略策略
-新增"不该入库"的东西时，**改 [.gitignore](../.gitignore) 而不是靠自觉**。分类见 §1。
+新增"不该入库"的东西时，**改 [.gitignore](../../.gitignore) 而不是靠自觉**。分类见 §1。
 临时/本地文件放到忽略目录，避免 `git add -A` 误带入。
 
 ---
@@ -102,12 +102,12 @@ feat: 改了好多东西          # scope 缺失、摘要笼统
 git config core.hooksPath scripts/hooks    # 在 bms-app/ 下执行一次
 ```
 
-启用后两道本地关（详见 [process-workflow.md §8](process-workflow.md)）：
+启用后两道本地关（详见 [workflow.md §8](workflow.md)）：
 
 | 钩子 | 时机 | 做什么 | 阻断性 |
 |---|---|---|---|
-| [pre-commit](../scripts/hooks/pre-commit) | `git commit` | 对暂存的 `app/drivers/tests` 下 `.c/.h` 跑 clang-format 校验 | **硬拒绝**（不符合则提交失败） |
-| [pre-push](../scripts/hooks/pre-push) | `git push` | push 范围 format + 机会性增量 clang-tidy + cppcheck/MISRA | format/tidy 失败**拒推**；cppcheck/MISRA **仅告警** |
+| [pre-commit](../../scripts/hooks/pre-commit) | `git commit` | 对暂存的 `app/drivers/tests` 下 `.c/.h` 跑 clang-format 校验 | **硬拒绝**（不符合则提交失败） |
+| [pre-push](../../scripts/hooks/pre-push) | `git push` | push 范围 format + 机会性增量 clang-tidy + cppcheck/MISRA | format/tidy 失败**拒推**；cppcheck/MISRA **仅告警** |
 
 应急绕过（**仅限紧急、需说明理由**）：`git commit --no-verify` / `git push --no-verify`。
 
@@ -161,7 +161,7 @@ git worktree remove ../bms-app-soc                        # 合并后清理
 
 - **默认单工作树串行即可**，仅在真有并行需求时才开 worktree（避免过度工程）。
 - **禁止**两个 session 指向同一工作树改同一批文件（丢更新、状态错乱的根源）。
-- 详见 [process-workflow.md §3.1](process-workflow.md)。
+- 详见 [workflow.md §3.1](workflow.md)。
 
 ---
 
@@ -191,7 +191,7 @@ gh api -X PATCH repos/JianShiYao/bms-app \
 
 ## 9. 发布与标签管理（CD）
 
-版本由 [VERSION](../VERSION) 文件 + git tag + [release.yml](../.github/workflows/release.yml) 联动；遵循 **SemVer 0.x**（`0.MINOR.PATCH`）。
+版本由 [VERSION](../../VERSION) 文件 + git tag + [release.yml](../../.github/workflows/release.yml) 联动；遵循 **SemVer 0.x**（`0.MINOR.PATCH`）。
 
 ```bash
 # 1) 开发布分支，改 VERSION（PATCHLEVEL 或 VERSION_MINOR +1）+ CHANGELOG
@@ -206,7 +206,7 @@ git tag -a v0.1.2 -m "release v0.1.2"
 git push origin v0.1.2                      # 触发 release.yml：构建固件 + SHA256SUMS + GitHub Release
 ```
 
-- tag 命名 **`vX.Y.Z`**；[scripts/check-version-tag.sh](../scripts/check-version-tag.sh) 校验 `tag == VERSION`。
+- tag 命名 **`vX.Y.Z`**；[scripts/check-version-tag.sh](../../scripts/check-version-tag.sh) 校验 `tag == VERSION`。
 - 已发布：`v0.1.0`、`v0.1.1`（制品含 `mps2-an386-zephyr.{elf,bin,map}` + `SHA256SUMS`）。
 - MINOR 进位 = 新功能/可能破坏；PATCH = 修复。上真实 STM32F405 板量产稳定后再升 `1.0.0`。
 
@@ -257,7 +257,7 @@ git merge --abort           # 想放弃整个合并、回到合并前
 
 ### 10.6 误删文件 / 想丢弃本地改动
 ```bash
-git restore docs/design/concept-architecture.md         # 丢弃该文件的未暂存改动（恢复到 HEAD）
+git restore docs/concept/architecture.md         # 丢弃该文件的未暂存改动（恢复到 HEAD）
 git checkout -- .claude/CLAUDE.md         # 旧写法，恢复被删文件（本会话真实用过）
 git restore --staged file                 # 仅取消暂存，保留改动
 git clean -nd                             # 先预览将删除哪些未跟踪文件（-n 只看不删）
@@ -310,5 +310,5 @@ git show <hash>                # 某次提交的完整 diff
 
 ---
 
-> 相关文档：[process-workflow.md](process-workflow.md)（流程权威）、
-> [guide-build.md](guide-build.md)（构建/运行/测试）、[quality-management.md](quality-management.md)（质量管控全景）。
+> 相关文档：[workflow.md](workflow.md)（流程权威）、
+> [build.md](../guide/build.md)（构建/运行/测试）、[management.md](../quality/management.md)（质量管控全景）。

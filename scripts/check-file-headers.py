@@ -12,10 +12,10 @@ verifies:
               - ``@file <name>`` whose argument equals the actual file name,
               - ``@brief`` (non-empty), and
               - ``@ingroup <DOMAIN>`` with DOMAIN in the allowed module-domain
-                set (kept in sync with docs/traceability.md / CLAUDE.md).
+                set (kept in sync with docs/work/traceability.md / CLAUDE.md).
 
 Scope is intentionally ``app/`` only: tests/ and drivers/ follow different
-conventions (see docs/coding-style.md). Pass explicit roots to widen it.
+conventions (see docs/standard/coding-style.md). Pass explicit roots to widen it.
 
 Exit code: 0 if all files pass, 1 otherwise. Pure stdlib; runs identically on
 Windows (check.ps1) and Linux (CI).
@@ -26,7 +26,7 @@ import os
 import re
 import sys
 
-# Module domains, kept in sync with CLAUDE.md / docs/traceability.md.
+# Module domains, kept in sync with CLAUDE.md / docs/work/traceability.md.
 ALLOWED_INGROUPS = {"SYS", "AFE", "SOC", "PROT", "BAL", "COMM", "BOARD"}
 
 SPDX_FIRST_LINE = "/* SPDX-License-Identifier: Apache-2.0 */"

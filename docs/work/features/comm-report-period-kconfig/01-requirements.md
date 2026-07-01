@@ -20,7 +20,7 @@
 - 周期配置项指 `CONFIG_BMS_COMM_REPORT_PERIOD_MS`（单位 ms，整数），下称「上报周期」。
 - 数值与单位以 `app/include/bms/types.h`/Kconfig 为准：周期单位 ms、默认 200ms。
 - `P_min` / `P_max`：上报周期的合法下界 / 上界，单位 ms，**具体取值由 ②架构 / ③设计阶段确定**（需求层仅约束：`P_min` 必须严格 > 0，`P_max` 为工程上界且 `P_max ≥ 200`）。本文凡涉具体边界值处均以符号引用，便于设计阶段收敛后回填。
-- 失效安全相关需求以 ⚠️ 标注（对齐 docs/process-workflow.md §2 与计划第 4 节）。
+- 失效安全相关需求以 ⚠️ 标注（对齐 docs/process/workflow.md §2 与计划第 4 节）。
 - 「钳制（clamp）」：当输入越界时映射到最近的合法边界值（< `P_min` → `P_min`；> `P_max` → `P_max`），并保证结果落在 `[P_min, P_max]`。
 
 ## 需求列表

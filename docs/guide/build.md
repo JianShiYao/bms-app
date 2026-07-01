@@ -5,8 +5,8 @@
 > 外加命令语法、构建产物、配置覆盖、清理与排错。
 >
 > **不在本文范围**：分支/提交/PR/发布等开发流程，以及 clang-format/clang-tidy/cppcheck 等
-> **质量门禁工具的安装与使用** —— 见 [process-workflow.md](process-workflow.md) 与
-> [README.md](../README.md)「代码格式化」「静态分析工具依赖」。各项约定的唯一来源是 [../CLAUDE.md](../CLAUDE.md)。
+> **质量门禁工具的安装与使用** —— 见 [workflow.md](../process/workflow.md) 与
+> [README.md](../../README.md)「代码格式化」「静态分析工具依赖」。各项约定的唯一来源是 [../CLAUDE.md](../../CLAUDE.md)。
 
 ---
 
@@ -234,7 +234,7 @@ west build -b mps2/an386 app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 ```
 
 > BMS 关键 Kconfig（`BMS_CELL_COUNT`、各 `BMS_*_PERIOD_MS`、SOC 容量等）默认值见 `app/prj.conf` 与 `app/Kconfig`，
-> 含义见 [../CLAUDE.md](../CLAUDE.md) 的「Kconfig 关键项」。永久改动写进 `prj.conf`，**别只在 menuconfig 里改**（不持久）。
+> 含义见 [../CLAUDE.md](../../CLAUDE.md) 的「Kconfig 关键项」。永久改动写进 `prj.conf`，**别只在 menuconfig 里改**（不持久）。
 
 ---
 
@@ -279,8 +279,8 @@ powershell -ExecutionPolicy Bypass -File scripts\check.ps1
 powershell -ExecutionPolicy Bypass -File scripts\check.ps1 -Fast   # 仅 format+build+test（跳过两个重门）
 ```
 
-> 质量门禁的分层触发、各门含义、工具安装见 [process-workflow.md](process-workflow.md) 与
-> [README.md](../README.md)「静态分析工具依赖」。
+> 质量门禁的分层触发、各门含义、工具安装见 [workflow.md](../process/workflow.md) 与
+> [README.md](../../README.md)「静态分析工具依赖」。
 
 ---
 
@@ -330,4 +330,4 @@ Remove-Item -Recurse -Force build
 ---
 
 > 当前版本：`VERSION` = **0.1.1**（SemVer 0.x）。本文与 README/CLAUDE.md 的命令保持一致；
-> 若发现不一致，以本仓库 [CLAUDE.md](../CLAUDE.md)（唯一来源）为准并同步本文。
+> 若发现不一致，以本仓库 [CLAUDE.md](../../CLAUDE.md)（唯一来源）为准并同步本文。

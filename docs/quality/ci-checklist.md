@@ -5,7 +5,7 @@
 > twister + SCA 钩子，而非手写 CMake target。**
 
 **状态（2026-06）**：P0 / P1 已全部落地，质量门禁体系已成型。本清单从「待办计划」转为
-**「已完成对照 + 剩余可选项」**。当前门禁事实表见 [quality-gates.md](quality-gates.md)；本文只记录「门禁做了什么、怎么落地的、还差什么」。
+**「已完成对照 + 剩余可选项」**。当前门禁事实表见 [gates.md](gates.md)；本文只记录「门禁做了什么、怎么落地的、还差什么」。
 
 ## 门禁能力现状
 
@@ -16,7 +16,7 @@
 | clang-tidy（零告警） | `.clang-tidy`（cert-*/readability-*，WarningsAsErrors）+ CI 硬门 | ✅ 已落地 |
 | cppcheck + MISRA | cppcheck + MISRA addon（CI 硬门；pre-push + check.ps1 本地 warn-only） | ✅ 已落地 |
 | editorconfig/yaml/文件头 | editorconfig-checker、yamllint、file-header 检查已入 CI；Python 风格未单独加 flake8 | ✅ 主要项已落地 |
-| CI 流水线（门禁） | `.github/workflows/ci.yml`（完整阻断门见 `quality-gates.md`） | ✅ 已落地 |
+| CI 流水线（门禁） | `.github/workflows/ci.yml`（完整阻断门见 `gates.md`） | ✅ 已落地 |
 | 多配置/多板编译矩阵 | build 矩阵 mps2/an386 + native_sim + qmxx_f407zg；bms_f405 待板级完善 | ✅ 已落地 |
 | Doxygen + Pages | Doxygen 公共 API + GitHub Pages | ✅ 已落地 |
 | 供应链/产物安全（SBOM·签名·provenance） | Release 已生成 SPDX SBOM 并签名 SHA256SUMS；build provenance 待补 | ⚠️ 部分 |

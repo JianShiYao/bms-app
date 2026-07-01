@@ -2,7 +2,7 @@
 
 > 特性 slug：`soc-coulomb`
 > 阶段：小 V 左腿第①层 —— 需求分析（`bms-requirements`）
-> 输入：`docs/features/soc-coulomb/00-iteration-plan.md`；`app/include/bms/types.h`、`app/include/bms/soc.h`、`app/Kconfig`
+> 输入：`docs/work/features/soc-coulomb/00-iteration-plan.md`；`app/include/bms/types.h`、`app/include/bms/soc.h`、`app/Kconfig`
 > 交付物语言：中文。
 > 本文件只定义「做什么」与「如何验收」，不做架构/实现决策（不指定函数/线程/数据结构）。
 

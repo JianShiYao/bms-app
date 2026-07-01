@@ -1,7 +1,7 @@
 /*
  * AFE 仿真后端单元测试（ztest, native_sim / mps2-an386）
  *
- * 被测：仿真后端纯函数核心（设计：docs/design/concept-architecture.md「数据源后端可切换（afe）」）
+ * 被测：仿真后端纯函数核心（设计：docs/concept/architecture.md「数据源后端可切换（afe）」）
  *  - bms_afe_sim_state_reset —— 复位到确定起点（T-RESET）
  *  - bms_afe_sim_step        —— 三角充放电 + 库仑积分 + OCV 映射 + 温升（T-STEP）
  *
@@ -224,7 +224,7 @@ ZTEST(bms_afe_sim, test_deterministic_for_same_inputs)
 
 /* ============================================================
  * T-VALIDATE：bms_afe_validate 合理性校验（测量数据纪律，安全相关）
- * 回链：docs/design/concept-architecture.md「测量数据纪律」
+ * 回链：docs/concept/architecture.md「测量数据纪律」
  * ============================================================ */
 
 /* 与 afe.c 经 Kconfig 注入的回退默认一致的本地镜像 */

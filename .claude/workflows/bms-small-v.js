@@ -21,8 +21,8 @@ const riskTier = (_args && _args.riskTier) || 'normal'
 if (!slug || !feature) {
   throw new Error('bms-small-v 需要 args = { slug, feature, riskTier? }；实际收到 typeof=' + (typeof args) + ' value=' + JSON.stringify(args))
 }
-const FEAT = `docs/features/${slug}`
-const REPO_HINT = '项目根=bms-app；构建/测试用 Windows venv：在 bms-app/ 下 `..\\.venv\\Scripts\\python.exe -m west ...`，测试用 `..\\run-tests-coverage.ps1 -Board mps2/an386`（见 docs/process-agents.md §4）。'
+const FEAT = `docs/work/features/${slug}`
+const REPO_HINT = '项目根=bms-app；构建/测试用 Windows venv：在 bms-app/ 下 `..\\.venv\\Scripts\\python.exe -m west ...`，测试用 `..\\run-tests-coverage.ps1 -Board mps2/an386`（见 docs/process/agents.md §4）。'
 
 // ---------- 角色扮演 prompt（读 .claude/agents 单一事实源）----------
 function rolePrompt(role, task) {
@@ -234,5 +234,5 @@ return {
   tdd: { failures: testV.failures, covLine: testV.covLine },
   traceability: trace,
   deliverables: `bms-app/${FEAT}/`,
-  note: '未执行任何 git 操作；请人工审阅 docs/features/' + slug + ' 与 app/、tests/ 改动后再提交。',
+  note: '未执行任何 git 操作；请人工审阅 docs/work/features/' + slug + ' 与 app/、tests/ 改动后再提交。',
 }

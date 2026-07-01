@@ -1,12 +1,12 @@
 # `bms-small-v` 自动编排工作流 · 操作指导
 
 一条调用自动跑完一个特性的敏捷-V 小 V（编排→需求→架构→详细设计→TDD→CICD→评审→追溯校验）。
-脚本：[`.claude/workflows/bms-small-v.js`](../.claude/workflows/bms-small-v.js)。
+脚本：[`.claude/workflows/bms-small-v.js`](../../.claude/workflows/bms-small-v.js)。
 
-- 设计依据：[docs/superpowers/specs/2026-06-30-bms-small-v-workflow-design.md](superpowers/specs/2026-06-30-bms-small-v-workflow-design.md)
-- 实施计划：[docs/superpowers/plans/2026-06-30-bms-small-v-workflow.md](superpowers/plans/2026-06-30-bms-small-v-workflow.md)
-- 借鉴来源：`agency-agents` 的"编排者 agent + QA 门 + 重试"——这里把"编排者"实现为 **Workflow 脚本本身**（绕开 Claude Code subagent 不能嵌套），QA门+重试=tester↔coder 真值门循环，跨阶段交接=`docs/features/<slug>/` 文件（非 MCP memory）。
-- 与手动方式的关系：本工作流是 [process-agents.md](process-agents.md) §3.2「方案 A 主会话手动派发」的**自动化版本**；二者产物布局一致。
+- 设计依据：[docs/archive/specs/2026-06-30-bms-small-v-workflow-design.md](../archive/specs/2026-06-30-bms-small-v-workflow-design.md)
+- 实施计划：[docs/archive/plans/2026-06-30-bms-small-v-workflow.md](../archive/plans/2026-06-30-bms-small-v-workflow.md)
+- 借鉴来源：`agency-agents` 的"编排者 agent + QA 门 + 重试"——这里把"编排者"实现为 **Workflow 脚本本身**（绕开 Claude Code subagent 不能嵌套），QA门+重试=tester↔coder 真值门循环，跨阶段交接=`docs/work/features/<slug>/` 文件（非 MCP memory）。
+- 与手动方式的关系：本工作流是 [agents.md](agents.md) §3.2「方案 A 主会话手动派发」的**自动化版本**；二者产物布局一致。
 
 ---
 
@@ -22,7 +22,7 @@ phase 4 验收    追溯门：断言 traceability.md 6 列无空格 + 用例名�
 ```
 
 - **阶段门**分层锚定真值：能跑的阶段锚 `west build`/twister 退出码；文档阶段用独立验证者对抗式审。
-- 每道门把结论追加到 `docs/features/<slug>/gate-log.md`（可追溯重试历史）。
+- 每道门把结论追加到 `docs/work/features/<slug>/gate-log.md`（可追溯重试历史）。
 - **不碰 git**：只把文档/代码/测试写进工作树，提交由人事后处理。
 
 ## 2. 前提（调用前确认）
@@ -48,7 +48,7 @@ Workflow({
 })
 ```
 
-- `slug`：特性目录名（kebab，如 `contactor-gpio`）→ 产物落在 `docs/features/<slug>/`。
+- `slug`：特性目录名（kebab，如 `contactor-gpio`）→ 产物落在 `docs/work/features/<slug>/`。
 - `feature`：一句话目标（越具体越好，含默认值/单位）。
 - `riskTier`：
   - `safety`：protection/阈值/接触器/采样等安全相关 → **强制 tester 先写红灯用例**再实现。

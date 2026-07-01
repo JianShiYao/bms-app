@@ -37,15 +37,15 @@
 
 ### - [ ] ① 需求 —— `bms-requirements`
 - 调用 agent：`bms-requirements`
-- 输入文件：本计划 `docs/features/soc-coulomb/00-iteration-plan.md`；`app/include/bms/types.h`、`app/include/bms/soc.h`、`app/Kconfig`
-- 预期产出文件：`docs/features/soc-coulomb/01-requirements.md`
+- 输入文件：本计划 `docs/work/features/soc-coulomb/00-iteration-plan.md`；`app/include/bms/types.h`、`app/include/bms/soc.h`、`app/Kconfig`
+- 预期产出文件：`docs/work/features/soc-coulomb/01-requirements.md`
 - 内容要点：功能需求（积分公式、单位与符号约定、SOC 夹紧、发布触发条件）、上电初始化策略、时间间隔来源与异常（首帧、丢帧、时间戳回绕/非单调）、⚠️ 失效安全需求（见第 4 节）、可量化验收判据（精度/边界/容差）
 - 准出判据：每条需求有唯一 `REQ-SOC-Cxx` ID、可测试、含明确数值容差；⚠️ 失效安全需求齐备；回填第 3 节「需求ID」列
 
 ### - [ ] ② 架构 —— `bms-architect`
 - 调用 agent：`bms-architect`
 - 输入文件：`01-requirements.md`；`app/src/bms/channels.c`、`app/include/bms/channels.h`、`app/src/bms/soc/soc.c`（zbus 解耦现状）
-- 预期产出文件：`docs/features/soc-coulomb/02-architecture.md`（含 ADR）
+- 预期产出文件：`docs/work/features/soc-coulomb/02-architecture.md`（含 ADR）
 - 关键架构决策（待定，需 ADR 记录）：
   - **状态归属**：库仑积分需要跨帧状态（累计电荷、上一帧时间戳、SOC 当前值）。决策其存放位置——模块内静态状态 vs 通过扩展的 `bms_soc_estimate` 入参传入（影响纯函数可单测性，对齐 protection 的「纯逻辑/线程分离」范式）。
   - **接口形态**：是否需要新增纯函数（如 `bms_soc_coulomb_step(state, meas, &out)`）以保持可单测、无副作用；现有 `bms_soc_estimate` 是否保留/改签名。
@@ -57,7 +57,7 @@
 ### - [ ] ③ 详细设计 —— `bms-designer`
 - 调用 agent：`bms-designer`
 - 输入文件：`02-architecture.md`；`app/src/bms/soc/soc.c`、`app/include/bms/soc.h`、`app/include/bms/types.h`
-- 预期产出文件：`docs/features/soc-coulomb/03-design.md`
+- 预期产出文件：`docs/work/features/soc-coulomb/03-design.md`
 - 内容要点：函数签名与数据结构（积分状态结构体、纯函数原型）、定点积分算法与防溢出（`int64_t` 电荷累加、mA·ms→mAh 的换算与舍入）、夹紧与饱和、首帧/丢帧/时间戳异常的具体处理分支、新增 Kconfig 项的默认值与范围、伪代码、单元可测点清单
 - 准出判据：设计项可直接编码；定点运算给出量纲推导与溢出边界证明；每个设计项回链需求ID 与架构决策；回填第 3 节「设计项」列
 
@@ -81,7 +81,7 @@
 ### - [ ] ⑥ CICD —— `bms-cicd`
 - 调用 agent：`bms-cicd`
 - 输入文件：`run-tests-coverage.ps1`、`tests/bms/soc/testcase.yaml`、CI 配置（如存在）
-- 预期产出文件：`docs/features/soc-coulomb/06-cicd.md`；必要时更新 CI/脚本使本特性测试纳入流水线
+- 预期产出文件：`docs/work/features/soc-coulomb/06-cicd.md`；必要时更新 CI/脚本使本特性测试纳入流水线
 - 准出判据：`bms.soc` 测试在流水线（Windows venv，板 `mps2/an386`）自动执行并通过；构建+测试+覆盖率链路绿；无回归
 
 ---

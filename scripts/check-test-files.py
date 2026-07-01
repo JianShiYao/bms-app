@@ -17,7 +17,7 @@ SRC = ROOT / "app" / "src" / "bms"
 TESTS = ROOT / "tests" / "bms"
 
 # 已知缺测、显式豁免的模块（技术债登记；补上 tests/bms/<name> 后从此处删除）。
-# 对齐 docs/quality-management.md「待补齐清单」。
+# 对齐 docs/quality/management.md「待补齐清单」。
 EXEMPT = {
     "balancing": "纯函数 bms_balancing_compute 待补单测",
     "engine": "db/diag/task（集中调度/数据库/诊断）单测待补",

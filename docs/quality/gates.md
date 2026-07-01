@@ -1,8 +1,8 @@
 # 质量门禁事实表
 
 本文记录当前 CI / 本地检查的实际门禁状态。流程原则见
-[process-workflow.md](process-workflow.md)，质量全景见
-[quality-management.md](quality-management.md)。当 `.github/workflows/ci.yml`
+[workflow.md](../process/workflow.md)，质量全景见
+[management.md](management.md)。当 `.github/workflows/ci.yml`
 变化时，优先同步本文，再更新其他文档引用。
 
 ## CI 门禁

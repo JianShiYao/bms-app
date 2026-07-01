@@ -2,11 +2,11 @@
 
 本文说明 `.claude/agents/` 下这套覆盖**需求→架构→详细设计→编码→测试→CICD**全流程的
 Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方法论依据见根基文档
-[concept-methodology.md](concept-methodology.md);本文是该方法论"小 V 各阶段"的 agent 执行载体。
+[methodology.md](../concept/methodology.md);本文是该方法论"小 V 各阶段"的 agent 执行载体。
 
-- 设计依据：[docs/superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md)
-- 实施计划：[docs/superpowers/plans/2026-06-19-bms-agile-v-agents.md](superpowers/plans/2026-06-19-bms-agile-v-agents.md)
-- 端到端样例：[docs/features/soc-coulomb/](features/soc-coulomb/)（一个完整"小 V"的全部交付物）
+- 设计依据：[docs/archive/specs/2026-06-19-bms-agile-v-agents-design.md](../archive/specs/2026-06-19-bms-agile-v-agents-design.md)
+- 实施计划：[docs/archive/plans/2026-06-19-bms-agile-v-agents.md](../archive/plans/2026-06-19-bms-agile-v-agents.md)
+- 端到端样例：[docs/work/features/soc-coulomb/](../work/features/soc-coulomb)（一个完整"小 V"的全部交付物）
 
 ---
 
@@ -44,7 +44,7 @@ Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方�
 `bms-orchestrator` **只产出迭代计划与派发清单**，不亲自实现，也**不能**直接调用其它 agent
 （subagent 不可嵌套）。真正"按顺序调用 ①~⑥"由**主会话**照计划执行。典型一轮：
 
-1. 把一个特性交给 `bms-orchestrator` → 得到 `docs/features/<slug>/00-iteration-plan.md`
+1. 把一个特性交给 `bms-orchestrator` → 得到 `docs/work/features/<slug>/00-iteration-plan.md`
 2. 主会话照清单**依次**派发 `bms-requirements` → `bms-architect` → `bms-designer`（左腿，串行依赖）
 3. 根据风险选择 TDD 握手：
    - 安全/核心逻辑改动：先派 `bms-tester` 写红灯用例（确认能失败）→ 再派 `bms-coder` 实现 → 再派 `bms-tester` 复验并出报告
@@ -95,14 +95,14 @@ Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方�
 ### 3.6 并行与 worktree 约束
 
 默认在单一工作树中串行推进一个小 V。确需并行推进多个不相关特性时，遵循
-[process-workflow.md §3.1](process-workflow.md)：
+[workflow.md §3.1](workflow.md)：
 
 - 一任务 = 一 worktree = 一分支 = 一 PR，最终只通过 `master` 汇合
 - 禁止两个会话/agent 在同一工作树同时改同一批文件
 - `coder` 与 `tester` 若要并行，只能在各自隔离 worktree 中工作；主会话负责合并与冲突裁决
 - 并行分支合并前，必须重新核对 `traceability.md`、测试报告与 CI 门，避免一边的变更使另一边断链
 
-常用开/收命令见 [process-workflow.md §3.1](process-workflow.md)；不要为普通单特性工作强行开 worktree。
+常用开/收命令见 [workflow.md §3.1](workflow.md)；不要为普通单特性工作强行开 worktree。
 
 ### 3.7 什么时候不用完整小 V
 
@@ -120,7 +120,7 @@ Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方�
 
 ### 3.8 交付物布局
 ```
-docs/features/<feature-slug>/
+docs/work/features/<feature-slug>/
 ├─ 00-iteration-plan.md   # orchestrator：计划+派发清单
 ├─ 01-requirements.md     # requirements
 ├─ 02-architecture.md     # architect
@@ -129,7 +129,7 @@ docs/features/<feature-slug>/
 ├─ 06-cicd.md             # cicd
 └─ traceability.md        # 独立追溯矩阵（orchestrator 初始化，各阶段回填）
 ```
-产品代码与测试仍写入既有 `app/`、`tests/`；`docs/features/<slug>/` 只放过程交付物。
+产品代码与测试仍写入既有 `app/`、`tests/`；`docs/work/features/<slug>/` 只放过程交付物。
 
 ## 4. 工具链速记（以 Windows venv 为准）
 
@@ -163,23 +163,23 @@ WSL + `native_sim` 仅用于更可靠的覆盖率（CI 即走 native_sim）。
 
 项目已有一套需求工程脚手架，**这套 agent 应当对齐它**：
 
-- **ID 规范**（见 [docs/templates/README.md](templates/README.md)）：需求 `REQ-<域>-<NNN>`、设计 `DES-<域>-<NNN>`；
+- **ID 规范**（见 [docs/templates/README.md](../templates/README.md)）：需求 `REQ-<域>-<NNN>`、设计 `DES-<域>-<NNN>`；
   域 = `SYS/AFE/SOC/PROT/BAL/COMM/BOARD`。例：`REQ-SOC-001`、`DES-SOC-002`。
-- **模板**：[requirements-template.md](templates/requirements-template.md) /
-  [design-spec-template.md](templates/design-spec-template.md) /
-  [traceability-matrix-template.md](templates/traceability-matrix-template.md)。
+- **模板**：[requirements-template.md](../templates/requirements-template.md) /
+  [design-spec-template.md](../templates/design-spec-template.md) /
+  [traceability-matrix-template.md](../templates/traceability-matrix-template.md)。
 - **追溯**：每条需求可追溯到一个验证手段；安全相关需求优先自动化测试；ztest 用
   `/* Verifies REQ-XXX-NNN: ... */` 注释标注。
-- **分支/PR**（见 [process-workflow.md](process-workflow.md)）：从最新 **master** 切
+- **分支/PR**（见 [workflow.md](workflow.md)）：从最新 **master** 切
   `feat/<kebab>` 分支，PR `--base master`，仅 Squash 合并，master 受 6 道 CI 门保护。
 
 > ⚠️ 已知偏差（仅限历史样例 `soc-coulomb`，规则面向后续新特性）：该样例用了 `REQ-SOC-Cxx`、
 > 把追溯表塞进 `00-iteration-plan.md`、从 `ci/local-quality-layering` 切分支。这三点的**明文规则**现已固化在
-> [process-workflow.md §1.1–1.2、§3](process-workflow.md)（ID 用 `REQ-<域>-NNN`、追溯矩阵独立成 `traceability.md`、
+> [workflow.md §1.1–1.2、§3](workflow.md)（ID 用 `REQ-<域>-NNN`、追溯矩阵独立成 `traceability.md`、
 > 特性分支从 `master` 切）——后续 agent 的 CKB/契约以该处为准；历史样例不回改。
 >
 > **ID 规范化进展（2026-06-24）**：`REQ-SOC-Cxx` 已规范为 **`REQ-SOC-025..036`**（接续遗留 `soc.md` 001-024，`C0x→0(x+24)`）。
-> **活代码** `tests/bms/soc/` 已用规范 ID，权威矩阵见 [docs/traceability.md](traceability.md)；`docs/features/soc-coulomb/` 过程文档因
+> **活代码** `tests/bms/soc/` 已用规范 ID，权威矩阵见 [docs/work/traceability.md](../work/traceability.md)；`docs/work/features/soc-coulomb/` 过程文档因
 > REQ/ADR/裸码交织且属历史记录，**保留原始 `Cxx`**（不回改，映射见 traceability.md）。protection/afe 测试的 REQ 注释为独立后续项。
 
 ## 6. 扩展点（YAGNI 之外）

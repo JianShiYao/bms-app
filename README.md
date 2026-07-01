@@ -2,8 +2,8 @@
 
 基于 **Zephyr RTOS v4.4.0** 的电池管理系统（BMS）固件。采用 west **T2 拓扑**（本仓库即 manifest 仓库），分层架构 + zbus 消息总线解耦。
 
-> 参与开发请先读 **[开发流程与质量审查](docs/process-workflow.md)**（分支模型 / 提交规范 / PR 流程 / 质量门禁 / 发布）；
-> Git 操作细则、命令示例与出错恢复见 **[Git 管理制度与操作手册](docs/process-git.md)**。
+> 参与开发请先读 **[开发流程与质量审查](docs/process/workflow.md)**（分支模型 / 提交规范 / PR 流程 / 质量门禁 / 发布）；
+> Git 操作细则、命令示例与出错恢复见 **[Git 管理制度与操作手册](docs/process/git.md)**。
 
 - 第一步：在 PC 上用 **QEMU（`mps2/an386`，Cortex-M4F）** 跑通架构与业务骨架。
   - 选 `mps2/an386` 是因为它与目标 STM32F405 同为 **Cortex-M4F（带硬件 FPU）**，架构忠实。
@@ -34,11 +34,11 @@ bms-app/                     # 本仓库（west manifest 仓库）
 
 ## 一、环境搭建 / 构建 / 运行 / 测试
 
-> **完整步骤见 [构建指南 docs/guide-build.md](docs/guide-build.md)** —— 工具链与 SDK 安装、
+> **完整步骤见 [构建指南 docs/guide/build.md](docs/guide/build.md)** —— 工具链与 SDK 安装、
 > workspace 初始化、构建（增量/全新/多板）、QEMU 运行、单元测试、构建产物、配置覆盖、清理、排错速查。
 >
 > 首次搭建（装工具链 / `west init` + `west update` / 装 SDK）务必照
-> [构建指南 §0 环境准备](docs/guide-build.md) 一步步来。下面是跑通后的常用命令速览：
+> [构建指南 §0 环境准备](docs/guide/build.md) 一步步来。下面是跑通后的常用命令速览：
 
 ```powershell
 & ..\.venv\Scripts\Activate.ps1                       # 每个新终端先激活 venv
@@ -88,7 +88,7 @@ git commit --no-verify
 
 pre-push 钩子与 `scripts\check.ps1` 会调用 **cppcheck**（含 MISRA）与 **clang-tidy**。
 两者均为**可选本地依赖**：未安装时对应检查自动标 `SKIP`（不阻断本地操作），**CI 会权威地补跑**。
-分层触发与各门细节见 [开发流程与质量审查](docs/process-workflow.md)。
+分层触发与各门细节见 [开发流程与质量审查](docs/process/workflow.md)。
 
 ### cppcheck（+ MISRA）
 
@@ -126,7 +126,7 @@ scoop install llvm                    # 或：winget install LLVM.LLVM
 
 ## 四、API 文档（Doxygen → GitHub Pages）
 
-公共接口（[app/include/bms/](app/include/bms/) 头文件）的 API 参考由 **Doxygen** 自动生成并发布到 GitHub Pages：
+公共接口（[app/include/bms/](app/include/bms) 头文件）的 API 参考由 **Doxygen** 自动生成并发布到 GitHub Pages：
 
 - **在线文档**：<https://jianshiyao.github.io/bms-app/>
 - **自动发布**：`master` 上改动头文件 / `docs/Doxyfile` 时，[.github/workflows/docs.yml](.github/workflows/docs.yml) 自动构建并部署（也可手动 `workflow_dispatch`）。
@@ -139,7 +139,7 @@ scoop install llvm                    # 或：winget install LLVM.LLVM
 ## 五、质量门禁与验证
 
 分层门禁（编辑器 → pre-commit → pre-push → `check.ps1` → CI，**CI 为权威**）。完整说明见
-[质量管控全景 docs/quality-management.md](docs/quality-management.md) 与
+[质量管控全景 docs/quality/management.md](docs/quality/management.md) 与
 [验证策略与工具关键性分级 docs/quality-verification.md](docs/quality-verification.md)。
 
 CI 必过门（[.github/workflows/ci.yml](.github/workflows/ci.yml)）：
@@ -155,4 +155,4 @@ CI 必过门（[.github/workflows/ci.yml](.github/workflows/ci.yml)）：
 
 ## 架构
 
-详见 [docs/design/concept-architecture.md](docs/design/concept-architecture.md)。设计文档见 `docs/superpowers/specs/`。
+详见 [docs/concept/architecture.md](docs/concept/architecture.md)。设计文档见 `docs/archive/specs/`。

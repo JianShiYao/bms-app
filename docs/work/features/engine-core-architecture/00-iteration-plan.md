@@ -13,7 +13,7 @@
 - `bms_diag`：诊断中心。
 - `bms_bms`：主状态机与接触器允许条件。
 
-这些模块已在代码中形成骨架，但还缺正式 `REQ → DES → TEST` 证据链。该缺口已登记在 [../../../TODO.md](../../../TODO.md)。
+这些模块已在代码中形成骨架，但还缺正式 `REQ → DES → TEST` 证据链。该缺口已登记在 [../../../TODO.md](../../../../TODO.md)。
 
 ## 2. 本迭代目标
 
@@ -42,8 +42,8 @@
 
 DoR：
 
-- `concept-architecture.md` 已定义 engine 目标架构。
-- `standard-module-interface.md` 已定义模块接口标准。
+- `architecture.md` 已定义 engine 目标架构。
+- `module-interface.md` 已定义模块接口标准。
 - 当前代码已有 `bms_task` / `bms_db` / `bms_diag` / `bms_bms` 骨架。
 
 DoD：
