@@ -20,6 +20,7 @@
 #include "bms/protection.h"
 #include "bms/soc.h"
 #include "bms/task.h"
+#include "bms/time.h"
 
 LOG_MODULE_REGISTER(bms_task, LOG_LEVEL_INF);
 
@@ -47,18 +48,6 @@ LOG_MODULE_REGISTER(bms_task, LOG_LEVEL_INF);
 static struct bms_soc_coulomb_state task_soc_state;
 static struct bms_prot_limits task_prot_limits;
 static enum bms_state task_bms_state = BMS_STATE_INIT;
-
-static bool due_u32(uint32_t now, uint32_t *next, uint32_t period_ms)
-{
-	if ((int32_t)(now - *next) < 0) {
-		return false;
-	}
-	*next += period_ms;
-	if ((int32_t)(now - *next) >= 0) {
-		*next = now + period_ms;
-	}
-	return true;
-}
 
 static void publish_cell_compat(const struct bms_cell_meas *meas)
 {
@@ -118,7 +107,7 @@ static void run_protection_and_bms(void)
 	}
 #else
 	struct bms_prot_evt prot = {
-		.timestamp_ms = k_uptime_get_32(),
+		.timestamp_ms = bms_time_now_ms(),
 		.state = BMS_PROT_NORMAL,
 		.contactor = BMS_CONTACTOR_CLOSED,
 	};
@@ -139,7 +128,7 @@ static void run_protection_and_bms(void)
 	task_bms_state = bms_next_state(task_bms_state, &inputs);
 
 	struct bms_state_snapshot state = {
-		.timestamp_ms = k_uptime_get_32(),
+		.timestamp_ms = bms_time_now_ms(),
 		.state = task_bms_state,
 		.contactor = bms_contactor_for_state(task_bms_state),
 	};
@@ -156,9 +145,9 @@ static void tsk_safety_10ms(void *p1, void *p2, void *p3)
 	uint32_t next_sample = 0;
 
 	while (1) {
-		uint32_t now = k_uptime_get_32();
+		uint32_t now = bms_time_now_ms();
 
-		if (due_u32(now, &next_sample, CONFIG_BMS_AFE_SAMPLE_PERIOD_MS)) {
+		if (bms_time_due(now, &next_sample, CONFIG_BMS_AFE_SAMPLE_PERIOD_MS)) {
 			run_measurement(now);
 		}
 		run_protection_and_bms();
@@ -206,10 +195,10 @@ static void tsk_app_100ms(void *p1, void *p2, void *p3)
 #endif
 		}
 
-		uint32_t now = k_uptime_get_32();
+		uint32_t now = bms_time_now_ms();
 
 #if defined(CONFIG_BMS_COMM)
-		if (due_u32(now, &next_comm, (uint32_t)bms_comm_effective_period_ms())) {
+		if (bms_time_due(now, &next_comm, (uint32_t)bms_comm_effective_period_ms())) {
 			const struct bms_cell_meas *meas_ptr = meas_meta.valid ? &meas : NULL;
 			const struct bms_soc *soc_ptr = NULL;
 			const struct bms_prot_evt *prot_ptr = NULL;
@@ -264,7 +253,7 @@ int bms_task_init(void)
 	task_bms_state = BMS_STATE_INIT;
 
 	struct bms_state_snapshot initial = {
-		.timestamp_ms = k_uptime_get_32(),
+		.timestamp_ms = bms_time_now_ms(),
 		.state = BMS_STATE_INIT,
 		.contactor = BMS_CONTACTOR_OPEN,
 	};
