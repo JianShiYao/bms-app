@@ -1,11 +1,16 @@
-/*
- * AFE 仿真后端（afe_sim）—— 实现
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    afe_sim.c
+ * @brief   AFE 仿真后端（afe_sim）—— 实现。
+ * @ingroup AFE
  *
- * 详见 bms/afe_sim.h。本文件提供：
- *  - bms_afe_sim_step()        纯函数仿真核心（确定可测；积分用干净电流，噪声只叠加在输出上）
- *  - bms_afe_sim_state_reset() 状态复位到确定起点
- *  - bms_afe_backend_read()    afe 后端接口的仿真实现（薄包装：取 k_uptime + static 状态）
+ * @details 详见 bms/afe_sim.h。本文件提供：
+ *           - bms_afe_sim_step() 纯函数仿真核心（确定可测；积分用干净电流，噪声只叠加在输出上）
+ *           - bms_afe_sim_state_reset() 状态复位到确定起点
+ *           - bms_afe_backend_read()    afe 后端接口的仿真实现（薄包装：取 k_uptime + static 状态）
  */
+
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>

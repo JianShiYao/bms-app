@@ -1,14 +1,19 @@
-/*
- * CAN 通信模块 —— 桩实现
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    comm.c
+ * @brief   CAN 通信模块 —— 桩实现。
+ * @ingroup COMM
  *
- * 职责：按固定周期对外 CAN 上报（电压/SOC/保护状态）；接收外部命令。
- * 仿真阶段（QEMU/native_sim）无真实 CAN 控制器，走日志桩；
- * 真实硬件接 can1（见第二步 overlay）。
+ * @details 职责：按固定周期对外 CAN 上报（电压/SOC/保护状态）；接收外部命令。
+ *          仿真阶段（QEMU/native_sim）无真实 CAN 控制器，走日志桩；
+ *          真实硬件接 can1（见第二步 overlay）。
  *
- * 日志策略：CAN 帧按 CONFIG_BMS_COMM_REPORT_PERIOD_MS 周期发送（真实硬件上即
- * can_send）；但控制台 INF 仅在 SOC/保护状态“变化时”打印，避免在 QEMU 仿真
- * 时钟快进时刷屏。高频的逐帧测量数据走 DBG，需要时再开。
+ *          日志策略：CAN 帧按 CONFIG_BMS_COMM_REPORT_PERIOD_MS 周期发送（真实硬件上即
+ *          can_send）；但控制台 INF 仅在 SOC/保护状态“变化时”打印，避免在 QEMU 仿真
+ *          时钟快进时刷屏。高频的逐帧测量数据走 DBG，需要时再开。
  */
+
 #include <errno.h>
 #include <zephyr/logging/log.h>
 

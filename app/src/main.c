@@ -1,8 +1,13 @@
-/*
- * BMS 应用入口
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    main.c
+ * @brief   BMS 应用入口。
+ * @ingroup SYS
  *
- * main 只做 engine/module 初始化；长期运行逻辑由 bms_task 统一调度。
+ * @details main 只做 engine/module 初始化；长期运行逻辑由 bms_task 统一调度。
  */
+
 #include <app_version.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>

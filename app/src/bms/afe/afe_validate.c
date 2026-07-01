@@ -1,10 +1,15 @@
-/*
- * AFE 测量合理性校验（afe_validate）—— 纯函数
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    afe_validate.c
+ * @brief   AFE 测量合理性校验（afe_validate）—— 纯函数。
+ * @ingroup AFE
  *
- * 详见 bms/afe.h 的 bms_afe_validate()。校验与采集分离（架构「测量数据纪律」）：
- * afe 边缘在 backend_read 之后调用本函数，剔除明显坏帧并写 validity 位。
- * 无线程、无 zbus、无副作用，供 afe 线程与 ztest 直接复用。
+ * @details 详见 bms/afe.h 的 bms_afe_validate()。校验与采集分离（架构「测量数据纪律」）：
+ *          afe 边缘在 backend_read 之后调用本函数，剔除明显坏帧并写 validity 位。
+ *          无线程、无 zbus、无副作用，供 afe 线程与 ztest 直接复用。
  */
+
 #include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>

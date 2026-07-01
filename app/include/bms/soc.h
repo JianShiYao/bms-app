@@ -1,6 +1,11 @@
-/*
- * SOC/SOH 估算模块接口
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    soc.h
+ * @brief   SOC/SOH 估算模块接口。
+ * @ingroup SOC
  */
+
 #ifndef BMS_SOC_H_
 #define BMS_SOC_H_
 
@@ -47,8 +52,8 @@ int bms_soc_init(void);
  * 设计来源：03-design.md §2.1（ADR-SOC-C04）。语义收敛为「上电一次性初值来源」，
  * 行为与原桩实现逐位一致（3000mV→0‰、4200mV→1000‰，端点外夹紧）。无跨帧状态、无副作用。
  *
- * @param meas 输入测量（非空）
- * @param out  输出 SOC/SOH（非空）
+ * @param[in]  meas 输入测量（非空）
+ * @param[out] out  输出 SOC/SOH（非空）
  * @return 0 成功；-EINVAL（meas/out 任一为 NULL）。
  */
 int bms_soc_estimate(const struct bms_cell_meas *meas, struct bms_soc *out);
@@ -60,9 +65,10 @@ int bms_soc_estimate(const struct bms_cell_meas *meas, struct bms_soc *out);
  * 有状态库仑积分一步：取 Δt、对 pack_current_ma 积分、更新 state 与 out->soc_permille（夹紧）；
  * 首帧执行电压映射初始化（不积分）；异常输入安全降级。输出进入即先置安全态。
  *
- * @param state 跨帧积分状态（非空，调用方持有，单测可栈上构造）。本函数为其唯一读写入口。
- * @param meas  本帧测量（非空）。读取 pack_current_ma、timestamp_ms、cell_mv[]（仅初始化时）。
- * @param out   发布载荷（非空）。
+ * @param[in,out] state 跨帧积分状态（非空，调用方持有，单测可栈上构造）。本函数为其唯一读写入口。
+ * @param[in]     meas  本帧测量（非空）。读取
+ * pack_current_ma、timestamp_ms、cell_mv[]（仅初始化时）。
+ * @param[out]    out   发布载荷（非空）。
  * @return 0   已产生有效输出（含初始化帧、含降级后仍更新的帧），调用方应发布；
  *         -EINVAL 任一指针 NULL（不触 state、不写 out）；
  *         -EAGAIN 坏数据被跳过，本帧不应发布（§3 分支 F）。
@@ -75,7 +81,7 @@ int bms_soc_coulomb_step(struct bms_soc_coulomb_state *state, const struct bms_c
  *
  * 设计来源：03-design.md §2.3。把 state 置为「未初始化安全态」：全部字段归零、initialized=false。
  *
- * @param state 为 NULL 时安全返回（无操作）。
+ * @param[out] state 为 NULL 时安全返回（无操作）。
  */
 void bms_soc_coulomb_state_reset(struct bms_soc_coulomb_state *state);
 

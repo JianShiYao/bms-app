@@ -1,6 +1,11 @@
-/*
- * BMS 公共数据类型
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    types.h
+ * @brief   BMS 公共数据类型。
+ * @ingroup SYS
  */
+
 #ifndef BMS_TYPES_H_
 #define BMS_TYPES_H_
 

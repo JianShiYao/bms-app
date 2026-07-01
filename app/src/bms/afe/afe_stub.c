@@ -1,10 +1,15 @@
-/*
- * AFE 桩后端（afe_stub）—— 恒定测量数据
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    afe_stub.c
+ * @brief   AFE 桩后端（afe_stub）—— 恒定测量数据。
+ * @ingroup AFE
  *
- * bms_afe_backend_read() 的最简实现：返回固定电压/电流/温度，确定性最强，
- * 用于最小化烟雾测试或 soc/protection 单独验证。需"会动"的数据请选 afe_sim 后端。
- * 见 docs/concept-architecture.md「数据源后端可切换（afe）」。
+ * @details bms_afe_backend_read() 的最简实现：返回固定电压/电流/温度，确定性最强，
+ *          用于最小化烟雾测试或 soc/protection 单独验证。需"会动"的数据请选 afe_sim 后端。
+ *          见 docs/concept-architecture.md「数据源后端可切换（afe）」。
  */
+
 #include <errno.h>
 #include <zephyr/kernel.h>
 

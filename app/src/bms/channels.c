@@ -1,9 +1,14 @@
-/*
- * BMS zbus channel 定义
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    channels.c
+ * @brief   BMS zbus channel 定义。
+ * @ingroup SYS
  *
- * 观察者（订阅者/监听者）由各模块用 ZBUS_CHAN_ADD_OBS 自行注册，
- * 因此这里以 ZBUS_OBSERVERS_EMPTY 定义，保持 channel 与模块解耦。
+ * @details 观察者（订阅者/监听者）由各模块用 ZBUS_CHAN_ADD_OBS 自行注册，
+ *          因此这里以 ZBUS_OBSERVERS_EMPTY 定义，保持 channel 与模块解耦。
  */
+
 #include "bms/channels.h"
 
 ZBUS_CHAN_DEFINE(chan_cell_meas,       /* name */
