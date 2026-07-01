@@ -1,6 +1,6 @@
 # 文档索引（docs/）
 
-bms-app 的文档导航。命名约定见 [../CLAUDE.md](../CLAUDE.md)「文档命名约定」——顶层文档用 `<category>-<topic>.md`，类别 ∈ `concept`/`process`/`guide`/`standard`/`quality`。
+bms-app 的文档导航。**顶层文档命名约定**（权威）：`<category>-<topic>.md`（小写 kebab），`category` ∈ `concept`/`process`/`guide`/`standard`/`quality`。例外（各按自身约定，详见下方「子目录」）：`traceability.md`、`features/<slug>/`（`NN-<阶段>.md`）、`requirements/`（按域名）、`superpowers/specs|plans/`（`YYYY-MM-DD-…`）、`Doxyfile`。
 
 ## 两个权威锚点
 
