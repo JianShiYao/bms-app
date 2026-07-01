@@ -34,6 +34,7 @@ target_sources(app PRIVATE
   src/bms/channels.c
   src/bms/engine/db.c
   src/bms/engine/diag.c
+  src/bms/engine/time.c
   src/bms/engine/task.c
   src/bms/application/bms.c
 )
