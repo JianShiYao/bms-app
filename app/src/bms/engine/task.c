@@ -33,6 +33,9 @@ LOG_MODULE_REGISTER(bms_task, LOG_LEVEL_INF);
 #ifndef CONFIG_BMS_AFE_SAMPLE_PERIOD_MS
 #define CONFIG_BMS_AFE_SAMPLE_PERIOD_MS 100
 #endif
+#ifndef CONFIG_BMS_MEAS_STALE_TOLERANCE_MS
+#define CONFIG_BMS_MEAS_STALE_TOLERANCE_MS 300
+#endif
 
 #define TASK_SAFETY_STACK 1536
 #define TASK_APP_STACK    1536
@@ -63,10 +66,12 @@ static uint32_t next_comm;
 static uint32_t last_soc_meas_seq;
 #endif
 
+#if defined(CONFIG_BMS_AFE)
 static void publish_cell_compat(const struct bms_cell_meas *meas)
 {
 	(void)zbus_chan_pub(&chan_cell_meas, meas, K_NO_WAIT);
 }
+#endif
 
 #if defined(CONFIG_BMS_SOC)
 static void publish_soc_compat(const struct bms_soc *soc)
@@ -90,6 +95,7 @@ static void run_measurement(uint32_t now)
 		return;
 	}
 
+	meas.timestamp_ms = now;
 	(void)bms_db_write_cell_meas(&meas);
 	publish_cell_compat(&meas);
 
@@ -104,21 +110,26 @@ static void run_protection_and_bms(uint32_t now_ms)
 {
 #if defined(CONFIG_BMS_PROTECTION)
 	struct bms_cell_meas meas;
-	struct bms_db_meta meas_meta;
+	struct bms_db_meta meas_meta = {0};
+	bool fresh = (bms_db_read_cell_meas(&meas, &meas_meta) == 0) && meas_meta.valid;
+	bool stale = fresh &&
+		     bms_time_after(now_ms, meas.timestamp_ms + CONFIG_BMS_MEAS_STALE_TOLERANCE_MS);
+
+	(void)bms_diag_report(BMS_DIAG_MEAS_STALE, stale, now_ms);
+
+	/* 失效安全默认：坏/过期数据时保持 {FAULT, OPEN}，不 early-return。 */
 	struct bms_prot_evt prot = {
 		.state = BMS_PROT_FAULT,
 		.contactor = BMS_CONTACTOR_OPEN,
 	};
 
-	if (bms_db_read_cell_meas(&meas, &meas_meta) != 0 || !meas_meta.valid) {
-		return;
-	}
-
-	if (bms_protection_evaluate(&meas, &task_prot_limits, &prot) == 0) {
-		(void)bms_db_write_prot(&prot);
-		publish_prot_compat(&prot);
-		(void)bms_diag_report(BMS_DIAG_PROTECTION_ACTIVE, prot.state != BMS_PROT_NORMAL,
-				      now_ms);
+	if (fresh && !stale) {
+		if (bms_protection_evaluate(&meas, &task_prot_limits, &prot) == 0) {
+			(void)bms_db_write_prot(&prot);
+			publish_prot_compat(&prot);
+			(void)bms_diag_report(BMS_DIAG_PROTECTION_ACTIVE,
+					      prot.state != BMS_PROT_NORMAL, now_ms);
+		}
 	}
 #else
 	ARG_UNUSED(now_ms);
