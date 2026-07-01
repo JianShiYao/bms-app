@@ -34,8 +34,8 @@ target_sources(app PRIVATE
   ${APP_DIR}/src/bms/engine/db.c
   ${APP_DIR}/src/bms/engine/diag.c
   ${APP_DIR}/src/bms/application/bms.c
-  ${APP_DIR}/src/bms/protection/protection.c
-  ${APP_DIR}/src/bms/channels.c
+  ${APP_DIR}/src/bms/measurement-control/protection/protection.c
+  ${APP_DIR}/src/bms/engine/channels.c
   ${APP_DIR}/src/bms/afe/afe.c
   ${APP_DIR}/src/bms/afe/afe_validate.c
   ${APP_DIR}/src/bms/afe/afe_sim.c

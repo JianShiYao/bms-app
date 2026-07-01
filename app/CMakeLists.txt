@@ -31,7 +31,7 @@ target_compile_options(app PRIVATE -Werror -Wswitch-default -Wimplicit-fallthrou
 # 核心源：main + compatibility zbus channel + foxBMS-style engine
 target_sources(app PRIVATE
   src/main.c
-  src/bms/channels.c
+  src/bms/engine/channels.c
   src/bms/engine/db.c
   src/bms/engine/diag.c
   src/bms/engine/time.c
@@ -47,9 +47,9 @@ target_sources_ifdef(CONFIG_BMS_AFE        app PRIVATE src/bms/afe/afe_validate.
 target_sources_ifdef(CONFIG_BMS_AFE_BACKEND_STUB app PRIVATE src/bms/afe/afe_stub.c)
 target_sources_ifdef(CONFIG_BMS_AFE_BACKEND_SIM  app PRIVATE src/bms/afe/afe_sim.c)
 target_sources_ifdef(CONFIG_BMS_AFE_BACKEND_ADC  app PRIVATE src/bms/afe/afe_adc.c)
-target_sources_ifdef(CONFIG_BMS_SOC        app PRIVATE src/bms/soc/soc.c)
-target_sources_ifdef(CONFIG_BMS_PROTECTION app PRIVATE src/bms/protection/protection.c)
-target_sources_ifdef(CONFIG_BMS_BALANCING  app PRIVATE src/bms/balancing/balancing.c)
-target_sources_ifdef(CONFIG_BMS_COMM       app PRIVATE src/bms/comm/comm.c)
+target_sources_ifdef(CONFIG_BMS_SOC        app PRIVATE src/bms/application/soc/soc.c)
+target_sources_ifdef(CONFIG_BMS_PROTECTION app PRIVATE src/bms/measurement-control/protection/protection.c)
+target_sources_ifdef(CONFIG_BMS_BALANCING  app PRIVATE src/bms/application/balancing/balancing.c)
+target_sources_ifdef(CONFIG_BMS_COMM       app PRIVATE src/bms/application/comm/comm.c)
 # comm 周期合法化（纯函数，运行期防御性钳制；单测只链此源）
-target_sources_ifdef(CONFIG_BMS_COMM       app PRIVATE src/bms/comm/comm_period.c)
+target_sources_ifdef(CONFIG_BMS_COMM       app PRIVATE src/bms/application/comm/comm_period.c)
