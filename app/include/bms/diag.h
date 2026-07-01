@@ -41,6 +41,8 @@ struct bms_diag_state {
 	uint32_t active_mask;                /**< 当前激活诊断位掩码（bit = bms_diag_id） */
 	uint32_t latched_mask;               /**< 已锁存诊断位掩码 */
 	enum bms_diag_severity max_severity; /**< 当前激活项中的最高严重度 */
+	bool initialized; /**< 诊断中心是否已初始化；false=未就绪，下游按失效安全处理（不得进
+			     NORMAL） */
 };
 
 /**
