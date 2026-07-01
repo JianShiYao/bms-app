@@ -184,5 +184,5 @@ stale = !entry_valid || age_ms > max_age_ms
 
 - [concept-architecture.md](concept-architecture.md)
 - [standard-module-interface.md](standard-module-interface.md)
-- [quality-integration-test-strategy.md](quality-integration-test-strategy.md)
-- [docs/traceability.md](traceability.md)
+- [quality-integration-test-strategy.md](../quality-integration-test-strategy.md)
+- [docs/traceability.md](../traceability.md)

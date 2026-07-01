@@ -30,6 +30,16 @@
 - 讲接口、命名、数据结构、配置、诊断这些硬约束，用 `standard-`。
 - 讲测试、覆盖率、门禁、证据、成熟度，用 `quality-`。
 
+## 2b. 学科目录（与命名前缀正交）
+
+命名前缀回答「这是哪类文档」，**目录**回答「这属于哪个学科」，两者正交：
+
+- `docs/design/` —— **软件设计契约**：架构、运行时、数据、安全概念、模块接口标准等 agent 据以实现/重构代码的权威件（`concept-` 与 `standard-` 前缀混居于此）。
+- `docs/hardware/` —— 硬件资料（原理图/BOM/数据手册），与 `design/` 并行。
+- `docs/` 根 —— 跨学科的流程/方法/质量/指南（`process-`/`guide-`/`quality-` 及方法论、文档体系两篇 `concept-`）。
+
+因此完整路径形如 `design/concept-architecture.md`、`design/standard-module-interface.md`；新增软件设计契约放 `design/`，其余按前缀留根。目录随学科增长（如将来 `systems/`），前缀不变。
+
 ## 3. 权威链
 
 ```

@@ -20,7 +20,7 @@
 
 ## 架构
 
-三层：应用层（main）→ BMS 服务层（5 模块，各独立线程）→ HAL/驱动层（Zephyr 内建 ADC/CAN/GPIO + out-of-tree AFE 占位）。模块间经 zbus channel：`chan_cell_meas`、`chan_soc`、`chan_prot_state`。详见 `docs/concept-architecture.md`。
+三层：应用层（main）→ BMS 服务层（5 模块，各独立线程）→ HAL/驱动层（Zephyr 内建 ADC/CAN/GPIO + out-of-tree AFE 占位）。模块间经 zbus channel：`chan_cell_meas`、`chan_soc`、`chan_prot_state`。详见 `docs/design/concept-architecture.md`。
 
 ## 模块统一形态
 

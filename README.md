@@ -155,4 +155,4 @@ CI 必过门（[.github/workflows/ci.yml](.github/workflows/ci.yml)）：
 
 ## 架构
 
-详见 [docs/concept-architecture.md](docs/concept-architecture.md)。设计文档见 `docs/superpowers/specs/`。
+详见 [docs/design/concept-architecture.md](docs/design/concept-architecture.md)。设计文档见 `docs/superpowers/specs/`。

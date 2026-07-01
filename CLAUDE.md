@@ -14,12 +14,12 @@
 - [docs/README.md](docs/README.md) —— 文档索引与关系图（入口，先看这个）
 - [docs/process-workflow.md](docs/process-workflow.md) —— 开发流程**单一事实源**
 - [docs/quality-gates.md](docs/quality-gates.md) —— CI/本地**门禁事实表**（门与阈值只此一处）
-- [docs/concept-architecture.md](docs/concept-architecture.md) —— 软件架构基线 v0（engine core）
-- [docs/concept-data-model.md](docs/concept-data-model.md) —— `bms_db` 数据契约（entry/owner/validity/sequence/stale）
+- [docs/design/concept-architecture.md](docs/design/concept-architecture.md) —— 软件架构基线 v0（engine core）
+- [docs/design/concept-data-model.md](docs/design/concept-data-model.md) —— `bms_db` 数据契约（entry/owner/validity/sequence/stale）
 
 ## 3. 不可违反的规则
 
-- **失效安全**：接触器默认 **OPEN**，仅判定 NORMAL 才 CLOSED；改保护/阈值/默认态代码须格外谨慎（安全概念见 [docs/concept-safety.md](docs/concept-safety.md)）。
+- **失效安全**：接触器默认 **OPEN**，仅判定 NORMAL 才 CLOSED；改保护/阈值/默认态代码须格外谨慎（安全概念见 [docs/design/concept-safety.md](docs/design/concept-safety.md)）。
 - **不手改依赖**：`../zephyr/`、`../modules/` 由 `west update` 管理，**勿手动编辑**。
 - **CI 为权威**：分层质量门禁不可绕过；具体门与阈值以 [docs/quality-gates.md](docs/quality-gates.md) 为准，**本文件不复制门禁细节**。
 - **不写死测试数量**：文档/注释/PR 不固定测试总数，以 `west twister` 与 CI 报告为准。

@@ -32,9 +32,9 @@
 ### 非目标（v0 暂不做）
 
 - 不实现完整 foxBMS 2 目录、命名前缀、FreeRTOS 抽象或代码生成体系。
-- 不把 HIL、FMEA、MCUboot、安全启动作为每个 PR 的默认硬门；触发条件见 [concept-methodology.md](concept-methodology.md)。
+- 不把 HIL、FMEA、MCUboot、安全启动作为每个 PR 的默认硬门；触发条件见 [concept-methodology.md](../concept-methodology.md)。
 - 不在 v0 一次性铺开所有硬件 wrapper；先定义边界，随真板 bring-up 增量实现。
-- 不在 `concept-architecture.md` 维护 CI 门禁和阈值；当前门禁事实见 [quality-gates.md](quality-gates.md)。
+- 不在 `concept-architecture.md` 维护 CI 门禁和阈值；当前门禁事实见 [quality-gates.md](../quality-gates.md)。
 
 ## 3. 分层基线
 

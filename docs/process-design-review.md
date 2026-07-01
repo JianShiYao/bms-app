@@ -61,7 +61,7 @@
 
 - 小 V 特性：记录到 `docs/features/<slug>/gate-log.md`，并在 `02-architecture.md` 或 `03-design.md` 写明评审结论。
 - 跨模块架构改动：记录到 PR 描述，并在相关 `concept-*` / `standard-*` / `process-*` 文档中同步。
-- 安全相关结论：必要时回链到 [concept-safety.md](concept-safety.md) 的 SG 或风险项。
+- 安全相关结论：必要时回链到 [concept-safety.md](design/concept-safety.md) 的 SG 或风险项。
 
 ## 6. 单人项目执行方式
 

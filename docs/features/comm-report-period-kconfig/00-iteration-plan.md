@@ -53,7 +53,7 @@
 
 ### - [ ] ② 架构 —— `bms-architect`
 - 调用 agent：`bms-architect`
-- 输入文件：`01-requirements.md`；`app/src/bms/comm/comm.c`、`app/include/bms/comm.h`、`docs/concept-architecture.md`（comm 模块章节、线程模型/优先级）
+- 输入文件：`01-requirements.md`；`app/src/bms/comm/comm.c`、`app/include/bms/comm.h`、`docs/design/concept-architecture.md`（comm 模块章节、线程模型/优先级）
 - 预期产出文件：`docs/features/comm-report-period-kconfig/02-architecture.md`（含 ADR）
 - 关键架构决策（待定，需 ADR 记录）：
   - **可测性拆分**：周期取值的合法化逻辑是否抽成纯函数（如 `bms_comm_report_period_ms(void)` 或 `bms_comm_clamp_period(int)`），以脱离线程在 ztest 直测——对齐项目「纯逻辑 + 薄线程包装」范式（参照 `bms_protection_evaluate`）。
