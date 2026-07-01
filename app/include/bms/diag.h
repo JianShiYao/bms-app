@@ -23,6 +23,7 @@ enum bms_diag_id {
 	BMS_DIAG_INVALID_MEAS = 0,  /**< 测量无效/超界 */
 	BMS_DIAG_PROTECTION_ACTIVE, /**< 保护判定为非 NORMAL */
 	BMS_DIAG_TASK_OVERRUN,      /**< 任务超期/超时 */
+	BMS_DIAG_MEAS_STALE,        /**< 测量过期/源失联（valid 但时间戳超容忍） */
 	BMS_DIAG_COUNT,             /**< 诊断条目数量（哨兵，非具体条目） */
 };
 

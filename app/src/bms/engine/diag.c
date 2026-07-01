@@ -40,6 +40,13 @@ static const struct bms_diag_entry_cfg DIAG_CFG[BMS_DIAG_COUNT] = {
 			.clear_time_ms = 0,
 			.latch = false,
 		},
+	[BMS_DIAG_MEAS_STALE] =
+		{
+			.severity = BMS_DIAG_ERROR,
+			.confirm_time_ms = 0,
+			.clear_time_ms = 0,
+			.latch = false,
+		},
 };
 
 static struct bms_diag_entry_rt diag_rt[BMS_DIAG_COUNT];

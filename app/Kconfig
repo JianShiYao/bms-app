@@ -97,6 +97,12 @@ config BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX
 	depends on BMS_AFE
 	default 1250
 
+config BMS_MEAS_STALE_TOLERANCE_MS
+	int "Cell measurement staleness tolerance (ms)"
+	default 300
+	help
+	  DB_CELL_MEAS 视为过期的时间容忍（now - timestamp 超过即判过期）。默认 3× 采样周期。
+
 config BMS_SOC
 	bool "SOC/SOH 估算模块"
 	default y
