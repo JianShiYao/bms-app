@@ -190,6 +190,8 @@ bms_main: ==== BMS firmware starting on mps2/an386 ====
 （之后每 5s 一次心跳）
 ```
 
+上列模块（`afe/soc/protection/balancing/comm`）为**当前过渡实现**；目标 engine core 分层见 [../concept/architecture.md](../concept/architecture.md) §3。
+
 > `-t run` 是「构建目标（target）」而非编译；它会先确保已编译再拉起 QEMU。
 > 若用了 `-d`，运行也要带：`west build -t run -d build\an386`。
 
@@ -266,8 +268,8 @@ west twister -T tests -p mps2/an386 -c        # 预期 47/47 通过
 ```
 
 - `QEMU_BIN_PATH` 指向 SDK 自带 QEMU 目录（每个新终端都要设；也可在系统环境变量里永久设置）。
-- 当前测试规模：`bms.soc` 21 + `bms.protection` 6 + `bms.afe` 20 = **47 例**。
-- ⚠️ **QEMU soc 超时 flake**：`bms.soc`（21 例）在 QEMU 下较易触发 harness 超时（用例本身全过），
+- 测试规模不在文档写死，以 `west twister` / CI 报告为准（CLAUDE.md §3）。
+- ⚠️ **QEMU soc 超时 flake**：`bms.soc` 套件在 QEMU 下较易触发 harness 超时（用例本身全过），
   按需加 `--timeout-multiplier 4`；CI 走 `native_sim` 不受此限。
 - 跑单个套件：限定 `-T` 路径，如 `west twister -T tests/bms/soc -p mps2/an386 -c`。
 - 覆盖率：用 workspace 根的 `..\run-tests-coverage.ps1`（QEMU 覆盖率不稳，可靠覆盖率见 CI / WSL2+native_sim）。
