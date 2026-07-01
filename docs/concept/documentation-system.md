@@ -36,10 +36,10 @@
 
 除上面 5 类规范目录外，还有 4 类**不参与"依据谁"派生链**的目录：
 
-- `work/` —— 活的工程产物：需求基线、每个小 V 的交付物、需求↔测试追溯矩阵。
+- `work/` —— **活的工程产物**：每个小 V 的交付物（`features/<slug>/`）、需求↔测试活矩阵（`traceability.md`）。新固件需求随小 V 落在 `features/<slug>/01-requirements.md`。
 - `archive/` —— 历史归档：设计 spec、实施 plan，按 `YYYY-MM-DD` 沉淀。
 - `templates/` —— 可复制的产出骨架（非参考阅读）。
-- `reference/` —— 参考阅读资料（硬件原理图/BOM/数据手册）。
+- `reference/` —— 参考阅读资料：硬件原理图/BOM/数据手册（`hardware/`）、旧固件 S16100B 逆向需求参考（`legacy-requirements/`）。
 
 每个顶层目录都有自己的 `README.md`（三段式：放什么/不放什么/权威文件）——**先看目录 README，再进文件**。
 
