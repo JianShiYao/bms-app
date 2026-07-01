@@ -19,7 +19,7 @@
 | editorconfig/yaml/py 风格 | `.editorconfig` 有；editorconfig-checker/yamllint/flake8 未入 CI | ⚠️ 部分（见 P2） |
 | CI 流水线（门禁） | `.github/workflows/ci.yml`（format→build×2 / test-cov / sca / tidy） | ✅ 已落地 |
 | 多配置/多板编译矩阵 | twister/build 矩阵 mps2/an386 + native_sim（bms_f405 暂注释） | ✅ 已落地 |
-| Doxygen + Pages | 无 | 可选（见 P2） |
+| Doxygen + Pages | Doxygen 公共 API + GitHub Pages | ✅ 已落地 |
 | 供应链/产物安全（SBOM·签名·provenance） | 无 | 可立即采纳（见 P2） |
 
 ## 门禁清单（按优先级）
@@ -63,8 +63,8 @@
 - [ ] CI 加 `editorconfig-checker`、`yamllint --strict`（west.yml / *.yml 受益）、`flake8`（Python 脚本）。
       → 低成本、可随时补；当前未进 CI。
 
-### P2 — 文档（可选，未做）
-- [ ] Doxygen + GitHub Pages 自动发布——按需后置。
+### P2 — 文档 ✅ 已落地
+- [x] Doxygen + GitHub Pages 自动发布（公共 API）。
 
 ### P2 — 供应链 / 产物安全（固件签名 · SBOM · attestation）
 
@@ -100,6 +100,6 @@
 1. ✅ **CI 骨架 + twister + 格式检查（P0）** —— 已完成。
 2. ✅ **SCA（gcc）+ clang-tidy + cppcheck/MISRA（P1）** —— 已完成。
 3. ⏳ **剩余可选项**：
-   - P2：editorconfig-checker / yamllint / flake8 进 CI；Doxygen + Pages；供应链/产物安全（SBOM · 产物签名 · build provenance，纯 CI 可立即采纳）。
+   - P2：editorconfig-checker / yamllint / flake8 进 CI；供应链/产物安全（SBOM · 产物签名 · build provenance，纯 CI 可立即采纳）。
    - P3：cppcheck/MISRA 升级进 CI（非阻断→基线→门禁）；商业 MISRA 工具按合规需求评估。
    - 板：`bms_f405` dts/defconfig 完善后加入编译矩阵。

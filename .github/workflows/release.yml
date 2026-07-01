@@ -1,6 +1,7 @@
 name: Release
 
-# CD: on a version tag (vX.Y.Z), build release firmware and publish a GitHub Release.
+# CD: on a version tag (vX.Y.Z), build release firmware and publish a GitHub Release
+# with a CycloneDX/SPDX SBOM and a keyless (Sigstore) signature over the checksums.
 on:
   push:
     tags:
@@ -8,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write  # cosign keyless 签名走 GitHub OIDC，需要 id-token 写权限
 
 jobs:
   release:
@@ -27,14 +29,32 @@ jobs:
         run: west build -b mps2/an386 bms-app/app -- -DCMAKE_BUILD_TYPE=Release
       # NOTE: add a second build block for enervenue/bms_f405 once it's complete;
       # the release step globs release/** so extra boards just add more files.
+      # SBOM：west spdx 标准序列——init 注入 file-based API → 重建（带组件追踪）→ 生成 SPDX。
+      - name: Generate SBOM (SPDX)
+        run: |
+          west spdx --init -d build
+          west build -b mps2/an386 bms-app/app -- -DCMAKE_BUILD_TYPE=Release
+          west spdx -d build
       - name: Collect artifacts + checksums
         run: |
           mkdir -p release
           for f in elf bin hex map; do
             cp "build/zephyr/zephyr.$f" "release/mps2-an386-zephyr.$f" 2>/dev/null || true
           done
+          cp build/spdx/*.spdx release/ 2>/dev/null || true
           cd release && sha256sum * > SHA256SUMS
           echo "---- release contents ----" && ls -al
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+      - name: Sign checksums (keyless / Sigstore OIDC)
+        # 对 SHA256SUMS 做 keyless 签名（无长期私钥，身份由 GitHub OIDC 证明）。
+        # 验证：cosign verify-blob --certificate SHA256SUMS.pem
+        #   --signature SHA256SUMS.sig
+        #   --certificate-identity-regexp '.*' --certificate-oidc-issuer-regexp '.*' SHA256SUMS
+        run: |
+          cosign sign-blob --yes release/SHA256SUMS \
+            --output-signature release/SHA256SUMS.sig \
+            --output-certificate release/SHA256SUMS.pem
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:

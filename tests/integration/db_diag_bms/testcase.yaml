@@ -1,0 +1,9 @@
+tests:
+  bms.integration:
+    platform_allow:
+      - mps2/an386
+      - native_sim
+    tags:
+      - bms
+      - integration
+      - safety

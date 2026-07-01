@@ -11,7 +11,7 @@
 | 阶段 | 已落地管控 | 阻断强度 | 主要待补齐 |
 |---|---|---|---|
 | 需求 | 设计/规格文档（`docs/`） | 软 | 需求管理、验收标准、需求↔测试追溯 |
-| 设计 | 架构文档 + 分层/zbus 解耦 | 软 | 设计评审流程、API 文档(Doxygen)、FMEA/安全分析 |
+| 设计 | foxBMS 2 inspired 架构文档 + 安全概念 + 模块接口标准 + 设计评审门 | 软 | engine 模块 REQ/DES/TEST 链、参数/标定治理、FMEA/安全分析 |
 | 编码 | clang-format（pre-commit/CI 强制）、.editorconfig（编辑器实时，**依赖插件**）、命名规范、**app `-Werror`**（编译告警即错，限 app 目标） | clang-format=提交前拦截；`-Werror`=CI 构建拦截；editorconfig=仅编辑器层 | — |
 | 静态分析 | gcc `-fanalyzer`、clang-tidy(CERT/可读性，硬)、cppcheck+MISRA(本地 + CI 非阻断观察) | CI 必过；cppcheck/MISRA=非阻断(`continue-on-error`) | cppcheck/MISRA 升必过门、复杂度度量 |
 | 测试 | ztest 单测(soc/protection/afe，47 例)、twister、app 覆盖率门禁(line≥55%) | CI 必过 | 集成/HIL 测试、balancing/comm 单测、分支覆盖偏低 |
@@ -25,10 +25,11 @@
 ## 二、分阶段详述
 
 ### 1. 需求与设计
-**现状**：系统设计见 [concept-architecture.md](concept-architecture.md)（三层架构、zbus 数据流、保护优先级、fail-safe 原则）；功能规格散见 `docs/`。模块化由 Kconfig 开关表达（`CONFIG_BMS_*`）。**已提供需求工程模板** [templates/](templates/)（需求规格 + 设计规格 + 需求↔测试追溯，EARS 句式、ID 规范、与 ztest 关联约定）。
+**现状**：目标架构见 [concept-architecture.md](concept-architecture.md)（foxBMS 2 inspired：`bms_task` / `bms_db` / `bms_diag` / `bms_bms`，Zephyr 原生落地）；安全概念见 [concept-safety.md](concept-safety.md)；文档/证据体系见 [concept-documentation-system.md](concept-documentation-system.md)。模块化由 Kconfig 开关表达（`CONFIG_BMS_*`）。**已提供需求工程模板** [templates/](templates/)（需求规格 + 设计规格 + 需求↔测试追溯，EARS 句式、ID 规范、与 ztest 关联约定）。模块接口标准见 [standard-module-interface.md](standard-module-interface.md)，设计评审门见 [process-design-review.md](process-design-review.md)。
 **待补齐**：
 - 按模块**填充**需求/设计文档并建立追溯矩阵（模板已就绪，内容待写）；
-- 无成文**设计评审**门槛；API 文档（Doxygen）未搭建。
+- 为 `bms_task` / `bms_db` / `bms_diag` / `bms_bms` 补齐 `REQ/DES/TEST` 链；
+- 参数/标定治理标准（保护阈值、周期、容量、诊断参数）待补。
 
 ### 2. 编码（提交前）
 **现状**（提交前即拦截）。规则文件本身不"触发"检查，触发靠读取它的工具，分三层：
@@ -56,7 +57,7 @@
 **待补齐**：
 - **未被测试的模块**：当前 soc/protection/afe/channels 进入测试构建；**balancing/comm/main 无专门单测**；
 - **分支覆盖偏低**（39%），init/线程路径未覆盖；
-- 集成/系统验证当前**合并为一个环节**（对齐 [process-workflow.md §8](process-workflow.md) V 腿表），但**尚无专门的多模块集成测试套件**——现仅靠各模块单测 + `native_sim` 整机运行覆盖；专门集成测试待补。无 **HIL（硬件在环）**、无 fuzz/属性测试。
+- 集成/系统验证当前**合并为一个环节**（对齐 [process-workflow.md §8](process-workflow.md) V 腿表）；多模块集成测试路线已在 [quality-integration-test-strategy.md](quality-integration-test-strategy.md) 成文，首批 `DB→DIAG→BMS→contactor` 套件已补到 `tests/integration/db_diag_bms/`，当前本地 `mps2/an386` 为构建验证，执行型验证待 CI/WSL `native_sim`。无 **HIL（硬件在环）**、无 fuzz/属性测试。
 
 ### 5. 构建 / CI（必过门禁）
 **现状**：[.github/workflows/ci.yml](../.github/workflows/ci.yml) 6 道门禁 DAG：
@@ -80,10 +81,11 @@
 
 | 优先级 | 项 | 价值 | 备注 |
 |---|---|---|---|
-| 高 | 补齐 balancing/comm 单测、提高分支覆盖（afe 已补） | 直接提升固件可靠性 | 随阈值逐步调高 |
-| 高 | 需求↔测试追溯 + 验收标准 | 功能安全基础 | BMS 安全相关必备 |
+| 高 | 补齐 balancing 单测 + comm DB/TX 集成测试，提高分支覆盖 | 直接提升固件可靠性 | 随阈值逐步调高 |
+| 高 | 需求↔测试追溯 + 验收标准 | 功能安全基础 | Engine Core 初版已补；其余模块继续 backfill |
+| 高 | `task_pipeline` 集成烟测 + engine 集成测试执行型验证 | 新架构关键交互验证 | DB→DIAG→BMS 已构建通过，仍需可执行平台运行 |
 | 中 | cppcheck/MISRA 升必过门（已进 CI 非阻断观察 ②，待升 ③） | 嵌入式编码合规 | 噪声稳后去 `continue-on-error` + 加分支保护 |
-| 中 | Doxygen API 文档 + GitHub Pages | 可维护性 | 见 ci-borrow-checklist |
+| 中 | 参数/标定治理标准 | 安全参数可控 | 阈值、周期、容量、诊断参数 |
 | 中 | bms_f405 进编译矩阵 + 真机 HIL | 接真板必需 | 需自托管 runner + 硬件 |
 | 低 | 固件签名 / SBOM / attestation | 供应链与安全启动 | 量产/OTA 阶段 |
 | 低 | FMEA / 安全分析（IEC 61508 / ISO 26262） | 功能安全认证 | 视项目目标 |

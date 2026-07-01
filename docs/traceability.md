@@ -9,6 +9,21 @@
 > 维护约定：新增/变更需求时同步本表（DoD「追溯链无断链」「变更已再基线」）；CI 对应测试通过即标「已验证」。
 > 测试用例名格式 `bms.<模块>.<用例>`（twister id）。状态：草稿 / 已实现 / 已验证 / 部分 / 缺口。
 
+## Engine Core 架构（`engine-core-architecture`）
+
+> 证据包见 [features/engine-core-architecture/](features/engine-core-architecture/)；首批 `DB→DIAG→BMS` 集成测试已补到 [../tests/integration/db_diag_bms/](../tests/integration/db_diag_bms/)。
+> 当前 Windows 本地 `mps2/an386` 为 built-only，`native_sim` 被静态过滤；执行型验证留给 CI/WSL native_sim。
+
+| 需求 ID | 需求摘要 | 设计 | 验证方法 | 测试用例 | 状态 |
+|---|---|---|---|---|---|
+| REQ-ENG-001 | `bms_db` 提供 typed snapshot 交换 | [DES-ENG-001](features/engine-core-architecture/03-design.md) | 测试 | `bms.integration.test_db_write_read_snapshot` | 部分 |
+| REQ-ENG-002 | `bms_db` entry 必须有单一写入者 | [DES-ENG-001](features/engine-core-architecture/03-design.md) | 检视 | — | 已实现 / 待检视 |
+| REQ-ENG-003 | `bms_diag` 集中聚合故障 | [DES-ENG-002](features/engine-core-architecture/03-design.md) | 测试 | `bms.integration.test_diag_error_blocks_normal` | 部分 |
+| ⚠️ REQ-ENG-004 | `bms_bms` 主状态机集中决定接触器期望态 | [DES-ENG-003](features/engine-core-architecture/03-design.md) | 测试 | `bms.integration.test_bms_fault_opens_contactor` | 部分 |
+| ⚠️ REQ-ENG-005 | engine 必须保持失效安全默认态 | [DES-ENG-003](features/engine-core-architecture/03-design.md) | 测试 | `bms.integration.test_bms_default_open` | 部分 |
+| REQ-ENG-006 | `bms_task` 统一调度长期运行逻辑 | [DES-ENG-004](features/engine-core-architecture/03-design.md) | 检视 / 集成测试 | `bms.integration.test_task_pipeline_smoke`（待补） | 已实现 / 待验证 |
+| REQ-ENG-007 | 兼容 `zbus` 过渡层，避免一次性大迁移 | [DES-ENG-005](features/engine-core-architecture/03-design.md) | 构建 / 检视 | 现有 `bms.*` 单测构建 | 已实现 |
+
 ## SOC 模块（库仑计数特性，`soc-coulomb`）
 
 > **ID 规范化说明**：本特性早期用工作码 `REQ-SOC-C01..C12`；现规范为 **`REQ-SOC-025..036`**（接续遗留 `soc.md` 的 001-024，避免撞号；映射 `C0x → 0(x+24)`）。

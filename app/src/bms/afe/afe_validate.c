@@ -19,7 +19,7 @@
 
 int bms_afe_validate(struct bms_cell_meas *m, const struct bms_afe_limits *lim)
 {
-	if (m == NULL || lim == NULL) {
+	if ((m == NULL) || (lim == NULL)) {
 		return -EINVAL;
 	}
 
@@ -29,7 +29,7 @@ int bms_afe_validate(struct bms_cell_meas *m, const struct bms_afe_limits *lim)
 	bool voltage_ok = true;
 
 	for (int i = 0; i < BMS_CELL_COUNT; i++) {
-		if (m->cell_mv[i] < lim->cell_mv_min || m->cell_mv[i] > lim->cell_mv_max) {
+		if ((m->cell_mv[i] < lim->cell_mv_min) || (m->cell_mv[i] > lim->cell_mv_max)) {
 			voltage_ok = false;
 			break;
 		}
@@ -39,7 +39,7 @@ int bms_afe_validate(struct bms_cell_meas *m, const struct bms_afe_limits *lim)
 	}
 
 	/* 电流：绝对值不超合理上限 */
-	int32_t abs_ma = m->pack_current_ma < 0 ? -m->pack_current_ma : m->pack_current_ma;
+	int32_t abs_ma = (m->pack_current_ma < 0) ? -m->pack_current_ma : m->pack_current_ma;
 
 	if (abs_ma <= lim->current_abs_max_ma) {
 		valid |= BMS_MEAS_VALID_CURRENT;
@@ -49,7 +49,7 @@ int bms_afe_validate(struct bms_cell_meas *m, const struct bms_afe_limits *lim)
 	bool temp_ok = true;
 
 	for (int i = 0; i < BMS_TEMP_SENSOR_COUNT; i++) {
-		if (m->temp_dci[i] < lim->temp_dci_min || m->temp_dci[i] > lim->temp_dci_max) {
+		if ((m->temp_dci[i] < lim->temp_dci_min) || (m->temp_dci[i] > lim->temp_dci_max)) {
 			temp_ok = false;
 			break;
 		}

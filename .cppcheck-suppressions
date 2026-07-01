@@ -17,8 +17,26 @@ misra-config
 # to zephyr/ headers so a real #error in our own code is still reported.
 preprocessorErrorDirective:*/zephyr/*
 
+# Zephyr 生成的 autoconf.h / devicetree_generated.h 含大量 CONFIG_*/DT_* 宏，
+# cppcheck 视角"未使用"（实由条件编译 + Kconfig/devicetree 体系消费）——生成文件
+# 噪声，非本项目代码缺陷。占 project 模式 misra 2.5 报告的绝大多数。
+misra-c2012-2.5:*/generated/*
+
 # --- Accepted MISRA deviations (add with a one-line justification) ----------
 # Each entry waives a rule for the whole project; prefer inline
 # '// cppcheck-suppress misra-c2012-X.Y' at the exact site when possible.
-# Example:
-# misra-c2012-15.5  # early return used for guard clauses (readability > single-exit)
+#
+# 8.7 外部链接但仅单 TU 引用：本项目纯函数（bms_*_evaluate / bms_afe_validate /
+# bms_comm_clamp_period_ms / bms_*_step 等）刻意 external，以供 tests/ 跨 TU 复用
+# （「纯函数 + 薄线程」可测性约定）。cppcheck project 模式只见 app build 的 TU、
+# 看不到 tests/ 的 TU，故误报；deviation。
+misra-c2012-8.7
+# 15.5 单一出口：本项目刻意用 guard-clause 提前 return（如 fail-safe 入参 NULL 检查
+# CS-22）；可读性与失效安全优先于单一出口。advisory 规则，项目级 deviation。
+misra-c2012-15.5
+# types.h 是项目公共类型/常量「目录」头，其宏（如 BMS_MEAS_VALID_ALL）与 tag（如
+# struct bms_state_snapshot）供全项目及 tests/ 复用、或为 sys/db 预留；cppcheck
+# project 模式按单 TU 视角会把未在当前 TU 出现的宏/tag 误报为 unused（2.4/2.5）。
+# 仅对该 API 目录头 deviation，其它文件的 2.4/2.5 仍生效。
+misra-c2012-2.4:*/bms/types.h
+misra-c2012-2.5:*/bms/types.h

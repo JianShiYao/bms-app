@@ -71,16 +71,18 @@ jobs:
         # twister's own gcovr is rooted at zephyr/, which excludes our app/ (a
         # sibling dir). Run our own gcovr rooted at the workspace, filtered to
         # app/src + app/include, for a MEANINGFUL number, and gate on it.
-        # Baseline (2026-06-18): lines 61.0%, branches 39.1%. Thresholds are set
-        # below the baseline with margin to catch regressions without flakiness;
-        # raise them as test coverage grows.
+        # Baseline (2026-06-18): lines 61.0%, branches 39.1%. Thresholds sit just
+        # below the live baseline with margin (catch regressions, avoid flakiness);
+        # raise them as coverage grows. Ladder: 55/30 (initial) -> 60/38 (2026-06-30,
+        # after protection boundary/NULL cases). Safety-critical pure functions
+        # (bms_protection_evaluate / bms_soc_* / bms_afe_validate) target 100% branch.
         run: >
           gcovr --root "$GITHUB_WORKSPACE"
           --filter 'bms-app/app/(src|include)/.*'
           --gcov-ignore-parse-errors=all
           --print-summary
-          --fail-under-line 55
-          --fail-under-branch 30
+          --fail-under-line 60
+          --fail-under-branch 38
           twister-out
       - name: Upload coverage report
         if: always()
@@ -141,11 +143,13 @@ jobs:
       - name: Run clang-tidy on app sources
         run: clang-tidy -p build $(find bms-app/app/src -name '*.c')
 
-  # Observation job (NON-BLOCKING): cppcheck + MISRA addon.
-  # process-workflow.md §8 ladder, step ②: runs in CI and reports findings
-  # but does NOT block merge (continue-on-error; not a required check). Promote
-  # to required (drop continue-on-error + add to branch protection) only after
-  # the noise baseline proves stable.
+  # Gate 9: cppcheck + MISRA C:2012 (project mode). HARD gate (CPPCHECK_FAIL=1),
+  # promoted from observation (process-workflow.md §8 ladder ② -> ③). Local
+  # baseline (cppcheck 2.21) is 0 findings after the suppressions/deviations in
+  # .cppcheck-suppressions. NOTE: CI installs cppcheck from apt, whose version may
+  # differ from local and emit version-specific MISRA findings; if so, tune
+  # .cppcheck-suppressions in the PR before merge. After this merges, add
+  # `cppcheck-misra` to the master branch-protection required checks.
   cppcheck-misra:
     needs: format
     runs-on: ubuntu-24.04
@@ -163,8 +167,9 @@ jobs:
         run: bash bms-app/scripts/setup-cppcheck-misra.sh
       - name: Generate compile_commands.json (mps2/an386)
         run: west build -b mps2/an386 bms-app/app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-      - name: Run cppcheck + MISRA (project mode, non-blocking)
-        continue-on-error: true
+      - name: Run cppcheck + MISRA (project mode, blocking)
+        env:
+          CPPCHECK_FAIL: '1'
         run: bash bms-app/scripts/cppcheck-run.sh --project build/compile_commands.json 2>&1 | tee cppcheck-report.txt
       - name: Upload cppcheck/MISRA report
         if: always()
@@ -225,7 +230,22 @@ jobs:
           name: yamllint-report
           path: yamllint-report.txt
 
-  # Gate 8: file-header hygiene (coding-style C:002 SPDX + C:004 file-level
+  # Gate 8: test-presence. Every BMS module under app/src/bms/ must have a
+  # tests/bms/<module>/ suite, or be registered in scripts/check-test-files.py
+  # EXEMPT (tech-debt ledger). Pure-stdlib Python. Blocking gate; after this
+  # merges, add `test-files` to the master branch-protection required checks.
+  test-files:
+    needs: format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check every module has a test suite
+        run: python scripts/check-test-files.py
+
+  # Gate 9: file-header hygiene (coding-style C:002 SPDX + C:004 file-level
   # doxygen), scoped to app/. Pure-stdlib Python, no pinned tool needed.
   # See docs/coding-style.md. Blocking gate (§8 ladder step ③). After this
   # merges, add `file-headers` to the master branch-protection required checks.
