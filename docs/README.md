@@ -16,7 +16,7 @@ bms-app 的文档导航。**顶层文档命名约定**（权威）：`<category>
         |
         v   按文档 5 类横向展开（命名 <category>-<topic>；topic 详见下方清单）
 
-  concept/    ->  architecture · safety · documentation-system
+  concept/    ->  architecture · data-model · safety · documentation-system
   process/    ->  workflow ★ · git · agents · design-review · small-v-workflow
   standard/   ->  module-interface
   quality/    ->  management · ci-checklist · integration-test-strategy · traceability (*)
@@ -33,7 +33,8 @@ bms-app 的文档导航。**顶层文档命名约定**（权威）：`<category>
 |------|------|------------|
 | [concept-methodology.md](concept-methodology.md) | 方法论母文档（Why） | — |
 | [concept-documentation-system.md](concept-documentation-system.md) | 研发文档/证据体系骨架 | methodology + CLAUDE |
-| [concept-architecture.md](concept-architecture.md) | 目标架构（foxBMS 2 借鉴） | — |
+| [concept-architecture.md](concept-architecture.md) | 软件架构基线 v0（ADR 风格） | methodology / foxBMS 2 借鉴 |
+| [concept-data-model.md](concept-data-model.md) | `bms_db` 数据契约基线（entry/owner/validity/sequence/stale） | architecture ADR-ARCH-002 |
 | [concept-safety.md](concept-safety.md) | 安全概念（危害→安全目标→安全功能，轻量初版） | methodology §6.1 |
 | [process-workflow.md](process-workflow.md) | 开发流程**单一事实源**（完整生命周期） | 衍生自 methodology |
 | [process-git.md](process-git.md) | Git 制度细化 + 操作/恢复手册 | 细化 workflow |
@@ -62,7 +63,7 @@ bms-app 的文档导航。**顶层文档命名约定**（权威）：`<category>
 ## 「查哪份」速查
 
 - 为什么这么做 → **concept-methodology**；怎么走流程 → **process-workflow**（Git 细节 → process-git）。
-- 文档体系怎么理解 → **concept-documentation-system**；系统怎么设计 → **concept-architecture**。
+- 文档体系怎么理解 → **concept-documentation-system**；系统怎么设计 → **concept-architecture**；DB 数据契约 → **concept-data-model**。
 - 怎么编译/跑（含 WSL native_sim）→ **guide-build**；模块接口怎么写 → **standard-module-interface**。
 - 危害/安全目标/失效安全为什么这么定 → **concept-safety**。
 - 需求验证到哪 → **traceability**；engine 核心证据链 → **features/engine-core-architecture**；质量现状/CI 路线 → **quality-management** / **quality-ci-checklist**；集成测试怎么补 → **quality-integration-test-strategy**。

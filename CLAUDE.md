@@ -14,7 +14,8 @@
 - [docs/README.md](docs/README.md) —— 文档索引与关系图（入口，先看这个）
 - [docs/process-workflow.md](docs/process-workflow.md) —— 开发流程**单一事实源**
 - [docs/quality-gates.md](docs/quality-gates.md) —— CI/本地**门禁事实表**（门与阈值只此一处）
-- [docs/concept-architecture.md](docs/concept-architecture.md) —— 目标架构（**engine core**：`bms_task` 调度 / `bms_db` 数据交换 / `bms_diag` 诊断 / `bms_bms` 状态机；已从早期"各模块自起 zbus 线程"演进而来）
+- [docs/concept-architecture.md](docs/concept-architecture.md) —— 软件架构基线 v0（engine core）
+- [docs/concept-data-model.md](docs/concept-data-model.md) —— `bms_db` 数据契约（entry/owner/validity/sequence/stale）
 
 ## 3. 不可违反的规则
 

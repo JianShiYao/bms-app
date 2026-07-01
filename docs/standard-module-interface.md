@@ -41,21 +41,14 @@ enum bms_state bms_next_state(enum bms_state cur,
 
 ## 4. 数据所有权
 
-目标架构以 `bms_db` 为数据交换中心。
-
-| 数据 | 唯一写入者 | 主要读取者 |
-|------|------------|------------|
-| `DB_CELL_MEAS` | `bms_meas` / 当前过渡期 `bms_task` 调用 `bms_afe_sample` 后写入 | protection、algorithm、balancing、comm |
-| `DB_SOC_STATE` | `bms_algorithm` / 当前 `bms_task` 调用 SOC 核心后写入 | bms、comm、diag |
-| `DB_PROT_STATE` | `bms_protection` / 当前 `bms_task` 调用 protection 核心后写入 | diag、bms、comm |
-| `DB_DIAG_STATE` | `bms_diag` | bms、sys、comm |
-| `DB_BMS_STATE` | `bms_bms` / 当前 `bms_task` 调用 `bms_next_state` 后写入 | comm、balancing、sys_mon |
+目标架构以 `bms_db` 为数据交换中心。entry 清单、唯一 owner、validity、sequence、stale 与 copy-by-value 规则以 [concept-data-model.md](concept-data-model.md) 为权威；本文只规定模块接口必须遵守的数据边界。
 
 规则：
 
 - 一个 database entry 只能有一个 owner。
 - 读者不得缓存可变指针；只能读取值拷贝。
 - 同一采样周期内一致的数据必须一次性写入同一个 entry。
+- 非 owner 不得直接改写他人 entry；需要表达请求时，必须通过自己的 entry、命令 entry 或明确的 engine API。
 - zbus 仅作为兼容/通知层，不作为新的模块契约。
 
 ## 5. 错误与诊断
@@ -68,7 +61,7 @@ enum bms_state bms_next_state(enum bms_state cur,
 ## 6. 安全默认态
 
 - 接触器默认 `OPEN`。
-- `bms_bms`/`bms_sys` 是接触器最终 owner。
+- `bms_bms` 是接触器最终 owner。
 - `bms_protection` 只做保护判定，不直接闭合接触器。
 - 测量无效、诊断 ERROR/CRITICAL、任务健康异常、硬件故障 latch 均不得允许进入 `NORMAL`。
 
