@@ -50,6 +50,7 @@ int main(void)
 	}
 
 	bms_task_init();
+	bms_task_start();
 
 	LOG_INF("BMS engine initialized");
 
