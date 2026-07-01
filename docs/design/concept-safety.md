@@ -1,8 +1,8 @@
 # BMS 安全概念（轻量初版）
 
-> **文档定位**：本项目的**安全概念（safety concept）**——[concept-methodology.md](concept-methodology.md) §6.1「风险分析与安全需求」要求的产物。它为"安全案例驱动"方法论提供地基：把**危害 → 安全目标 → 安全功能/需求 → 代码/测试**的链条显式化，使下游需求、保护设计、测试强度都能回指安全目标。
+> **文档定位**：本项目的**安全概念（safety concept）**——[concept-methodology.md](../concept-methodology.md) §6.1「风险分析与安全需求」要求的产物。它为"安全案例驱动"方法论提供地基：把**危害 → 安全目标 → 安全功能/需求 → 代码/测试**的链条显式化，使下游需求、保护设计、测试强度都能回指安全目标。
 > **状态**：**轻量初版（draft）**。按 methodology §6.1「早期可轻量，但必须能追溯到安全需求」。本版给出危害清单与安全目标的**首个基线**；HARA 风险定级（S/E/C → ASIL 或等价）、FMEA/FTA、保护响应时间预算等**重型分析**待接真板、明确安全目标后按 methodology §6 补强。
-> **依据来源**：危害与阈值取材于既有保护需求 [requirements/prot.md](requirements/prot.md)（逆向自 S16100B，**参考性**）与跨域风险清单 [requirements/risks-and-gaps.md](requirements/risks-and-gaps.md)；安全态/状态机取自 [concept-architecture.md](concept-architecture.md)。权威约定见 [../CLAUDE.md](../CLAUDE.md)。
+> **依据来源**：危害与阈值取材于既有保护需求 [requirements/prot.md](../requirements/prot.md)（逆向自 S16100B，**参考性**）与跨域风险清单 [requirements/risks-and-gaps.md](../requirements/risks-and-gaps.md)；安全态/状态机取自 [concept-architecture.md](concept-architecture.md)。权威约定见 [../CLAUDE.md](../../CLAUDE.md)。
 
 ## 1. 范围与 Item 定义
 
@@ -107,7 +107,7 @@
 
 ## 8. 维护（治理）
 
-- **Owner**：[.github/CODEOWNERS](../.github/CODEOWNERS)（当前单人项目即维护者）。
+- **Owner**：[.github/CODEOWNERS](../../.github/CODEOWNERS)（当前单人项目即维护者）。
 - **版本**：`v0.1`（轻量初版，2026-06-30）。危害/安全目标（§3·§4）变更升次版本，追溯/注脚补充升修订。
 - **变更流程**：标准 docs PR（从 `master` 切 `docs/<kebab>` → PR → 评审 → Squash）。
 - **再基线**：新增/变更安全相关需求时，须回链到本文某条 SG；新增危害须评估是否派生新 SG 与安全功能（methodology 原则6/7）。

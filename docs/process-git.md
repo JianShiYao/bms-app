@@ -257,7 +257,7 @@ git merge --abort           # 想放弃整个合并、回到合并前
 
 ### 10.6 误删文件 / 想丢弃本地改动
 ```bash
-git restore docs/concept-architecture.md         # 丢弃该文件的未暂存改动（恢复到 HEAD）
+git restore docs/design/concept-architecture.md         # 丢弃该文件的未暂存改动（恢复到 HEAD）
 git checkout -- .claude/CLAUDE.md         # 旧写法，恢复被删文件（本会话真实用过）
 git restore --staged file                 # 仅取消暂存，保留改动
 git clean -nd                             # 先预览将删除哪些未跟踪文件（-n 只看不删）

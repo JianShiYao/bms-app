@@ -5,8 +5,8 @@
 
 出处缩写：**QM**=[quality-management.md](docs/quality-management.md)、**WF**=[process-workflow.md](docs/process-workflow.md)、
 **RP**=[quality-system-rollout-plan.md](docs/quality-system-rollout-plan.md)、**CL**=[quality-ci-checklist.md](docs/quality-ci-checklist.md)、
-**ARCH**=[concept-architecture.md](docs/concept-architecture.md)、**CLAUDE**=[CLAUDE.md](CLAUDE.md)、
-**DOCSYS**=[concept-documentation-system.md](docs/concept-documentation-system.md)、**STD**=[standard-module-interface.md](docs/standard-module-interface.md)、
+**ARCH**=[concept-architecture.md](docs/design/concept-architecture.md)、**CLAUDE**=[CLAUDE.md](CLAUDE.md)、
+**DOCSYS**=[concept-documentation-system.md](docs/concept-documentation-system.md)、**STD**=[standard-module-interface.md](docs/design/standard-module-interface.md)、
 **DR**=[process-design-review.md](docs/process-design-review.md)、**INT**=[quality-integration-test-strategy.md](docs/quality-integration-test-strategy.md)。
 
 ## 已完成（里程碑）
@@ -22,7 +22,7 @@
 - [x] **ztest 测试基础**：当前源码含 AFE 20、COMM 6、PROT 15、SOC 21、集成 4 个 `ZTEST()`；afe 采样后端可切换（stub/sim/adc + validate）。
 - [x] **Doxygen API 文档 → GitHub Pages**：[docs/Doxyfile](docs/Doxyfile)（仅公共 API）+ [docs.yml](.github/workflows/docs.yml) 自动构建发布；站点 <https://jianshiyao.github.io/bms-app/>。
 - [x] **文档/证据体系骨架**：[docs/concept-documentation-system.md](docs/concept-documentation-system.md) 明确 `concept/process/guide/standard/quality` 五类文档、权威链、小 V 证据包与变更治理。
-- [x] **模块接口标准**：[docs/standard-module-interface.md](docs/standard-module-interface.md) 固化 `bms_task/bms_db/bms_diag/bms_bms` 架构下的模块接口、数据 owner、任务 owner 与安全默认态。
+- [x] **模块接口标准**：[docs/design/standard-module-interface.md](docs/design/standard-module-interface.md) 固化 `bms_task/bms_db/bms_diag/bms_bms` 架构下的模块接口、数据 owner、任务 owner 与安全默认态。
 - [x] **设计评审门槛**：[docs/process-design-review.md](docs/process-design-review.md) 补齐架构/安全/任务/DB/诊断改动的评审触发条件、checklist 与结论类型。
 - [x] **集成测试策略骨架**：[docs/quality-integration-test-strategy.md](docs/quality-integration-test-strategy.md) 明确 DB/DIAG/BMS/TASK 多模块集成验证路线。
 - [x] **Engine Core 架构证据链初版**：[docs/features/engine-core-architecture/](docs/features/engine-core-architecture/) 补齐 `bms_task/bms_db/bms_diag/bms_bms` 的 `REQ → DES → TEST` 追溯框架，并同步到全局 [docs/traceability.md](docs/traceability.md)。

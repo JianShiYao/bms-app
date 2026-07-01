@@ -25,7 +25,7 @@
 ## 二、分阶段详述
 
 ### 1. 需求与设计
-**现状**：目标架构见 [concept-architecture.md](concept-architecture.md)（foxBMS 2 inspired：`bms_task` / `bms_db` / `bms_diag` / `bms_bms`，Zephyr 原生落地）；安全概念见 [concept-safety.md](concept-safety.md)；文档/证据体系见 [concept-documentation-system.md](concept-documentation-system.md)。模块化由 Kconfig 开关表达（`CONFIG_BMS_*`）。**已提供需求工程模板** [templates/](templates/)（需求规格 + 设计规格 + 需求↔测试追溯，EARS 句式、ID 规范、与 ztest 关联约定）。模块接口标准见 [standard-module-interface.md](standard-module-interface.md)，设计评审门见 [process-design-review.md](process-design-review.md)。
+**现状**：目标架构见 [concept-architecture.md](design/concept-architecture.md)（foxBMS 2 inspired：`bms_task` / `bms_db` / `bms_diag` / `bms_bms`，Zephyr 原生落地）；安全概念见 [concept-safety.md](design/concept-safety.md)；文档/证据体系见 [concept-documentation-system.md](concept-documentation-system.md)。模块化由 Kconfig 开关表达（`CONFIG_BMS_*`）。**已提供需求工程模板** [templates/](templates/)（需求规格 + 设计规格 + 需求↔测试追溯，EARS 句式、ID 规范、与 ztest 关联约定）。模块接口标准见 [standard-module-interface.md](design/standard-module-interface.md)，设计评审门见 [process-design-review.md](process-design-review.md)。
 **待补齐**：
 - 按模块**填充**需求/设计文档并建立追溯矩阵（模板已就绪，内容待写）；
 - 为 `bms_task` / `bms_db` / `bms_diag` / `bms_bms` 补齐 `REQ/DES/TEST` 链；

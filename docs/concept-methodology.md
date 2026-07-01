@@ -171,7 +171,7 @@ BMS 固件不仅要"算对",还要"及时、安全、资源可控"。建议**视
 | [process-workflow.md](process-workflow.md) | §3 模型 / §4 原则3·4·5·6·7 / §5 DoR-DoD / §6 增强层 | 分支/提交/PR、分层质量门、DoR/DoD 本项目清单、安全改动路径、变更再基线、发布 |
 | [concept-documentation-system.md](concept-documentation-system.md) | §3 证据层 / §4 原则3·5·6·7 / §6.6 | 文档体系骨架、权威链、小 V 证据包、文档变更治理 |
 | [process-design-review.md](process-design-review.md) | §4 原则4·6·7 / §5 DoD / §6.6 | 架构/安全/任务/DB/诊断改动的设计评审门与记录方式 |
-| [standard-module-interface.md](standard-module-interface.md) | §4 原则2·3·4 / §6.5 | 模块接口、数据 owner、任务 owner、诊断路径、安全默认态 |
+| [standard-module-interface.md](design/standard-module-interface.md) | §4 原则2·3·4 / §6.5 | 模块接口、数据 owner、任务 owner、诊断路径、安全默认态 |
 | [quality-integration-test-strategy.md](quality-integration-test-strategy.md) | §4 原则2·3·5 / §6.3 | 多模块集成测试分层、首批集成场景、CI 演进 |
 | [process-agents.md](process-agents.md) + `.claude/agents/*` | §3 小 V 各阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
 | [templates/](templates/) | §4 原则3·7 / §6.2 | REQ/DES ID 规范、追溯矩阵、EARS 模板、需求元数据 |
