@@ -147,6 +147,10 @@ static void run_protection_and_bms(uint32_t now_ms)
 	(void)bms_diag_get_state(&diag);
 	inputs = (struct bms_state_inputs){
 		.close_allowed = true,
+		/* interim：当前无预充回路，视预充即时可完成、不超时；M6 接真实电压爬升/超时反馈
+		 * （DB_CONTACTOR_FB）后据实计算。顶部失效安全门每拍仍先判，故不放宽安全。 */
+		.precharge_complete = true,
+		.precharge_timeout = false,
 		.open_request = false,
 		.hw_fault_latched = false,
 		.diag = diag,
