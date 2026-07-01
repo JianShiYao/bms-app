@@ -1,7 +1,7 @@
 # 设计：docs/ 目录按类别重构（目录树自导航）
 
 - **日期**：2026-07-01
-- **状态**：设计已确认，待写实施计划
+- **状态**：设计已确认（含 review 修订），待写实施计划
 - **动机**：当前 `docs/` 顶层是 ~13 个带前缀散落文件 + 6 个文件夹混杂；分类信息编码在文件名前缀里，**目录树本身不导航**——须懂命名约定或读 README 才知道去哪，未充分服务研发流程。
 
 ## 1. 决策
@@ -10,11 +10,15 @@
 |------|------|------|
 | 顶层组织轴 | **按文档类别**（"我要哪类文档"），前缀提升为文件夹 | 用户选定 |
 | `design/` 学科目录 | **解散**（纯单轴，消除双轴混用） | 用户选定 |
-| 工作产物层 | **两层**：类别文件夹 + `work/` + `reference/` | 用户选定 |
 | 文件名前缀 | **去前缀**（目录已承载类别，前缀冗余） | 用户选定 |
 | 子目录自解释 | 每个顶层子目录补一份短 `README.md`，只答三件事 | 用户选定 |
+| 活产物 vs 历史归档 | `work/`（活产物）与 `archive/`（按日期沉淀的过程记录）**顶层分家** | review ①：work/ 太杂 |
+| 模板定位 | `templates/` **提到顶层独立**（产出骨架，非参考阅读）；`reference/` 只留参考阅读资料 | review ②：templates 不属 reference |
+| `management.md` 定位 | 仅"质量全景总览"，门禁事实以 `gates.md` 为准（加定位 banner） | review ③：防与 gates 抢权威 |
 
 ## 2. 目标结构
+
+顶层 9 个语义单一的文件夹，各带三段式 `README.md`：
 
 ```
 docs/
@@ -37,12 +41,17 @@ docs/
   guide/                       操作怎么做
     README.md
     build.md
-  work/                        活的工程产物 / 证据
+  work/                        活的工程产物（随产品演进）
     README.md
-    requirements/  features/  specs/  plans/  traceability.md
-  reference/                   参考资料 / 支撑
+    requirements/  features/  traceability.md
+  archive/                     历史归档（按日期沉淀的过程记录）
     README.md
-    hardware/  templates/
+    specs/  plans/
+  templates/                   可复制的产出骨架（非参考阅读）
+    README.md
+  reference/                   参考阅读资料
+    README.md
+    hardware/
 ```
 
 ## 3. 文件迁移映射（old → new）
@@ -71,21 +80,25 @@ docs/
 - `quality-gates.md` → `quality/gates.md`
 - `quality-ci-checklist.md` → `quality/ci-checklist.md`
 - `quality-integration-test-strategy.md` → `quality/integration-test-strategy.md`
-- `quality-management.md` → `quality/management.md`
+- `quality-management.md` → `quality/management.md`（+ 定位 banner，见 §4·§8）
 
 **guide/**
 - `guide-build.md` → `guide/build.md`
 
-**work/**（`superpowers/` 不透明名消失）
+**work/**（活产物）
 - `requirements/` → `work/requirements/`
 - `features/` → `work/features/`
-- `superpowers/specs/` → `work/specs/`
-- `superpowers/plans/` → `work/plans/`
 - `traceability.md` → `work/traceability.md`
+
+**archive/**（历史归档；`superpowers/` 不透明名消失）
+- `superpowers/specs/` → `archive/specs/`
+- `superpowers/plans/` → `archive/plans/`
+
+**templates/**（提到顶层；已有的 `templates/README.md` 改写为三段式）
+- `templates/` → `templates/`（保持顶层，内容不变，README 重写）
 
 **reference/**
 - `hardware/` → `reference/hardware/`
-- `templates/` → `reference/templates/`
 
 **留在原地**
 - `docs/README.md`（改写以反映新结构）
@@ -98,10 +111,12 @@ docs/
 - **concept/**：放=为什么这么做与目标模型（方法论、文档体系、架构/运行时/数据/诊断/安全设计契约）；不放=操作步骤(→guide)、流程门(→process)、可执行接口/编码约束(→standard)、活产物(→work)；权威=`methodology.md`（方法论母文档）。
 - **process/**：放=研发活动怎么走、门在哪（生命周期、Git、评审、agent 编排）；不放=门禁阈值事实表(→quality)、为什么(→concept)；权威=`workflow.md`（流程单一事实源）。
 - **standard/**：放=必须遵守的工程契约（模块接口、编码风格）；不放=目标模型讨论(→concept)、如何证明(→quality)；权威=`module-interface.md`。
-- **quality/**：放=如何证明做得够好（门禁事实表、CI 清单、集成测试策略、质量管控全景）；不放=活的证据/矩阵(→work)、流程步骤(→process)；权威=`gates.md`（门与阈值唯一事实源）。
+- **quality/**：放=如何证明做得够好（门禁事实表、CI 清单、集成测试策略、质量全景总览）；不放=活的证据/矩阵(→work)、流程步骤(→process)；权威=`gates.md`（门与阈值唯一事实源；`management.md` 仅总览，不抢权威）。
 - **guide/**：放=具体操作怎么做（环境/构建/测试/WSL）；不放=规则与约定(→concept/standard)；权威=`build.md`。
-- **work/**：放=活的工程产物与证据（需求、特性交付物、设计 spec、实施 plan、追溯矩阵）；不放=常青规范文档(→ 概念/流程/标准/质量)；权威=`traceability.md`（需求↔测试活矩阵），每特性见 `features/<slug>/`。
-- **reference/**：放=参考资料与模板（硬件原理图/BOM/数据手册、文档模板）；不放=常青规范、活产物；权威=`hardware/__00_readme.md`、`templates/README.md`。
+- **work/**：放=**活的**工程产物与证据（需求基线、特性交付物、追溯矩阵）；不放=历史归档(→archive)、常青规范文档(→概念/流程/标准/质量)；权威=`traceability.md`（需求↔测试活矩阵），每特性见 `features/<slug>/`。
+- **archive/**：放=**按日期沉淀**的过程记录（设计 spec、实施 plan，`YYYY-MM-DD-…`）；不放=活产物(→work)、常青规范(→类别文件夹)；权威=无单一权威（历史快照，以文件名日期为序，最新结论以对应常青文档为准）。
+- **templates/**：放=**可复制的产出骨架**（需求/设计/追溯矩阵模板）；不放=参考阅读资料(→reference)、真实产物(→work)；说明=**这不是参考阅读，是复制后填写的骨架**；权威=`README.md`（模板索引与用法）。
+- **reference/**：放=**参考阅读资料**（硬件原理图/BOM/数据手册）；不放=可复制模板(→templates)、常青规范、活产物；权威=`hardware/__00_readme.md`。
 
 ## 5. 待迁移期核实的点
 
@@ -110,18 +125,18 @@ docs/
 
 ## 6. 引用修正策略（迁移核心难点）
 
-本次**几乎所有文档都移动**，相对链接的正确新目标取决于"源新位置 × 目标新位置"，不能简单前缀替换。策略：
+本次**几乎所有文档都移动 + 去前缀**，相对链接的正确新目标取决于"源新位置 × 目标新位置"，不能简单前缀替换。策略：
 
-1. 以 §3 的 old→new 映射为唯一事实源，构建映射表。
+1. 以 §3 的 old→new 映射为唯一事实源，构建映射表（含目录移动与去前缀两重变化）。
 2. 对每个 markdown 文件的每条本地链接：把 old 目标解析为仓库绝对路径 → 过映射表得到 new 绝对路径 → 按该文件的 **new 位置**重算相对路径。
-3. 代码注释/Kconfig/脚本里的 `docs/...` 路径式引用：按映射表直接替换绝对路径段。
-4. 裸文件名 prose 提及（反引号、无路径）：文件名会变（去前缀 + 可能改目录），需评估——本次去前缀使裸名也变，故这类**也要处理或标注**（与前两次不同）。
-5. 校验：脚本逐链按所在目录解析，`broken == 0`；无 `docs/docs`、无遗留旧路径；末行换行/CRLF/editorconfig；构建+测试由 CI 兜底。
+3. 代码注释/Kconfig/脚本里的 `docs/...` 路径式引用：按映射表替换绝对路径段。
+4. 裸文件名 prose 提及（反引号、无路径）：去前缀使裸名也变（如 `concept-architecture.md` → `architecture.md`），这类**须处理或标注**（与前两次不同）。
+5. 校验：脚本逐链按所在目录解析，`broken == 0`；无 `docs/docs`、无遗留旧路径/旧前缀名；末行换行/CRLF/editorconfig；构建+测试由 CI 兜底。
 
 ## 7. 同步改写的元文档
 
-- `docs/README.md`：索引、关系图、命名约定（改为"目录=类别、文件名去前缀"）、速查、子目录表。
-- `concept/documentation-system.md`：§2 五类前缀 → 五类**目录**；删/改 §2b 学科目录（design/ 已解散）；权威链树。
+- `docs/README.md`：索引、关系图、命名约定（改为"目录=类别、文件名去前缀、work/archive/templates/reference 四类产物/参考"）、速查、子目录表。
+- `concept/documentation-system.md`：§2 五类前缀 → 五类**目录** + work/archive/templates/reference；删 §2b 学科目录（design/ 已解散）；权威链树。
 - `CLAUDE.md`：§2 必读文档链接、§8 命名约定。
 - `TODO.md`、根 `README.md`：文档链接。
 
@@ -132,5 +147,5 @@ docs/
 
 ## 9. 非目标
 
-- 不改文档**内容**（仅移动 + 去前缀 + 补子目录 README + 修引用 + 改写元文档）。
+- 不改文档**内容**（仅移动 + 去前缀 + 补子目录 README + 修引用 + 改写元文档）。**唯一受控例外**：`quality/management.md` 顶部加一行定位 banner（声明其为总览、门禁事实以 `gates.md` 为准），不动其实质内容。
 - 不清理与本次无关的既存失联链接（如 `quality-verification.md` 等历史死链）。
