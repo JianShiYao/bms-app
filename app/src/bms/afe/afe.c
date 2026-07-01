@@ -18,6 +18,27 @@
 
 LOG_MODULE_REGISTER(bms_afe, LOG_LEVEL_INF);
 
+/* 正常构建由 app/Kconfig 提供；无 app Kconfig 的隔离测试场景回退默认值
+ * （与 app/Kconfig 各 default 一致；同 afe_sim.c/ task.c 的回退惯例）。 */
+#ifndef CONFIG_BMS_AFE_SAMPLE_PERIOD_MS
+#define CONFIG_BMS_AFE_SAMPLE_PERIOD_MS 100
+#endif
+#ifndef CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MIN
+#define CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MIN 0
+#endif
+#ifndef CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MAX
+#define CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MAX 6000
+#endif
+#ifndef CONFIG_BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA
+#define CONFIG_BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA 300000
+#endif
+#ifndef CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MIN
+#define CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MIN (-400)
+#endif
+#ifndef CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX
+#define CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX 1250
+#endif
+
 /* 合理性校验阈值（来自 Kconfig）。语义为"读数是否物理可信"，非保护阈值。 */
 static const struct bms_afe_limits AFE_LIMITS = {
 	.cell_mv_min = CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MIN,

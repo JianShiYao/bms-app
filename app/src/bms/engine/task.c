@@ -45,19 +45,35 @@ LOG_MODULE_REGISTER(bms_task, LOG_LEVEL_INF);
 #define BAL_DELTA_MV   20
 #define BAL_MASK_BYTES ((BMS_CELL_COUNT + 7) / 8)
 
+#if defined(CONFIG_BMS_SOC)
 static struct bms_soc_coulomb_state task_soc_state;
+#endif
 static struct bms_prot_limits task_prot_limits;
 static enum bms_state task_bms_state = BMS_STATE_INIT;
+
+/* 采样到期状态（safety_step 消化，bms_task_init 复位为 0）。 */
+static uint32_t next_sample;
+
+#if defined(CONFIG_BMS_COMM)
+/* comm 周期上报到期状态（app_step 消化，bms_task_init 复位为 0）。 */
+static uint32_t next_comm;
+#endif
+#if defined(CONFIG_BMS_SOC)
+/* 上次消化的采样序号，去重 SOC 步进（bms_task_init 复位为 0）。 */
+static uint32_t last_soc_meas_seq;
+#endif
 
 static void publish_cell_compat(const struct bms_cell_meas *meas)
 {
 	(void)zbus_chan_pub(&chan_cell_meas, meas, K_NO_WAIT);
 }
 
+#if defined(CONFIG_BMS_SOC)
 static void publish_soc_compat(const struct bms_soc *soc)
 {
 	(void)zbus_chan_pub(&chan_soc, soc, K_NO_WAIT);
 }
+#endif
 
 static void publish_prot_compat(const struct bms_prot_evt *prot)
 {
@@ -136,23 +152,84 @@ static void run_protection_and_bms(void)
 	(void)bms_db_write_bms_state(&state);
 }
 
+void bms_task_safety_step(uint32_t now_ms)
+{
+	if (bms_time_due(now_ms, &next_sample, CONFIG_BMS_AFE_SAMPLE_PERIOD_MS)) {
+		run_measurement(now_ms);
+	}
+	run_protection_and_bms();
+}
+
+void bms_task_app_step(uint32_t now_ms)
+{
+	struct bms_cell_meas meas;
+	struct bms_db_meta meas_meta = {0};
+
+	if (bms_db_read_cell_meas(&meas, &meas_meta) == 0 && meas_meta.valid) {
+#if defined(CONFIG_BMS_SOC)
+		if (meas_meta.sequence != last_soc_meas_seq) {
+			struct bms_soc soc;
+			int rc = bms_soc_coulomb_step(&task_soc_state, &meas, &soc);
+
+			last_soc_meas_seq = meas_meta.sequence;
+			if (rc == 0) {
+				(void)bms_db_write_soc(&soc);
+				publish_soc_compat(&soc);
+			}
+		}
+#endif
+
+#if defined(CONFIG_BMS_BALANCING)
+		uint8_t mask[BAL_MASK_BYTES];
+
+		if (bms_balancing_compute(&meas, BAL_DELTA_MV, mask, sizeof(mask)) == 0) {
+			LOG_DBG("balancing mask[0]=0x%02x", mask[0]);
+		}
+#endif
+	}
+
+#if defined(CONFIG_BMS_COMM)
+	if (bms_time_due(now_ms, &next_comm, (uint32_t)bms_comm_effective_period_ms())) {
+		struct bms_soc soc;
+		struct bms_prot_evt prot;
+		struct bms_db_meta soc_meta = {0};
+		struct bms_db_meta prot_meta = {0};
+		const struct bms_cell_meas *meas_ptr = meas_meta.valid ? &meas : NULL;
+		const struct bms_soc *soc_ptr = NULL;
+		const struct bms_prot_evt *prot_ptr = NULL;
+
+		if (bms_db_read_soc(&soc, &soc_meta) == 0 && soc_meta.valid) {
+			soc_ptr = &soc;
+		}
+		if (bms_db_read_prot(&prot, &prot_meta) == 0 && prot_meta.valid) {
+			prot_ptr = &prot;
+		}
+		bms_comm_tx_snapshot(meas_ptr, soc_ptr, prot_ptr);
+	}
+#else
+	ARG_UNUSED(now_ms);
+#endif
+}
+
 static void tsk_safety_10ms(void *p1, void *p2, void *p3)
 {
 	ARG_UNUSED(p1);
 	ARG_UNUSED(p2);
 	ARG_UNUSED(p3);
 
-	uint32_t next_sample = 0;
+	uint32_t next_wake = bms_time_now_ms();
 
 	while (1) {
-		uint32_t now = bms_time_now_ms();
+		bms_task_safety_step(bms_time_now_ms());
 
-		if (bms_time_due(now, &next_sample, CONFIG_BMS_AFE_SAMPLE_PERIOD_MS)) {
-			run_measurement(now);
+		next_wake += CONFIG_BMS_TASK_SAFETY_PERIOD_MS;
+		int32_t delay = (int32_t)(next_wake - bms_time_now_ms());
+
+		if (delay > 0) {
+			k_msleep((uint32_t)delay);
+		} else {
+			next_wake = bms_time_now_ms(); /* 落后则重置，不追赶 */
 		}
-		run_protection_and_bms();
-
-		k_msleep(CONFIG_BMS_TASK_SAFETY_PERIOD_MS);
 	}
 }
 
@@ -162,58 +239,19 @@ static void tsk_app_100ms(void *p1, void *p2, void *p3)
 	ARG_UNUSED(p2);
 	ARG_UNUSED(p3);
 
-	uint32_t next_comm = 0;
-	uint32_t last_soc_meas_seq = 0;
+	uint32_t next_wake = bms_time_now_ms();
 
 	while (1) {
-		struct bms_cell_meas meas;
-		struct bms_db_meta meas_meta = {0};
-		struct bms_soc soc;
-		struct bms_prot_evt prot;
-		struct bms_db_meta soc_meta = {0};
-		struct bms_db_meta prot_meta = {0};
+		bms_task_app_step(bms_time_now_ms());
 
-		if (bms_db_read_cell_meas(&meas, &meas_meta) == 0 && meas_meta.valid) {
-#if defined(CONFIG_BMS_SOC)
-			if (meas_meta.sequence != last_soc_meas_seq) {
-				int rc = bms_soc_coulomb_step(&task_soc_state, &meas, &soc);
+		next_wake += CONFIG_BMS_TASK_APP_PERIOD_MS;
+		int32_t delay = (int32_t)(next_wake - bms_time_now_ms());
 
-				last_soc_meas_seq = meas_meta.sequence;
-				if (rc == 0) {
-					(void)bms_db_write_soc(&soc);
-					publish_soc_compat(&soc);
-				}
-			}
-#endif
-
-#if defined(CONFIG_BMS_BALANCING)
-			uint8_t mask[BAL_MASK_BYTES];
-
-			if (bms_balancing_compute(&meas, BAL_DELTA_MV, mask, sizeof(mask)) == 0) {
-				LOG_DBG("balancing mask[0]=0x%02x", mask[0]);
-			}
-#endif
+		if (delay > 0) {
+			k_msleep((uint32_t)delay);
+		} else {
+			next_wake = bms_time_now_ms(); /* 落后则重置，不追赶 */
 		}
-
-		uint32_t now = bms_time_now_ms();
-
-#if defined(CONFIG_BMS_COMM)
-		if (bms_time_due(now, &next_comm, (uint32_t)bms_comm_effective_period_ms())) {
-			const struct bms_cell_meas *meas_ptr = meas_meta.valid ? &meas : NULL;
-			const struct bms_soc *soc_ptr = NULL;
-			const struct bms_prot_evt *prot_ptr = NULL;
-
-			if (bms_db_read_soc(&soc, &soc_meta) == 0 && soc_meta.valid) {
-				soc_ptr = &soc;
-			}
-			if (bms_db_read_prot(&prot, &prot_meta) == 0 && prot_meta.valid) {
-				prot_ptr = &prot;
-			}
-			bms_comm_tx_snapshot(meas_ptr, soc_ptr, prot_ptr);
-		}
-#endif
-
-		k_msleep(CONFIG_BMS_TASK_APP_PERIOD_MS);
 	}
 }
 
@@ -246,11 +284,17 @@ int bms_task_init(void)
 {
 #if defined(CONFIG_BMS_SOC)
 	bms_soc_coulomb_state_reset(&task_soc_state);
+	last_soc_meas_seq = 0;
 #endif
 #if defined(CONFIG_BMS_PROTECTION)
 	bms_protection_default_limits(&task_prot_limits);
 #endif
 	task_bms_state = BMS_STATE_INIT;
+
+	next_sample = 0;
+#if defined(CONFIG_BMS_COMM)
+	next_comm = 0;
+#endif
 
 	struct bms_state_snapshot initial = {
 		.timestamp_ms = bms_time_now_ms(),
@@ -262,8 +306,12 @@ int bms_task_init(void)
 
 	LOG_INF("Task framework init: safety=%d ms app=%d ms", CONFIG_BMS_TASK_SAFETY_PERIOD_MS,
 		CONFIG_BMS_TASK_APP_PERIOD_MS);
+	return 0;
+}
+
+void bms_task_start(void)
+{
 	k_thread_start(bms_tsk_safety_tid);
 	k_thread_start(bms_tsk_app_tid);
 	k_thread_start(bms_tsk_bg_tid);
-	return 0;
 }
