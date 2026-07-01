@@ -93,6 +93,25 @@ int bms_db_write_bms_state(const struct bms_state_snapshot *state);
  */
 int bms_db_read_bms_state(struct bms_state_snapshot *state, struct bms_db_meta *meta);
 
+/**
+ * @brief 写入最新任务健康快照（owner=bms_sys_mon，线程安全）。
+ * @details 由 @ref bms_sys_mon_step 聚合评估后写入 DB_TASK_HEALTH；
+ *          契约见 docs/concept/data-model.md（owner=bms_sys_mon）与 runtime-model §6。
+ * @param[in] health 待写入任务健康快照（非空）。
+ * @return 0 成功；@p health 为 NULL 返回 -EINVAL。
+ */
+int bms_db_write_task_health(const struct bms_task_health *health);
+
+/**
+ * @brief 读取最新任务健康快照（线程安全）。
+ * @details stale/未写入（meta.valid==false）表示任务健康未知，下游按失效安全处理
+ *          （data-model.md：stale 视为任务健康未知）。
+ * @param[out] health 输出任务健康快照（非空）。
+ * @param[out] meta   输出槽位元数据（可为 NULL，此时不回填）。
+ * @return 0 成功；@p health 为 NULL 返回 -EINVAL。
+ */
+int bms_db_read_task_health(struct bms_task_health *health, struct bms_db_meta *meta);
+
 #ifdef __cplusplus
 }
 #endif

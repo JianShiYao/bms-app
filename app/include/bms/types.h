@@ -96,6 +96,13 @@ struct bms_state_snapshot {
 	enum bms_contactor contactor;
 };
 
+/** 任务健康快照（owner=bms_sys_mon，写入 DB_TASK_HEALTH） */
+struct bms_task_health {
+	uint32_t timestamp_ms;           /**< 本轮 monitor 时刻 */
+	uint32_t heartbeat_timeout_mask; /**< 心跳超时任务位掩码（bit = bms_sys_mon_task） */
+	uint32_t runtime_overrun_mask;   /**< 运行超时任务位掩码 */
+};
+
 #ifdef __cplusplus
 }
 #endif

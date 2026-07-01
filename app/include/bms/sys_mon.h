@@ -78,6 +78,52 @@ void bms_sys_mon_exit(struct bms_sys_mon_rt *rt, uint32_t now_ms);
 struct bms_sys_mon_health bms_sys_mon_eval(const struct bms_sys_mon_cfg *cfg,
 					   const struct bms_sys_mon_rt *rt, uint32_t now_ms);
 
+/*
+ * ---------------------------------------------------------------------------
+ * 有状态聚合层（M5 第 2 片）：镜像 diag 的「纯核 + 有状态 registry」双层结构。
+ * 内部维护每任务 rt[]，周期性评估全部任务→写 DB_TASK_HEALTH→上报 diag。
+ * 契约见 docs/concept/runtime-model.md §6 与 data-model.md（DB_TASK_HEALTH，
+ * owner=bms_sys_mon）。本增量只声明契约（additive），聚合/写库/上报由 coder 补齐。
+ * ---------------------------------------------------------------------------
+ */
+
+/** 被监控任务 id（同时用作 DB_TASK_HEALTH 掩码的 bit 序号）。 */
+enum bms_sys_mon_task {
+	BMS_SYS_MON_SAFETY = 0, /**< safety cyclic 任务 */
+	BMS_SYS_MON_APP,        /**< app cyclic 任务 */
+	BMS_SYS_MON_COUNT,      /**< 被监控任务数量（哨兵，非具体任务） */
+};
+
+/**
+ * @brief 初始化系统监控有状态层（清零内部每任务 rt[]）。
+ * @details 每任务运行态归零（seen=false，开机未运行不误报，runtime-model §6）。
+ * @return 0 成功。
+ */
+int bms_sys_mon_init(void);
+
+/**
+ * @brief 记录指定任务进入时刻（心跳打点），委托纯核 @ref bms_sys_mon_enter。
+ * @param id     被监控任务 id（越界忽略）。
+ * @param now_ms 注入的单调毫秒时间。
+ */
+void bms_sys_mon_task_enter(enum bms_sys_mon_task id, uint32_t now_ms);
+
+/**
+ * @brief 记录指定任务退出时刻并更新运行/峰值时间，委托纯核 @ref bms_sys_mon_exit。
+ * @param id     被监控任务 id（越界忽略）。
+ * @param now_ms 注入的单调毫秒时间。
+ */
+void bms_sys_mon_task_exit(enum bms_sys_mon_task id, uint32_t now_ms);
+
+/**
+ * @brief 周期评估全部任务健康→写 DB_TASK_HEALTH→上报诊断（runtime-model §6）。
+ * @details 逐任务委托纯核 @ref bms_sys_mon_eval 评估心跳超时/运行超时，聚合为
+ *          heartbeat_timeout_mask / runtime_overrun_mask 写入 DB_TASK_HEALTH；
+ *          任一超时/超限则以 @ref bms_diag_report 上报 BMS_DIAG_TASK_OVERRUN。
+ * @param now_ms 注入的单调毫秒时间（写入快照 timestamp_ms 与超时判定）。
+ */
+void bms_sys_mon_step(uint32_t now_ms);
+
 #ifdef __cplusplus
 }
 #endif
