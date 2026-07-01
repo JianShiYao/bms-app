@@ -112,6 +112,7 @@ int bms_diag_init(void)
 	}
 	diag_state = (struct bms_diag_state){0};
 	diag_state.timestamp_ms = bms_time_now_ms();
+	diag_state.initialized = true;
 	k_mutex_unlock(&diag_lock);
 	return 0;
 }
