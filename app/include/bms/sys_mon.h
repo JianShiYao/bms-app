@@ -30,6 +30,7 @@ extern "C" {
 struct bms_sys_mon_cfg {
 	uint32_t wcet_ms;              /**< 声明的最大运行时间上限（WCET） */
 	uint32_t heartbeat_timeout_ms; /**< 心跳超时阈值：距上次 enter 超过此值判超时 */
+	bool safety_critical; /**< 是否安全关键任务；硬 watchdog 门控只看安全关键任务的健康 */
 };
 
 /** 每任务运行态。 */
@@ -123,6 +124,16 @@ void bms_sys_mon_task_exit(enum bms_sys_mon_task id, uint32_t now_ms);
  * @param now_ms 注入的单调毫秒时间（写入快照 timestamp_ms 与超时判定）。
  */
 void bms_sys_mon_step(uint32_t now_ms);
+
+/**
+ * @brief 是否允许喂硬 watchdog（纯判定，无副作用）。
+ * @details 当且仅当**每个安全关键任务**都已 seen 且健康（无心跳超时、无运行超限）时返回
+ *  true；否则 false（调用方据此停喂 → watchdog 复位进上电安全态）。未运行过的安全关键
+ *  任务（seen=false）按失效安全**不允许**喂。落 runtime-model §7。
+ * @param now_ms 注入的单调毫秒时间。
+ * @return true=允许喂狗；false=停喂（失效安全）。
+ */
+bool bms_sys_mon_wdt_feed_allowed(uint32_t now_ms);
 
 #ifdef __cplusplus
 }

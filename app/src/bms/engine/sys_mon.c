@@ -59,8 +59,8 @@ struct bms_sys_mon_health bms_sys_mon_eval(const struct bms_sys_mon_cfg *cfg,
  * ---------------------------------------------------------------------------
  */
 static const struct bms_sys_mon_cfg SYS_MON_CFG[BMS_SYS_MON_COUNT] = {
-	[BMS_SYS_MON_SAFETY] = {.wcet_ms = 5, .heartbeat_timeout_ms = 30},
-	[BMS_SYS_MON_APP] = {.wcet_ms = 20, .heartbeat_timeout_ms = 300},
+	[BMS_SYS_MON_SAFETY] = {.wcet_ms = 5, .heartbeat_timeout_ms = 30, .safety_critical = true},
+	[BMS_SYS_MON_APP] = {.wcet_ms = 20, .heartbeat_timeout_ms = 300, .safety_critical = false},
 };
 
 static struct bms_sys_mon_rt sys_mon_rt[BMS_SYS_MON_COUNT];
@@ -109,4 +109,33 @@ void bms_sys_mon_step(uint32_t now_ms)
 	bool any_fault = (health.heartbeat_timeout_mask | health.runtime_overrun_mask) != 0U;
 
 	bms_diag_report(BMS_DIAG_TASK_OVERRUN, any_fault, now_ms);
+}
+
+bool bms_sys_mon_wdt_feed_allowed(uint32_t now_ms)
+{
+	/*
+	 * 门控（runtime-model §7）：仅当**每个安全关键任务**都已 seen 且健康（无心跳超时、
+	 * 无运行超限）时才允许喂硬 watchdog；任一安全关键任务从未运行/失联/超限 → 停喂，
+	 * 让 watchdog 复位进上电安全态（软先于硬）。非安全关键任务不参与硬狗门控。
+	 */
+	for (unsigned int i = 0; i < BMS_SYS_MON_COUNT; i++) {
+		if (!SYS_MON_CFG[i].safety_critical) {
+			continue;
+		}
+
+		const struct bms_sys_mon_rt *rt = &sys_mon_rt[i];
+
+		/* 从未 seen → 安全任务未证明活着，失效安全不喂（闭合"从未启动"缺口）。 */
+		if (!rt->seen) {
+			return false;
+		}
+
+		struct bms_sys_mon_health h = bms_sys_mon_eval(&SYS_MON_CFG[i], rt, now_ms);
+
+		if (h.heartbeat_timeout || h.runtime_overrun) {
+			return false;
+		}
+	}
+
+	return true;
 }
