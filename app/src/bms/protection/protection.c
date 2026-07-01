@@ -43,7 +43,7 @@ int bms_protection_evaluate(const struct bms_cell_meas *meas, const struct bms_p
 	/*
 	 * 失效安全（REQ-PROT-033）：要闭合接触器必须电压/电流/温度测量全部有效。
 	 * 任一有效位缺失（AFE 故障 / 坏数据）即无法排除越限风险，强制 FAULT → OPEN，
-	 * 绝不据无效数据闭合（对齐 architecture.md「测量数据纪律」）。
+	 * 绝不据无效数据闭合（对齐 concept-architecture.md「测量数据纪律」）。
 	 */
 	if ((meas->validity & BMS_MEAS_VALID_ALL) != BMS_MEAS_VALID_ALL) {
 		out->state = BMS_PROT_FAULT;

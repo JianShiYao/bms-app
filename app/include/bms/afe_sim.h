@@ -5,7 +5,7 @@
  * @brief   AFE 仿真后端（afe_sim）—— 纯函数核心接口。
  * @ingroup AFE
  *
- * @details 设计来源：docs/architecture.md「数据源后端可切换（afe）」。
+ * @details 设计来源：docs/concept-architecture.md「数据源后端可切换（afe）」。
  *          afe 的「采样实现」与「业务逻辑」分离：本后端在 QEMU / native_sim（无真实
  *          ADC/AFE 芯片）下产出"会动"的可复现测量，使 soc / protection / balancing
  *          拿到真实变化的输入；真机后端见 afe_adc.c。

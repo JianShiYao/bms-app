@@ -59,7 +59,7 @@ if (!slug || !feature) {
   throw new Error('bms-small-v 需要 args = { slug, feature, riskTier? }')
 }
 const FEAT = `docs/features/${slug}`
-const REPO_HINT = '项目根=bms-app；构建/测试用 Windows venv：在 bms-app/ 下 `..\\.venv\\Scripts\\python.exe -m west ...`，测试用 `..\\run-tests-coverage.ps1 -Board mps2/an386`（见 docs/agents-guide.md §4）。'
+const REPO_HINT = '项目根=bms-app；构建/测试用 Windows venv：在 bms-app/ 下 `..\\.venv\\Scripts\\python.exe -m west ...`，测试用 `..\\run-tests-coverage.ps1 -Board mps2/an386`（见 docs/process-agents.md §4）。'
 
 // ---------- 角色扮演 prompt（读 .claude/agents 单一事实源）----------
 function rolePrompt(role, task) {

@@ -68,7 +68,7 @@ powershell -ExecutionPolicy Bypass -File scripts\format.ps1 -Check   # 只检查
 
 ## 架构（big picture）
 
-详见 `docs/architecture.md`。五个模块经 **zbus 消息总线** 完全解耦——模块间无直接函数调用、无编译期依赖，每个模块可由 `CONFIG_BMS_*` 单独开关。
+详见 `docs/concept-architecture.md`。五个模块经 **zbus 消息总线** 完全解耦——模块间无直接函数调用、无编译期依赖，每个模块可由 `CONFIG_BMS_*` 单独开关。
 
 ### 数据流（每条 channel 单一发布者）
 
@@ -132,8 +132,8 @@ git config core.hooksPath scripts/hooks   # 在 bms-app/ 下执行一次
 
 ## 开发流程与提交规范
 
-方法论根基：`docs/development-methodology.md`（敏捷+V 研发方法论,一切流程由其衍生）。
-操作权威：`docs/development-workflow.md`（务必先读）。
+方法论根基：`docs/concept-methodology.md`（敏捷+V 研发方法论,一切流程由其衍生）。
+操作权威：`docs/process-workflow.md`（务必先读）。
 
 - **分支**：从最新 `master` 切出 `<type>/<kebab-描述>`（feat/fix/docs/ci/refactor/test/chore…）。
 - **提交**：Conventional Commits——`<type>(<scope>): <祈使句摘要>`，scope 用模块名（soc/protection/afe/balancing/comm/board/ci/docs）。
@@ -141,6 +141,26 @@ git config core.hooksPath scripts/hooks   # 在 bms-app/ 下执行一次
 - **版本**：SemVer 0.x（`0.MINOR.PATCH`）；发布时改 `VERSION` 与 `CHANGELOG.md` 后打 tag。
 - 行尾由 `.gitattributes` 统一为 LF。
 
+## 文档命名约定（`docs/` 顶层）
+
+`docs/` 顶层文档用 `<category>-<topic>.md`（小写 kebab），便于看名归类、列表自动分组。`category` 取自固定 5 类：
+
+| 前缀 | 含义 | 例 |
+|------|------|----|
+| `concept-` | 概念/为什么（解释性、设计依据） | `concept-architecture.md`、`concept-methodology.md` |
+| `process-` | 流程/协作方式 | `process-workflow.md`、`process-git.md`、`process-agents.md`、`process-small-v-workflow.md` |
+| `guide-` | 操作指南 / 任务 how-to | `guide-build.md` |
+| `standard-` | 规范/强制约定（normative） | 编码规范等（保留类别） |
+| `quality-` | 质量与追溯 | `quality-management.md`、`quality-ci-checklist.md` |
+
+**例外（保持各自约定，不加前缀）**：
+- `traceability.md` —— 与 `features/<slug>/traceability.md` 有意并行同名（追溯矩阵），不加前缀以保持一致。
+- `superpowers/specs|plans/` —— `YYYY-MM-DD-<topic>-<design|plan>.md`（带日期产物）。
+- `features/<slug>/` —— `NN-<阶段>.md`（00…06 阶段序号）。
+- `requirements/` 按域名（`afe.md`/`soc.md`…）；`Doxyfile` 工具固定名。
+
+> 文档总索引与相互关系见 [docs/README.md](docs/README.md)。
+
 ## Agent 协作（可选）
 
-项目定义了端到端特性开发的子 agent 链（见 `docs/agents-guide.md`）：orchestrator → requirements → architect → designer →（coder ∥ tester）→ cicd。产物落在 `docs/features/<slug>/`（`00-iteration-plan` … `06-cicd`），并维护 `REQ-<域>-NNN` → `DES-<域>-NNN` → ztest 注释的可追溯链（域：SYS/AFE/SOC/PROT/BAL/COMM/BOARD）。
+项目定义了端到端特性开发的子 agent 链（见 `docs/process-agents.md`）：orchestrator → requirements → architect → designer →（coder ∥ tester）→ cicd。产物落在 `docs/features/<slug>/`（`00-iteration-plan` … `06-cicd`），并维护 `REQ-<域>-NNN` → `DES-<域>-NNN` → ztest 注释的可追溯链（域：SYS/AFE/SOC/PROT/BAL/COMM/BOARD）。

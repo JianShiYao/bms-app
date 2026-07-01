@@ -78,13 +78,13 @@
 4. **失效安全 / 安全红线先行** — 安全相关改动必须关联安全需求、默认安全态、测试先行、显式验证。
    > BMS:接触器**默认 OPEN**,仅判定 NORMAL 才 CLOSED;保护线程最高优先级;SOC 等信息流不得参与保护决策。
    >
-   > **立场(纪律不分阶段)**:安全**纪律**——关联安全需求、测试先行、验证失效安全默认态(见 [development-workflow.md §2](development-workflow.md))——**现行生效,不分项目阶段**。仅 FMEA / 危害分析 / ISO 26262 工作产物全集等**重型**项可随"接真板、明确安全目标"后置。
+   > **立场(纪律不分阶段)**:安全**纪律**——关联安全需求、测试先行、验证失效安全默认态(见 [process-workflow.md §2](process-workflow.md))——**现行生效,不分项目阶段**。仅 FMEA / 危害分析 / ISO 26262 工作产物全集等**重型**项可随"接真板、明确安全目标"后置。
 
 5. **持续合规(自动化是桥)** — 验证、追溯与证据靠自动化**持续**满足,而非阶段末人工补;门要前移、高频、自动。这是 §2 调和洞察的落地。
    > BMS:CI 6 门(format / build×2 / test-coverage / sca-gcc / clang-tidy)+ pre-commit/pre-push 分层门禁 + DoD 追溯门;后续接入真板/HIL 后,硬件相关验证结果也应进入同一证据链。
 
 6. **变更即再基线(变更不破坏追溯)** — 需求或安全相关项在迭代中途 / 跨迭代变更时,必须**连带更新**其追溯链(需求→架构→设计→代码→测试)与**受影响的右腿验证**;未同步即视为**断链**。这是原则3在"变化"维度的延伸,也是 §2 调和洞察的第二个轴——变更的完备性靠"连带传播"维持。
-   > BMS:改 `REQ-PROT-*` 阈值 → 同步对应 `DES-*`、代码与 ztest 并更新 `traceability.md`,重跑受影响用例;失效安全项变更按 [development-workflow.md §2](development-workflow.md)。
+   > BMS:改 `REQ-PROT-*` 阈值 → 同步对应 `DES-*`、代码与 ztest 并更新 `traceability.md`,重跑受影响用例;失效安全项变更按 [process-workflow.md §2](process-workflow.md)。
 
 7. **风险分级 / 安全案例驱动** — 危险分析决定验证强度,安全目标决定证据组织方式;每个安全相关目标都应能回指一组可审计证据(需求、设计、代码、测试、评审、分析、发布基线)。没有风险分级,测试容易平均用力;没有证据包,追溯链难以支撑审核。
    > BMS:过压/过流/过温、采样异常、接触器粘连、预充失败、通信丢失等场景应进入危险分析;高风险项至少要求边界测试、故障注入、默认安全态验证,接真板后逐步补 HIL/台架证据。
@@ -95,7 +95,7 @@
   - **准入(DoR)原则**:依赖就绪、基线可构建可测、范围(含非目标)已界定。
   - **准出(DoD)原则**:小 V 各阶段产出齐备;**追溯链无断链**;**变更已再基线**(改动的需求/安全项,其追溯链与受影响右腿同步更新);安全相关项有对应测试并通过;风险分级与证据包已更新;自动化门全绿;范围受控。
 - **门即持续合规**:把 V 的"阶段门"从"开会才过"变成"每次提交都过"——前移、高频、自动(原则5)。
-- **具体门禁、命令、DoR/DoD 的本项目落地清单**见 [development-workflow.md](development-workflow.md),本文不复制。
+- **具体门禁、命令、DoR/DoD 的本项目落地清单**见 [process-workflow.md](process-workflow.md),本文不复制。
 
 ## 6. BMS 功能安全增强层(从原型到量产的补足)
 
@@ -166,8 +166,8 @@ BMS 固件不仅要"算对",还要"及时、安全、资源可控"。建议把�
 
 | 下游产物 | 依据本方法论的 | 承载(落地了什么) |
 |---|---|---|
-| [development-workflow.md](development-workflow.md) | §3 模型 / §4 原则3·4·5·6·7 / §5 DoR-DoD / §6 增强层 | 分支/提交/PR、分层质量门、DoR/DoD 本项目清单、安全改动路径、变更再基线、发布 |
-| [agents-guide.md](agents-guide.md) + `.claude/agents/*` | §3 小 V 各阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
+| [process-workflow.md](process-workflow.md) | §3 模型 / §4 原则3·4·5·6·7 / §5 DoR-DoD / §6 增强层 | 分支/提交/PR、分层质量门、DoR/DoD 本项目清单、安全改动路径、变更再基线、发布 |
+| [process-agents.md](process-agents.md) + `.claude/agents/*` | §3 小 V 各阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
 | [templates/](templates/) | §4 原则3·7 / §6.2 | REQ/DES ID 规范、追溯矩阵、EARS 模板、需求元数据 |
 | CI(`.github/workflows/ci.yml`) | §4 原则2·5 / §6.3·6.4·6.6 | 自动化验证门、实时/资源/证据归档的后续承载点 |
 | [superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md) | §3 模型 / §4 | agent 体系的设计取舍 |

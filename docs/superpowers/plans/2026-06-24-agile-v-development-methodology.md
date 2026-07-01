@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 新增 `docs/development-methodology.md`(通用敏捷+V 方法论母文档),作为开发工作流/agent/模板的唯一依据,并把下游文档收敛为"由它衍生"。
+**Goal:** 新增 `docs/concept-methodology.md`(通用敏捷+V 方法论母文档),作为开发工作流/agent/模板的唯一依据,并把下游文档收敛为"由它衍生"。
 
 **Architecture:** 母文档承载方法论概念(通用 + BMS 注脚);development-workflow §1 瘦身为"指针 + 本项目落地规则";agents-guide / templates/README / CLAUDE.md 各加一句指向母文档为依据,形成派生闭环。
 
@@ -28,14 +28,14 @@ Expected: 切到新分支 `docs/agile-v-methodology`。
 
 ---
 
-## Task 1: 创建母文档 `docs/development-methodology.md`
+## Task 1: 创建母文档 `docs/concept-methodology.md`
 
 **Files:**
-- Create: `docs/development-methodology.md`
+- Create: `docs/concept-methodology.md`
 
 - [ ] **Step 1: 写入母文档完整内容**
 
-将以下内容**原样**写入 `docs/development-methodology.md`:
+将以下内容**原样**写入 `docs/concept-methodology.md`:
 
 ````markdown
 # 敏捷+V 研发方法论
@@ -109,7 +109,7 @@ Expected: 切到新分支 `docs/agile-v-methodology`。
 4. **失效安全 / 安全红线先行** — 安全相关改动必须关联安全需求、默认安全态、测试先行、显式验证。
    > BMS:接触器**默认 OPEN**,仅判定 NORMAL 才 CLOSED;保护线程最高优先级;SOC 等信息流不得参与保护决策。
    >
-   > **立场(纪律不分阶段)**:安全**纪律**——关联安全需求、测试先行、验证失效安全默认态(见 [development-workflow.md §2](development-workflow.md))——**现行生效,不分项目阶段**。仅 FMEA / 危害分析 / ISO 26262 工作产物全集等**重型**项可随"接真板、明确安全目标"后置。不给安全纪律留"待真板再说"的口子。
+   > **立场(纪律不分阶段)**:安全**纪律**——关联安全需求、测试先行、验证失效安全默认态(见 [process-workflow.md §2](process-workflow.md))——**现行生效,不分项目阶段**。仅 FMEA / 危害分析 / ISO 26262 工作产物全集等**重型**项可随"接真板、明确安全目标"后置。不给安全纪律留"待真板再说"的口子。
 
 5. **持续合规(自动化是桥)** — 验证与追溯靠自动化**持续**满足,而非阶段末人工补;门要前移、高频、自动。这是 §2 调和洞察的落地。
    > BMS:CI 6 门(format / build×2 / test-coverage / sca-gcc / clang-tidy)+ pre-commit/pre-push 分层门禁 + DoD 追溯门。
@@ -120,7 +120,7 @@ Expected: 切到新分支 `docs/agile-v-methodology`。
   - **准入(DoR)原则**:依赖就绪、基线可构建可测、范围(含非目标)已界定。
   - **准出(DoD)原则**:小 V 各阶段产出齐备;**追溯链无断链**;安全相关项有对应测试并通过;自动化门全绿;范围受控。
 - **门即持续合规**:把 V 的"阶段门"从"开会才过"变成"每次提交都过"——前移、高频、自动(原则5)。
-- **具体门禁、命令、DoR/DoD 的本项目落地清单**见 [development-workflow.md](development-workflow.md),本文不复制。
+- **具体门禁、命令、DoR/DoD 的本项目落地清单**见 [process-workflow.md](process-workflow.md),本文不复制。
 
 ## 6. 派生关系:本方法论如何落地
 
@@ -128,8 +128,8 @@ Expected: 切到新分支 `docs/agile-v-methodology`。
 
 | 下游产物 | 依据本方法论的 | 承载(落地了什么) |
 |---|---|---|
-| [development-workflow.md](development-workflow.md) | §3 模型 / §4 原则3·4·5 / §5 DoR-DoD | 分支/提交/PR、分层质量门、DoR/DoD 本项目清单、安全改动路径、发布 |
-| [agents-guide.md](agents-guide.md) + `.claude/agents/*` | §3 小 V 各阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
+| [process-workflow.md](process-workflow.md) | §3 模型 / §4 原则3·4·5 / §5 DoR-DoD | 分支/提交/PR、分层质量门、DoR/DoD 本项目清单、安全改动路径、发布 |
+| [process-agents.md](process-agents.md) + `.claude/agents/*` | §3 小 V 各阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
 | [templates/](templates/) | §4 原则3(可追溯性) | REQ/DES ID 规范、追溯矩阵、EARS 模板 |
 | CI(`.github/workflows/ci.yml`) | §4 原则2·5 | 自动化验证门 |
 | [superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md) | §3 模型 / §4 | agent 体系的设计取舍 |
@@ -165,16 +165,16 @@ Expected: 成立(注脚是增量,不是主干依赖)。
 - [ ] **Step 4: Commit**
 
 ```bash
-git add docs/development-methodology.md
+git add docs/concept-methodology.md
 git commit -m "docs(methodology): add agile+V development methodology as the root doc"
 ```
 
 ---
 
-## Task 2: development-workflow.md §1 瘦身为指针 + 本项目落地规则
+## Task 2: process-workflow.md §1 瘦身为指针 + 本项目落地规则
 
 **Files:**
-- Modify: `docs/development-workflow.md`(§1 区块,以及文件顶部"设计依据"类链接)
+- Modify: `docs/process-workflow.md`(§1 区块,以及文件顶部"设计依据"类链接)
 
 **背景:** 当前 §1 含小 V 模型完整阐述、可追溯性原理、DoR/DoD。按决策 A:方法论原理上移母文档;§1 只留**本项目落地规则**(分支/PR 粒度、ztest 注释格式、`docs/features/<slug>/` 文件约定、ID 形式)+ DoR/DoD 的**本项目具体清单**(清单留下,"为什么"归母文档)。
 
@@ -188,7 +188,7 @@ git commit -m "docs(methodology): add agile+V development methodology as the roo
 ```
 改为:
 ```markdown
-- **方法论依据**：[development-methodology.md](development-methodology.md)（敏捷+V 研发方法论根基；本节为其在本项目的操作落地）
+- **方法论依据**：[concept-methodology.md](concept-methodology.md)（敏捷+V 研发方法论根基；本节为其在本项目的操作落地）
 - **agent 体系设计**：[superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](superpowers/specs/2026-06-19-bms-agile-v-agents-design.md)
 ```
 
@@ -202,7 +202,7 @@ git commit -m "docs(methodology): add agile+V development methodology as the roo
 ```
 改为:
 ```markdown
-本节是**敏捷+V 方法论在本项目的操作落地**;方法论的"为什么/是什么"(模型、五条原则、可追溯性原理、DoR/DoD 的理由)见根基文档 [development-methodology.md](development-methodology.md),此处不再复述。下图为小 V 速查:
+本节是**敏捷+V 方法论在本项目的操作落地**;方法论的"为什么/是什么"(模型、五条原则、可追溯性原理、DoR/DoD 的理由)见根基文档 [concept-methodology.md](concept-methodology.md),此处不再复述。下图为小 V 速查:
 ```
 (小 V 图保留不动。)
 
@@ -220,7 +220,7 @@ git commit -m "docs(methodology): add agile+V development methodology as the roo
 ```markdown
 ### 1.1 可追溯性(本项目落地)
 
-> 为什么可追溯性是 V 模型的灵魂,见 [development-methodology.md §4 原则3](development-methodology.md)。本小节只给本项目的 ID 链与格式规则:
+> 为什么可追溯性是 V 模型的灵魂,见 [concept-methodology.md §4 原则3](concept-methodology.md)。本小节只给本项目的 ID 链与格式规则:
 ```
 (其下 ID 链代码块、ID 规范、ztest 注释、traceability.md、原则三条 bullet 全部保留不动。)
 
@@ -238,7 +238,7 @@ git commit -m "docs(methodology): add agile+V development methodology as the roo
 ```markdown
 ### 1.3 迭代准入 / 准出(DoR / DoD)
 
-> DoR/DoD 的设立理由见 [development-methodology.md §5](development-methodology.md)。下为本项目落地清单:
+> DoR/DoD 的设立理由见 [concept-methodology.md §5](concept-methodology.md)。下为本项目落地清单:
 
 每个特性默认继承以下通用判据(单特性可在其 `00-iteration-plan.md` 细化,但不得削弱)。
 ```
@@ -246,22 +246,22 @@ git commit -m "docs(methodology): add agile+V development methodology as the roo
 
 - [ ] **Step 5: 验证 §1 无方法论原理重复 + 链接有效**
 
-人工核对:§1 不再完整阐述"为什么敏捷+V/小 V 完整模型/可追溯性原理/DoR-DoD 理由"(只剩本项目规则 + 指针);新增的 `development-methodology.md` 相对链接(同在 docs/,直接文件名)可点开。
+人工核对:§1 不再完整阐述"为什么敏捷+V/小 V 完整模型/可追溯性原理/DoR-DoD 理由"(只剩本项目规则 + 指针);新增的 `concept-methodology.md` 相对链接(同在 docs/,直接文件名)可点开。
 Expected: 满足,无与母文档重复的原理段落。
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add docs/development-workflow.md
+git add docs/process-workflow.md
 git commit -m "docs(workflow): slim §1 to project landing + point to methodology root"
 ```
 
 ---
 
-## Task 3: agents-guide.md 指向母文档为依据
+## Task 3: process-agents.md 指向母文档为依据
 
 **Files:**
-- Modify: `docs/agents-guide.md`(开头说明 + §1 上方的引用列表)
+- Modify: `docs/process-agents.md`(开头说明 + §1 上方的引用列表)
 
 - [ ] **Step 1: 开头"流程模型"一句加方法论依据**
 
@@ -274,13 +274,13 @@ Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**（迭代节�
 ```markdown
 本文说明 `.claude/agents/` 下这套覆盖**需求→架构→详细设计→编码→测试→CICD**全流程的
 Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方法论依据见根基文档
-[development-methodology.md](development-methodology.md);本文是该方法论"小 V 各阶段"的 agent 执行载体。
+[concept-methodology.md](concept-methodology.md);本文是该方法论"小 V 各阶段"的 agent 执行载体。
 ```
 
 - [ ] **Step 2: Commit**
 
 ```bash
-git add docs/agents-guide.md
+git add docs/process-agents.md
 git commit -m "docs(agents): point agents-guide to methodology root as rationale"
 ```
 
@@ -295,9 +295,9 @@ git commit -m "docs(agents): point agents-guide to methodology root as rationale
 
 在 `docs/templates/README.md` 开头概述段落后,加一行(若已有类似句则合并,不重复):
 ```markdown
-> 本套 ID / 追溯规范是研发方法论**原则3(可追溯性)**的落地;方法论根基见 [../development-methodology.md](../development-methodology.md)。
+> 本套 ID / 追溯规范是研发方法论**原则3(可追溯性)**的落地;方法论根基见 [../concept-methodology.md](../concept-methodology.md)。
 ```
-(注意相对路径:templates/ 在 docs/ 下,故用 `../development-methodology.md`。)
+(注意相对路径:templates/ 在 docs/ 下,故用 `../concept-methodology.md`。)
 
 - [ ] **Step 2: Commit**
 
@@ -319,19 +319,19 @@ git commit -m "docs(templates): note ID/traceability derives from methodology pr
 ```markdown
 ## 开发流程与提交规范
 
-权威文档：`docs/development-workflow.md`（务必先读）。
+权威文档：`docs/process-workflow.md`（务必先读）。
 ```
 改为:
 ```markdown
 ## 开发流程与提交规范
 
-方法论根基：`docs/development-methodology.md`（敏捷+V 研发方法论,一切流程由其衍生）。
-操作权威：`docs/development-workflow.md`（务必先读）。
+方法论根基：`docs/concept-methodology.md`（敏捷+V 研发方法论,一切流程由其衍生）。
+操作权威：`docs/process-workflow.md`（务必先读）。
 ```
 
 - [ ] **Step 2: 验证 CLAUDE.md 链接/路径正确**
 
-人工核对:`docs/development-methodology.md` 路径相对仓库根正确(CLAUDE.md 在 `bms-app/` 根,文档在 `bms-app/docs/`)。
+人工核对:`docs/concept-methodology.md` 路径相对仓库根正确(CLAUDE.md 在 `bms-app/` 根,文档在 `bms-app/docs/`)。
 Expected: 正确。
 
 - [ ] **Step 3: Commit**
@@ -357,7 +357,7 @@ git commit -m "docs(claude): reference methodology root as workflow rationale"
 ````markdown
 ## 五、对方法论五原则的符合性
 
-> 依据 [development-methodology.md](development-methodology.md) §4 的五条原则,评估本项目质量管控的符合度(✅满足 / ⚠️部分 / ❌差距)。本文是该方法论原则2·3·5 的落地与现状映射(见方法论 §6 派生表)。
+> 依据 [concept-methodology.md](concept-methodology.md) §4 的五条原则,评估本项目质量管控的符合度(✅满足 / ⚠️部分 / ❌差距)。本文是该方法论原则2·3·5 的落地与现状映射(见方法论 §6 派生表)。
 
 | 方法论原则 | 结论 | 说明 |
 |---|---|---|
@@ -378,7 +378,7 @@ git commit -m "docs(claude): reference methodology root as workflow rationale"
 ```
 替换为:
 ```
-其中**安全纪律**——关联安全需求、测试先行、验证失效安全默认态——按 [development-workflow.md §2](development-workflow.md) **现行生效,不分阶段**;**重型工作产物**(FMEA / 危害分析 / ISO 26262 工作产物全集、保护路径 MC-DC 高覆盖、固件签名+安全启动)则待接真实硬件并明确安全目标后纳入规划。
+其中**安全纪律**——关联安全需求、测试先行、验证失效安全默认态——按 [process-workflow.md §2](process-workflow.md) **现行生效,不分阶段**;**重型工作产物**(FMEA / 危害分析 / ISO 26262 工作产物全集、保护路径 MC-DC 高覆盖、固件签名+安全启动)则待接真实硬件并明确安全目标后纳入规划。
 ```
 
 - [ ] **Step 3: 修「无集成测试」与 §8 的口径不一致**
@@ -389,20 +389,20 @@ git commit -m "docs(claude): reference methodology root as workflow rationale"
 ```
 替换为:
 ```
-- 集成/系统验证当前**合并为一个环节**(对齐 [development-workflow.md §8](development-workflow.md) V 腿表),但**尚无专门的多模块集成测试套件**——现仅靠各模块单测 + `native_sim` 整机运行覆盖;专门集成测试待补。无 **HIL(硬件在环)**、无 fuzz/属性测试。
+- 集成/系统验证当前**合并为一个环节**(对齐 [process-workflow.md §8](process-workflow.md) V 腿表),但**尚无专门的多模块集成测试套件**——现仅靠各模块单测 + `native_sim` 整机运行覆盖;专门集成测试待补。无 **HIL(硬件在环)**、无 fuzz/属性测试。
 ```
 
 - [ ] **Step 4: 补 DoR/DoD、§2、追溯门交叉引用**
 
 在「一、全景总览」表后插入一句:
 ```markdown
-> 流程门补充:特性开发的迭代准入/准出(DoR/DoD)、安全改动路径、追溯 DoD 门见 [development-workflow.md §1.3 / §2 / §7](development-workflow.md);PR 模板含「追溯链无断链」「安全相关改动」勾选项。
+> 流程门补充:特性开发的迭代准入/准出(DoR/DoD)、安全改动路径、追溯 DoD 门见 [process-workflow.md §1.3 / §2 / §7](process-workflow.md);PR 模板含「追溯链无断链」「安全相关改动」勾选项。
 ```
 
 - [ ] **Step 5: 校验改动一致**
 
-Run: `grep -n "development-methodology.md\|尚无专门的多模块集成测试\|现行生效" docs/quality-management.md`
-Expected: 新节引用 `development-methodology.md`;不再有孤立的"无集成测试"绝对表述;§四末句出现"现行生效"。
+Run: `grep -n "concept-methodology.md\|尚无专门的多模块集成测试\|现行生效" docs/quality-management.md`
+Expected: 新节引用 `concept-methodology.md`;不再有孤立的"无集成测试"绝对表述;§四末句出现"现行生效"。
 
 - [ ] **Step 6: Commit**
 
@@ -425,9 +425,9 @@ Expected: 无孤链。
 - [ ] **Step 2: 链接有效性**
 
 核对所有新增相对链接目标存在:
-- 母文档内:`development-workflow.md`、`agents-guide.md`、`templates/`、`superpowers/specs/2026-06-19-bms-agile-v-agents-design.md`、`quality-management.md`(均相对 docs/);
-- development-workflow §1 内:`development-methodology.md`;
-- templates/README.md 内:`../development-methodology.md`。
+- 母文档内:`process-workflow.md`、`process-agents.md`、`templates/`、`superpowers/specs/2026-06-19-bms-agile-v-agents-design.md`、`quality-management.md`(均相对 docs/);
+- development-workflow §1 内:`concept-methodology.md`;
+- templates/README.md 内:`../concept-methodology.md`。
 Expected: 全部可点开。
 
 - [ ] **Step 3: 无重复/无矛盾**

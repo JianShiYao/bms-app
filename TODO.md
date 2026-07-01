@@ -1,11 +1,11 @@
 # TODO
 
 本文件是**未实现项的单一归集处**。每项标注**出处**（可追溯到提出该缺口的文档）、**优先级**、**必要性**。
-现状全景见 [docs/quality-management.md](docs/quality-management.md)；流程见 [docs/development-workflow.md](docs/development-workflow.md)。
+现状全景见 [docs/quality-management.md](docs/quality-management.md)；流程见 [docs/process-workflow.md](docs/process-workflow.md)。
 
-出处缩写：**QM**=[quality-management.md](docs/quality-management.md)、**WF**=[development-workflow.md](docs/development-workflow.md)、
-**RP**=[quality-system-rollout-plan.md](docs/quality-system-rollout-plan.md)、**CL**=[ci-borrow-checklist.md](docs/ci-borrow-checklist.md)、
-**ARCH**=[architecture.md](docs/architecture.md)、**CLAUDE**=[CLAUDE.md](CLAUDE.md)。
+出处缩写：**QM**=[quality-management.md](docs/quality-management.md)、**WF**=[process-workflow.md](docs/process-workflow.md)、
+**RP**=[quality-system-rollout-plan.md](docs/quality-system-rollout-plan.md)、**CL**=[quality-ci-checklist.md](docs/quality-ci-checklist.md)、
+**ARCH**=[concept-architecture.md](docs/concept-architecture.md)、**CLAUDE**=[CLAUDE.md](CLAUDE.md)。
 
 ## 已完成（里程碑）
 
