@@ -11,6 +11,10 @@
  *  以有符号差回绕安全（runtime-model §2）。
  */
 
+#include <string.h>
+
+#include "bms/db.h"
+#include "bms/diag.h"
 #include "bms/sys_mon.h"
 #include "bms/time.h"
 
@@ -42,4 +46,67 @@ struct bms_sys_mon_health bms_sys_mon_eval(const struct bms_sys_mon_cfg *cfg,
 		/* 运行超时：峰值运行时间超过声明 WCET。 */
 		.runtime_overrun = rt->peak_runtime_ms > cfg->wcet_ms,
 	};
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * 有状态聚合层：内部维护每任务 rt[]，enter/exit 委托上方纯核；step 评估全部任务、
+ * 聚合掩码写 DB_TASK_HEALTH、并把「任一超时/超限」上报 BMS_DIAG_TASK_OVERRUN。
+ * 契约见 docs/concept/runtime-model.md §6。
+ *
+ * 每任务静态配置为**内联默认值**（暂不依赖 Kconfig，避免脱离 app 构建的纯单测取不到
+ * CONFIG 而误判；按板精调留后续片）：wcet 为周期任务体单轮预算上限，心跳超时取数倍周期。
+ * ---------------------------------------------------------------------------
+ */
+static const struct bms_sys_mon_cfg SYS_MON_CFG[BMS_SYS_MON_COUNT] = {
+	[BMS_SYS_MON_SAFETY] = {.wcet_ms = 5, .heartbeat_timeout_ms = 30},
+	[BMS_SYS_MON_APP] = {.wcet_ms = 20, .heartbeat_timeout_ms = 300},
+};
+
+static struct bms_sys_mon_rt sys_mon_rt[BMS_SYS_MON_COUNT];
+
+int bms_sys_mon_init(void)
+{
+	memset(sys_mon_rt, 0, sizeof(sys_mon_rt));
+	return 0;
+}
+
+void bms_sys_mon_task_enter(enum bms_sys_mon_task id, uint32_t now_ms)
+{
+	if ((unsigned int)id >= BMS_SYS_MON_COUNT) {
+		return;
+	}
+	bms_sys_mon_enter(&sys_mon_rt[id], now_ms);
+}
+
+void bms_sys_mon_task_exit(enum bms_sys_mon_task id, uint32_t now_ms)
+{
+	if ((unsigned int)id >= BMS_SYS_MON_COUNT) {
+		return;
+	}
+	bms_sys_mon_exit(&sys_mon_rt[id], now_ms);
+}
+
+void bms_sys_mon_step(uint32_t now_ms)
+{
+	struct bms_task_health health = {.timestamp_ms = now_ms};
+
+	for (unsigned int i = 0; i < BMS_SYS_MON_COUNT; i++) {
+		struct bms_sys_mon_health h =
+			bms_sys_mon_eval(&SYS_MON_CFG[i], &sys_mon_rt[i], now_ms);
+
+		if (h.heartbeat_timeout) {
+			health.heartbeat_timeout_mask |= (1U << i);
+		}
+		if (h.runtime_overrun) {
+			health.runtime_overrun_mask |= (1U << i);
+		}
+	}
+
+	bms_db_write_task_health(&health);
+
+	/* 任一任务超时/超限 → 上报任务超期诊断（失效安全链：sys_mon→diag→bms）。 */
+	bool any_fault = (health.heartbeat_timeout_mask | health.runtime_overrun_mask) != 0U;
+
+	bms_diag_report(BMS_DIAG_TASK_OVERRUN, any_fault, now_ms);
 }
