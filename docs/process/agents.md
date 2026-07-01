@@ -16,7 +16,7 @@ Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方�
 |-------|------|------|------|--------|
 | `bms-orchestrator` | 迭代编排 | 特性描述 | `00-iteration-plan.md`（派发清单+追溯骨架） | 否 |
 | `bms-requirements` | 需求分析 | 迭代计划 | `01-requirements.md`（EARS 需求+验收准则） | 否 |
-| `bms-architect` | 架构设计 | 需求 | `02-architecture.md`（ADR、zbus/线程/安全） | 否 |
+| `bms-architect` | 架构设计 | 需求 | `02-architecture.md`（ADR、`bms_db` entry/任务模型/失效安全；zbus 过渡） | 否 |
 | `bms-designer` | 详细设计 | 架构 | `03-design.md`（签名/状态机/Kconfig/dts） | 否 |
 | `bms-coder` | 编码实现 | 详细设计 | 产品代码 + 构建自检 | 是 |
 | `bms-tester` | 测试验证 | 需求/设计/代码 | 测试代码 + `05-test-report.md` | 是 |
@@ -60,7 +60,7 @@ Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方�
 |------|----------------|----------------|----------|
 | `bms-orchestrator` | 特性目标/范围草案 | `00-iteration-plan.md` 与 `traceability.md` 已创建；DoR/DoD、非目标、风险点清楚 | 补清范围或拆小特性 |
 | `bms-requirements` | 迭代计划 | 每条需求有 `REQ-<域>-NNN`、EARS 句式、验收准则、验证方法；安全需求已标注 | 回需求阶段重写，不进入架构 |
-| `bms-architect` | `01-requirements.md` | 每条架构决策标注服务的 REQ；模块/通道/线程/优先级与失效安全影响明确 | 回架构阶段，必要时同步修需求 |
+| `bms-architect` | `01-requirements.md` | 每条架构决策标注服务的 REQ；模块/`bms_db` entry/任务与优先级（阻塞边界）与失效安全影响明确（对齐 concept 契约；zbus 过渡） | 回架构阶段，必要时同步修需求 |
 | `bms-designer` | `02-architecture.md` | 每条需求至少有 `DES-<域>-NNN` 覆盖；函数契约、状态机、Kconfig/dts、纯逻辑测试目标明确；`traceability.md` 设计列已回填 | 回设计阶段，接口不稳不得编码 |
 | `bms-tester` 红灯阶段 | `01-requirements.md` + `03-design.md` | 安全/核心逻辑的关键用例已写且可证明在实现前失败 | 用例不完整则补测试；需求含混则回需求 |
 | `bms-coder` | `03-design.md` + 必要红灯用例 | 实现不超设计范围；代码能回到 REQ/DES；构建通过 | 修实现；若必须改接口，回设计再基线 |
@@ -72,7 +72,7 @@ Claude Code subagent 怎么用。流程模型为**敏捷-V 混合**——其方�
 只要迭代中途或跨迭代改动了既有需求、安全项、接口、阈值或验收准则，就必须同步传播到右腿验证；否则按"追溯断链"处理。
 
 1. 改 `REQ-*` 或验收准则 → 回到 `bms-requirements`，同步 `01-requirements.md` 与 `traceability.md`
-2. 需求影响模块边界、zbus 通道、线程/优先级、安全路径 → 重新派 `bms-architect`
+2. 需求影响模块边界、`bms_db` entry、任务/优先级（阻塞边界）、安全路径 → 重新派 `bms-architect`
 3. 架构或接口变化 → 重新派 `bms-designer`，更新 `DES-*`、函数契约、Kconfig/dts 与纯逻辑测试目标
 4. 设计变化 → 重新派 `bms-tester` 补/改红灯用例，再派 `bms-coder` 实现
 5. 实现后 → `bms-tester` 重跑受影响用例并更新 `05-test-report.md`，注明"再基线范围"与重跑结果

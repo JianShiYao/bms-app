@@ -15,13 +15,13 @@
 > 本模块解决什么、边界在哪、不做什么。
 
 ## 2. 接口
-- **zbus 通道**：发布/订阅哪些 channel（如 `chan_cell_meas`、`chan_prot_state`），数据结构见 `app/include/bms/types.h`。
+- **数据接口（`bms_db`）**：读/写哪些 entry（owner / validity / sequence；契约见 `../concept/data-model.md`）。过渡期若仍经 zbus：发布/订阅哪些 channel（如 `chan_cell_meas`、`chan_prot_state`），数据结构见 `app/include/bms/types.h`。
 - **公共 API**：函数原型与契约（前置/后置条件、错误码）。
 - **Kconfig**：相关 `CONFIG_BMS_*` 开关与参数。
 - **设备树/驱动**（接真板后）：依赖的 DT 节点 / `DEVICE_DT_GET`。
 
 ## 3. 设计与数据流
-> 模块内部结构、线程模型与优先级、周期、状态机（必要时配图/伪码）。
+> 模块内部结构、任务归属与优先级/周期/阻塞边界（对齐 `../concept/runtime-model.md`）、状态机（必要时配图/伪码）。
 
 ## 4. 设计决策与权衡
 | 决策 | 备选 | 选择理由 |
