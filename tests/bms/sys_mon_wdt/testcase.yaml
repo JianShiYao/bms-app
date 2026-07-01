@@ -1,0 +1,8 @@
+tests:
+  bms.sys_mon_wdt:
+    platform_allow:
+      - native_sim
+      - mps2/an386
+    tags:
+      - bms
+      - sys_mon
