@@ -66,7 +66,7 @@
 
 ## 5. 安全目标 → 安全功能 / 需求 追溯
 
-> 闭合 methodology 原则3 的链：`SG → 安全需求 → 代码 → 测试`。「当前实现」列反映 `bms-app` 骨架现状（区别于 `requirements/` 中 S16100B 参考需求）。
+> 闭合 methodology 原则3 的链：`SG → 安全需求 → 代码 → 测试`。「当前实现」列反映 `bms-app` 骨架现状（区别于 `reference/legacy-requirements/` 中 S16100B 参考需求）。
 
 | SG | 安全需求（参考/目标） | bms-app 当前实现 | 测试 |
 |---|---|---|---|
