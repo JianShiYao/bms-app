@@ -286,15 +286,19 @@ wrapper 边界、接口契约、ISR/zero-latency 与仿真桩化的权威契约�
 
 迁移期间允许 zbus 与 DB 共存，但目标架构契约以 DB 为准。每一步必须保持现有 CI 与相关 ztest 通过。
 
-## 12. 后续需要拆出的概念文档
+## 12. 细化本基线的专题设计契约
 
-| 文档 | 目的 | 触发 |
+下列 concept 专题契约细化本架构的对应决策，**agent 实现时以它们为准**（文档导航总览见 [../README.md](../README.md)，此处只给"哪篇细化哪个 ADR + 落地里程碑"的关系）：
+
+| 契约 | 细化 | 落地里程碑（见 §11） |
 |---|---|---|
-| `data-model.md` | 细化 DB entry、owner、validity、sequence、stale、copy-by-value | M1 前 |
-| `runtime-model.md` | 细化任务表、周期、优先级、blocking 边界、sys_mon | M2 前 |
-| `diagnostics-fault-model.md` | 细化 severity、latch、clear、aging、故障到状态机路径 | M3 前 |
-| `configuration-calibration.md` | 细化参数/标定治理 | 引入可变安全参数前 |
-| `hardware-abstraction.md` | 细化 AFE/CAN/GPIO/NVM/WDT wrapper 边界 | 真板 bring-up 前 |
+| [data-model.md](data-model.md) | ADR-ARCH-002：DB entry / owner / validity / sequence / stale / copy-by-value | M1 |
+| [runtime-model.md](runtime-model.md) | ADR-ARCH-003：任务表 / 时间基准 / 绝对节拍 / blocking 边界 / sys_mon / watchdog | M2·M5 |
+| [diagnostics-fault-model.md](diagnostics-fault-model.md) | ADR-ARCH-005：severity / 去抖 / latch / aging / 故障→bms_bms | M3 |
+| [configuration-calibration.md](configuration-calibration.md) | ADR-ARCH-007：参数分层 / 登记表元数据 / 校验钳制 / 来源治理 | 引入可变安全参数前 |
+| [hardware-abstraction.md](hardware-abstraction.md) | ADR-ARCH-006：wrapper 边界 / 接口契约 / ISR·zero-latency / dt·Kconfig 绑定 | M6 |
+
+安全概念见 [safety.md](safety.md)；模块接口标准见 [../standard/module-interface.md](../standard/module-interface.md)。
 
 ## 13. 参考
 
