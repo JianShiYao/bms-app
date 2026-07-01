@@ -1,14 +1,17 @@
 <#
-  check.ps1 -- local mirror of the CI gates (.github/workflows/ci.yml).
+  check.ps1 -- Windows local preflight for the CI gates.
   ----------------------------------------------------------------------------
   Run this before opening a PR so you do not push something that turns the PR
-  red. It reproduces the CI gates locally, in the same scopes:
+  red. It catches the common local failures, but Linux CI remains authoritative
+  for native_sim coverage, clang-tidy parity, and hygiene gates not available on
+  this Windows path:
       format -> build (mps2/an386) -> build (native_sim) -> twister
              -> sca-gcc -> clang-tidy
 
   Prerequisites: run from an ACTIVATED Zephyr venv so `west` is on PATH.
   Optional tools (clang-tidy) are detected; if missing, that gate is SKIPped
-  (reported, not failed). SCA + clang-tidy do clean (-p always) builds, so a
+  (reported, not failed). cppcheck+MISRA is warn-only locally; CI is the
+  blocking source of truth. SCA + clang-tidy do clean (-p always) builds, so a
   full run takes several minutes -- use -Fast to skip those two heavy gates.
 
   Usage:
