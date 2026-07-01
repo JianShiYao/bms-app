@@ -24,6 +24,6 @@
 | REQ-PROT-005 | 正常 → 接触器 CLOSED | DES-PROT-001 | 测试 | `bms.protection.test_normal_closes_contactor` | 已验证 |
 | REQ-SOC-001 | 满电压 → SOC 100% | DES-SOC-001 | 测试 | `bms.soc.test_full_charge` | 已验证 |
 | REQ-SOC-002 | 空电压 → SOC 0% | DES-SOC-001 | 测试 | `bms.soc.test_empty` | 已验证 |
-| REQ-AFE-001 | 周期采样并发布 `chan_cell_meas` | DES-AFE-001 | 测试 | —（待补 afe 单测） | 缺口 |
+| REQ-AFE-001 | 周期采样写入 `DB_CELL_MEAS` | DES-AFE-001 | 测试 | —（待补 afe 单测） | 缺口 |
 
 > 统计：示例中 7/8 已验证，AFE 采样为已知测试缺口（见 [../../TODO.md](../../TODO.md)）。
