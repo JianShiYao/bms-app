@@ -33,7 +33,7 @@ int bms_afe_sample(struct bms_cell_meas *out);
 /**
  * @brief AFE 后端读取接口（后端无关的采样 seam）。
  *
- * 设计来源：docs/design/concept-architecture.md「数据源后端可切换（afe）」。由所选后端按 Kconfig
+ * 设计来源：docs/concept/architecture.md「数据源后端可切换（afe）」。由所选后端按 Kconfig
  * 提供唯一实现：afe_stub.c（恒定桩）/ afe_sim.c（充放电仿真）/ afe_adc.c（真机 ADC）。
  * 硬件/仿真差异收敛到本函数实现，afe 线程与业务逻辑不变。
  *
@@ -60,7 +60,7 @@ struct bms_afe_limits {
 /**
  * @brief 对一帧测量做合理性校验，按结果设置 m->validity 位（有状态纯函数）。
  *
- * 设计来源：docs/design/concept-architecture.md「测量数据纪律」——校验与采集分离、校验段为纯函数，
+ * 设计来源：docs/concept/architecture.md「测量数据纪律」——校验与采集分离、校验段为纯函数，
  * 由数据源「边缘」（bms_afe_sample）在 backend_read 之后调用：任一后端（sim/stub/adc）
  * 产出的原始帧都过同一校验，业务层只看到带 validity 的可信帧。
  *

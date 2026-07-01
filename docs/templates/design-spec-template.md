@@ -1,5 +1,5 @@
 <!--
-  设计/规格文档模板。复制到 docs/design/<模块>.md 后填写。
+  设计/规格文档模板。复制到 docs/work/features/<slug>/03-design.md（特性设计）或 docs/archive/specs/YYYY-MM-DD-<topic>-design.md（独立设计 spec）后填写。
   在「满足需求」字段写明覆盖的 REQ-* ；ID 规范见 ./README.md。
 -->
 # <模块> 设计规格

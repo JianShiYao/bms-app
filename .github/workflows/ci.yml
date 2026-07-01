@@ -144,7 +144,7 @@ jobs:
         run: clang-tidy -p build $(find bms-app/app/src -name '*.c')
 
   # Gate 9: cppcheck + MISRA C:2012 (project mode). HARD gate (CPPCHECK_FAIL=1),
-  # promoted from observation (process-workflow.md §8 ladder ② -> ③). Local
+  # promoted from observation (workflow.md §8 ladder ② -> ③). Local
   # baseline (cppcheck 2.21) is 0 findings after the suppressions/deviations in
   # .cppcheck-suppressions. NOTE: CI installs cppcheck from apt, whose version may
   # differ from local and emit version-specific MISRA findings; if so, tune
@@ -247,7 +247,7 @@ jobs:
 
   # Gate 9: file-header hygiene (coding-style C:002 SPDX + C:004 file-level
   # doxygen), scoped to app/. Pure-stdlib Python, no pinned tool needed.
-  # See docs/coding-style.md. Blocking gate (§8 ladder step ③). After this
+  # See docs/standard/coding-style.md. Blocking gate (§8 ladder step ③). After this
   # merges, add `file-headers` to the master branch-protection required checks.
   file-headers:
     needs: format

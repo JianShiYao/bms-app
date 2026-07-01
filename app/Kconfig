@@ -49,7 +49,7 @@ choice
 	default BMS_AFE_BACKEND_SIM
 	help
 	  选择 afe 的采样实现后端（业务逻辑/线程不变，差异收敛到 bms_afe_backend_read()，
-	  见 docs/design/concept-architecture.md「数据源后端可切换（afe）」）。
+	  见 docs/concept/architecture.md「数据源后端可切换（afe）」）。
 
 config BMS_AFE_BACKEND_STUB
 	bool "stub（恒定桩数据）"

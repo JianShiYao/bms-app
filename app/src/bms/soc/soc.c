@@ -8,7 +8,7 @@
  * @details 职责：提供 SOC/SOH 估算服务。
  *          周期调度和 database 写入由 bms_task 统一负责。
  *          SOC 用库仑积分（对 pack_current_ma 按帧间 Δt 积分）；首帧用电压线性映射初始化。
- *          设计来源：docs/features/soc-coulomb/03-design.md。
+ *          设计来源：docs/work/features/soc-coulomb/03-design.md。
  */
 
 #include <errno.h>
