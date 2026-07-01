@@ -21,7 +21,7 @@
 | `concept/` | 为什么这么做、目标模型是什么 | `methodology.md`、`architecture.md`、`safety.md` |
 | `process/` | 研发活动怎么走、门在哪里 | `workflow.md`、`git.md`、`design-review.md` |
 | `guide/` | 某个操作怎么做 | `build.md` |
-| `standard/` | 必须遵守的工程契约 | `module-interface.md`、`coding-style.md` |
+| `standard/` | 必须遵守的工程契约 | `module-interface.md`、`code-layout.md`、`coding-style.md` |
 | `quality/` | 如何证明做得够好 | `gates.md`、`ci-checklist.md`、`integration-test-strategy.md`、`management.md` |
 
 判断一个新文档该进哪个目录：
@@ -36,7 +36,7 @@
 
 除上面 5 类规范目录外，还有 4 类**不参与"依据谁"派生链**的目录：
 
-- `work/` —— **活的工程产物**：每个小 V 的交付物（`features/<slug>/`）、需求↔测试活矩阵（`traceability.md`）。新固件需求随小 V 落在 `features/<slug>/01-requirements.md`。
+- `work/` —— **活的工程产物**：需求↔设计↔测试的**唯一权威活矩阵** `traceability.md`，与各小 V 的证据包 `features/<slug>/`。新固件需求随小 V 记入 `features/<slug>/01-requirements.md`，它是**该特性的证据包快照**（非常青规范）；跨特性的权威现状以汇总的 `traceability.md` 为准。⚠️ **设计权威是 `concept/` 契约**（architecture / runtime-model / data-model / diagnostics-fault-model / safety），requirements 不凌驾其上；`reference/legacy-requirements/` 仅为 S16100B 逆向参考，不等于当前承诺。
 - `archive/` —— 历史归档：设计 spec、实施 plan，按 `YYYY-MM-DD` 沉淀。
 - `templates/` —— 可复制的产出骨架（非参考阅读）。
 - `reference/` —— 参考阅读资料：硬件原理图/BOM/数据手册（`hardware/`）、旧固件 S16100B 逆向需求参考（`legacy-requirements/`）。
