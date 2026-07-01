@@ -18,7 +18,7 @@ static struct bms_diag_state diag_state;
 
 /* 每条目静态登记表（severity/confirm/clear/latch）。默认值经验证与旧行为等价：
  * confirm=0 保证安全故障即时置位、不延迟；PROTECTION latch=true 保持锁存。 */
-static const struct bms_diag_entry_cfg diag_cfg[BMS_DIAG_COUNT] = {
+static const struct bms_diag_entry_cfg DIAG_CFG[BMS_DIAG_COUNT] = {
 	[BMS_DIAG_INVALID_MEAS] =
 		{
 			.severity = BMS_DIAG_ERROR,
@@ -119,8 +119,8 @@ static void diag_recompute_locked(uint32_t now_ms)
 	for (int i = 0; i < BMS_DIAG_COUNT; i++) {
 		if (diag_rt[i].state == BMS_DIAG_LIFE_ACTIVE) {
 			active_mask |= BIT(i);
-			if (diag_cfg[i].severity > max_severity) {
-				max_severity = diag_cfg[i].severity;
+			if (DIAG_CFG[i].severity > max_severity) {
+				max_severity = DIAG_CFG[i].severity;
 			}
 		}
 		if (diag_rt[i].state == BMS_DIAG_LIFE_LATCHED) {
@@ -141,7 +141,7 @@ int bms_diag_report(enum bms_diag_id id, bool raw_active, uint32_t now_ms)
 	}
 
 	k_mutex_lock(&diag_lock, K_FOREVER);
-	bms_diag_entry_step(&diag_cfg[id], &diag_rt[id], raw_active, now_ms);
+	bms_diag_entry_step(&DIAG_CFG[id], &diag_rt[id], raw_active, now_ms);
 	diag_recompute_locked(now_ms);
 	k_mutex_unlock(&diag_lock);
 	return 0;
