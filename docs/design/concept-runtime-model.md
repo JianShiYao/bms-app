@@ -4,7 +4,7 @@
 >
 > **现状与差距**不在此维护：见 [concept-architecture.md](concept-architecture.md) §11 迁移路径（本契约主要在 **M2** 与 **M5** 落地）。
 >
-> **规范措辞**：**必须 / 应 / 不得** 表示契约要求，可在评审、实现、测试中引用。相关：数据契约 [concept-data-model.md](concept-data-model.md)、接口 [standard-module-interface.md](standard-module-interface.md)、诊断 `concept-diagnostics-fault-model.md`（待建）。
+> **规范措辞**：**必须 / 应 / 不得** 表示契约要求，可在评审、实现、测试中引用。相关：数据契约 [concept-data-model.md](concept-data-model.md)、接口 [standard-module-interface.md](standard-module-interface.md)、诊断 [concept-diagnostics-fault-model.md](concept-diagnostics-fault-model.md)。
 
 ## 1. 运行时设计原则
 

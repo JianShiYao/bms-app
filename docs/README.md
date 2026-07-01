@@ -23,7 +23,7 @@ bms-app 的文档导航。文档按**两条正交轴**组织：
 
   docs/design/   软件设计契约（agent 据此实现/重构代码）
       concept-architecture ★ · concept-runtime-model · concept-data-model
-      concept-safety · standard-module-interface
+      concept-safety · concept-diagnostics-fault-model · standard-module-interface
   docs/ 根        跨学科流程 / 方法 / 质量 / 指南
       concept-methodology · concept-documentation-system
       process-workflow ☆ · git · agents · design-review · small-v-workflow
@@ -31,7 +31,7 @@ bms-app 的文档导航。文档按**两条正交轴**组织：
       guide-build
   docs/hardware/ 硬件资料（原理图/BOM/数据手册；与 design/ 并行学科目录）
 
-  ★   concept-architecture = 软件架构基线；runtime-model/data-model/safety 与 standard-module-interface 细化它
+  ★   concept-architecture = 软件架构基线；runtime-model/data-model/safety/diagnostics 与 standard-module-interface 细化它
   ☆   process-workflow = 流程单一事实源(SSOT)；git/agents/design-review/small-v-workflow 细化或落地它
   (*) traceability.md 不带类别前缀，与 features/<slug>/traceability.md 有意并行同名
 ```
@@ -46,6 +46,7 @@ bms-app 的文档导航。文档按**两条正交轴**组织：
 | [concept-runtime-model.md](design/concept-runtime-model.md) | 运行时模型设计契约（`bms_task`/`bms_time`/`bms_sys_mon`/watchdog 目标形态） | architecture ADR-ARCH-003 |
 | [concept-data-model.md](design/concept-data-model.md) | `bms_db` 数据契约基线（entry/owner/validity/sequence/stale） | architecture ADR-ARCH-002 |
 | [concept-safety.md](design/concept-safety.md) | 安全概念（危害→安全目标→安全功能，轻量初版） | methodology §6.1 |
+| [concept-diagnostics-fault-model.md](design/concept-diagnostics-fault-model.md) | 诊断与故障模型设计契约（登记表/severity/去抖·锁存·老化/→bms_bms） | architecture ADR-ARCH-005 |
 | [standard-module-interface.md](design/standard-module-interface.md) | 模块接口标准（task/db/diag/安全默认态） | architecture |
 
 ### `docs/` 根 —— 流程 / 方法 / 质量 / 指南
@@ -82,7 +83,7 @@ bms-app 的文档导航。文档按**两条正交轴**组织：
 
 - 为什么这么做 → **concept-methodology**；怎么走流程 → **process-workflow**（Git 细节 → process-git）。
 - 文档体系怎么理解 → **concept-documentation-system**；系统怎么设计 → **design/concept-architecture**；DB 数据契约 → **design/concept-data-model**。
-- 运行时/任务/调度/看门狗怎么定 → **design/concept-runtime-model**；模块接口怎么写 → **design/standard-module-interface**。
+- 运行时/任务/调度/看门狗怎么定 → **design/concept-runtime-model**；诊断/故障/severity/锁存怎么定 → **design/concept-diagnostics-fault-model**；模块接口怎么写 → **design/standard-module-interface**。
 - 怎么编译/跑（含 WSL native_sim）→ **guide-build**。
 - 危害/安全目标/失效安全为什么这么定 → **design/concept-safety**。
 - 需求验证到哪 → **traceability**；engine 核心证据链 → **features/engine-core-architecture**；质量现状/CI 路线 → **quality-management** / **quality-ci-checklist**；集成测试怎么补 → **quality-integration-test-strategy**。
