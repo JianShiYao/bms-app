@@ -8,16 +8,20 @@
  * 安全链回链（architecture.md「安全链优先级」）：
  *   采样有效性 → 诊断聚合 → BMS 状态机 → 接触器输出，不得绕过 fail-safe 默认态。
  *
- * M3b（initialized 门控）TDD 红灯说明：
- *   本增量为 data-model「未初始化或 stale 不得进 NORMAL」新增字段 + 红灯测试。
- *   diag.h 已增 struct bms_diag_state.initialized 字段（故本套件可编译），
- *   但 coder 尚未在 bms_next_state 加门控。因此：
- *     - test_uninitialized_diag_blocks_normal 为**断言失败型红灯**：
- *       diag.initialized=false 的干净输入当前仍会 STANDBY→NORMAL，断言 != NORMAL 失败。
- *     - test_initialized_clean_reaches_normal 与其余 characterization 用例
+ * M4（预充时序骨架）TDD 红灯说明：
+ *   本增量补齐 STANDBY→PRECHARGE→NORMAL。data-model/architecture §7 规定：
+ *   STANDBY 收到合法闭合命令先进 PRECHARGE（执行预充、检查电压爬升与超时），
+ *   预充完成方进 NORMAL，超时转 FAULT，命令撤销优雅回退 STANDBY。
+ *   bms.h 已 additive 增 struct bms_state_inputs.precharge_complete / precharge_timeout
+ *   两位（故本套件可编译），但 coder 尚未在 bms_next_state 加 PRECHARGE 路由。因此：
+ *     - test_initialized_clean_reaches_normal 改断言 STANDBY→PRECHARGE：当前仍
+ *       STANDBY→NORMAL → 断言失败（断言失败型红灯）。
+ *     - 新增 4 个 PRECHARGE 用例（complete→NORMAL、timeout→FAULT、close 撤销→STANDBY、
+ *       未完成留 PRECHARGE）：当前 bms.c PRECHARGE 分支尚未按契约路由 → 断言失败型红灯。
+ *     - 其余 characterization 用例（latched/CRITICAL/ERROR/prot/INIT/未初始化/接触器映射）
  *       描述既有不变式，pre-coder 应已通过（绿）。
- *   coder 在 bms_next_state 补齐「diag 未初始化按失效安全处理（返回 FAULT，不得进 NORMAL）」
- *   门控后，红灯用例转绿。tester 不实现门控、不改 bms.c/diag.c 实现。
+ *   coder 在 bms_next_state 补齐 PRECHARGE 路由后，红灯用例转绿。
+ *   tester 不实现路由、不改 bms.c/diag.c 实现、不改 task.c。
  */
 #include <stdbool.h>
 #include <stdint.h>
@@ -30,14 +34,17 @@
 ZTEST_SUITE(bms_state, NULL, NULL, NULL, NULL, NULL);
 
 /*
- * 构造一组"干净且允许闭合"的输入：无硬件故障、无断开请求、允许闭合，
- * 诊断已初始化且无任何激活/锁存项、严重度 INFO，保护为 NORMAL 且接触器 CLOSED。
- * 该输入在无额外门控时应允许 STANDBY → NORMAL。
+ * 构造一组"干净且允许闭合、且预充就绪"的输入：无硬件故障、无断开请求、允许闭合，
+ * 预充完成且未超时，诊断已初始化且无任何激活/锁存项、严重度 INFO，
+ * 保护为 NORMAL 且接触器 CLOSED。
+ * 该基线下：STANDBY 应进 PRECHARGE；处于 PRECHARGE 时应进 NORMAL。
  */
 static struct bms_state_inputs clean_inputs(void)
 {
 	return (struct bms_state_inputs){
 		.close_allowed = true,
+		.precharge_complete = true,
+		.precharge_timeout = false,
 		.open_request = false,
 		.hw_fault_latched = false,
 		.diag =
@@ -78,18 +85,72 @@ ZTEST(bms_state, test_uninitialized_diag_blocks_normal)
 }
 
 /* ============================================================
- * 基线：诊断已初始化 + 干净输入应可达 NORMAL
- * 回链：architecture 安全链——所有前置条件满足方可闭合
+ * 基线：诊断已初始化 + 干净输入，STANDBY 先进 PRECHARGE（不再直达 NORMAL）
+ * 回链：architecture §7 状态表——STANDBY 收到合法闭合命令先执行预充
  * ============================================================ */
 
-/* 干净输入（initialized=true）：STANDBY 应进 NORMAL（此为门控放行的正路径基线） */
+/* 干净输入（initialized=true，close_allowed=true）：STANDBY 应进 PRECHARGE（不直闭） */
 ZTEST(bms_state, test_initialized_clean_reaches_normal)
 {
-	/* Verifies architecture: 前置全满足（含 diag 已初始化）时 STANDBY→NORMAL */
+	/* Verifies architecture §7: 合法闭合命令下 STANDBY→PRECHARGE（先预充，不直达 NORMAL） */
 	struct bms_state_inputs in = clean_inputs();
 
-	zassert_equal(bms_next_state(BMS_STATE_STANDBY, &in), BMS_STATE_NORMAL,
-		      "clean initialized inputs must allow STANDBY -> NORMAL");
+	zassert_equal(
+		bms_next_state(BMS_STATE_STANDBY, &in), BMS_STATE_PRECHARGE,
+		"clean initialized inputs must route STANDBY -> PRECHARGE (not direct NORMAL)");
+}
+
+/* ============================================================
+ * M4 PRECHARGE 时序：complete→NORMAL / timeout→FAULT / 撤销→STANDBY / 未完成→留 PRECHARGE
+ * 回链：architecture §7 状态表——PRECHARGE 执行预充、检查电压爬升与超时
+ * ============================================================ */
+
+/* cur=PRECHARGE + 干净（precharge_complete=true）→ NORMAL（预充完成方允许闭合） */
+ZTEST(bms_state, test_precharge_complete_reaches_normal)
+{
+	/* Verifies architecture §7: 预充完成（电压爬升达标）时 PRECHARGE→NORMAL */
+	struct bms_state_inputs in = clean_inputs();
+
+	zassert_equal(bms_next_state(BMS_STATE_PRECHARGE, &in), BMS_STATE_NORMAL,
+		      "completed precharge must reach NORMAL");
+}
+
+/* cur=PRECHARGE + 预充超时（precharge_complete 置 false 隔离）→ FAULT（失效安全） */
+ZTEST(bms_state, test_precharge_timeout_forces_fault)
+{
+	/* Verifies architecture §7: 预充超时转 FAULT（不得闭合） */
+	struct bms_state_inputs in = clean_inputs();
+
+	in.precharge_complete = false;
+	in.precharge_timeout = true;
+
+	zassert_equal(bms_next_state(BMS_STATE_PRECHARGE, &in), BMS_STATE_FAULT,
+		      "precharge timeout must force FAULT");
+}
+
+/* cur=PRECHARGE + close_allowed=false（其余 clean）→ STANDBY（命令撤销优雅回退） */
+ZTEST(bms_state, test_precharge_abort_on_close_withdrawn)
+{
+	/* Verifies architecture §7: 预充中撤销闭合命令优雅回退 STANDBY（非故障） */
+	struct bms_state_inputs in = clean_inputs();
+
+	in.close_allowed = false;
+
+	zassert_equal(bms_next_state(BMS_STATE_PRECHARGE, &in), BMS_STATE_STANDBY,
+		      "withdrawn close command during precharge must fall back to STANDBY");
+}
+
+/* cur=PRECHARGE + 未完成未超时（close_allowed=true）→ 留 PRECHARGE（等待电压爬升） */
+ZTEST(bms_state, test_precharge_stays_until_complete)
+{
+	/* Verifies architecture §7: 预充未完成且未超时时留在 PRECHARGE 等待 */
+	struct bms_state_inputs in = clean_inputs();
+
+	in.precharge_complete = false;
+	in.precharge_timeout = false;
+
+	zassert_equal(bms_next_state(BMS_STATE_PRECHARGE, &in), BMS_STATE_PRECHARGE,
+		      "incomplete precharge (no timeout) must stay in PRECHARGE");
 }
 
 /* ============================================================

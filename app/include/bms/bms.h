@@ -21,6 +21,8 @@ extern "C" {
 /** BMS 主状态机的决策输入。 */
 struct bms_state_inputs {
 	bool close_allowed;         /**< 是否允许闭合接触器 */
+	bool precharge_complete;    /**< 预充完成（电压爬升达标）；PRECHARGE→NORMAL 门控 */
+	bool precharge_timeout;     /**< 预充超时；PRECHARGE→FAULT 门控 */
 	bool open_request;          /**< 外部断开请求 */
 	bool hw_fault_latched;      /**< 硬件故障已锁存 */
 	struct bms_diag_state diag; /**< 诊断状态快照 */

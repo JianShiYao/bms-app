@@ -35,9 +35,19 @@ enum bms_state bms_next_state(enum bms_state cur, const struct bms_state_inputs 
 	case BMS_STATE_INIT:
 		return BMS_STATE_STANDBY;
 	case BMS_STATE_STANDBY:
-		return in->close_allowed ? BMS_STATE_NORMAL : BMS_STATE_STANDBY;
+		/* 收到合法闭合命令先执行预充（不直闭主接触器），architecture §7。 */
+		return in->close_allowed ? BMS_STATE_PRECHARGE : BMS_STATE_STANDBY;
 	case BMS_STATE_PRECHARGE:
-		return in->close_allowed ? BMS_STATE_NORMAL : BMS_STATE_FAULT;
+		if (!in->close_allowed) {
+			return BMS_STATE_STANDBY; /* 命令撤销 → 优雅回退（非故障） */
+		}
+		if (in->precharge_timeout) {
+			return BMS_STATE_FAULT; /* 预充超时 → 失效安全 */
+		}
+		if (in->precharge_complete) {
+			return BMS_STATE_NORMAL; /* 电压爬升达标 → 闭合主接触器 */
+		}
+		return BMS_STATE_PRECHARGE; /* 未完成未超时 → 继续预充 */
 	case BMS_STATE_NORMAL:
 		return in->close_allowed ? BMS_STATE_NORMAL : BMS_STATE_STANDBY;
 	case BMS_STATE_FAULT:
