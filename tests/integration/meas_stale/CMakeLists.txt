@@ -35,6 +35,7 @@ target_sources(app PRIVATE
   ${APP_DIR}/src/bms/engine/time.c
   ${APP_DIR}/src/bms/engine/db.c
   ${APP_DIR}/src/bms/engine/diag.c
+  ${APP_DIR}/src/bms/engine/sys_mon.c
   ${APP_DIR}/src/bms/application/bms.c
   ${APP_DIR}/src/bms/measurement-control/protection/protection.c
   ${APP_DIR}/src/bms/engine/channels.c

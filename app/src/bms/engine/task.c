@@ -19,6 +19,7 @@
 #include "bms/diag.h"
 #include "bms/protection.h"
 #include "bms/soc.h"
+#include "bms/sys_mon.h"
 #include "bms/task.h"
 #include "bms/time.h"
 
@@ -165,16 +166,28 @@ static void run_protection_and_bms(uint32_t now_ms)
 
 void bms_task_safety_step(uint32_t now_ms)
 {
+	bms_sys_mon_task_enter(BMS_SYS_MON_SAFETY, now_ms);
+
 	if (bms_time_due(now_ms, &next_sample, CONFIG_BMS_AFE_SAMPLE_PERIOD_MS)) {
 		run_measurement(now_ms);
 	}
+
+	/* 聚合任务健康并上报 TASK_OVERRUN——放在状态机之前，使本拍失联即驱动 fail-safe
+	 * （runtime-model §6/§7：软先于硬，sys_mon→diag→bms 进 FAULT）。safety（最高优先级
+	 * cyclic）每拍评估，可检出 app 等较低优先级任务失联。 */
+	bms_sys_mon_step(now_ms);
+
 	run_protection_and_bms(now_ms);
+
+	bms_sys_mon_task_exit(BMS_SYS_MON_SAFETY, now_ms);
 }
 
 void bms_task_app_step(uint32_t now_ms)
 {
 	struct bms_cell_meas meas;
 	struct bms_db_meta meas_meta = {0};
+
+	bms_sys_mon_task_enter(BMS_SYS_MON_APP, now_ms);
 
 	if (bms_db_read_cell_meas(&meas, &meas_meta) == 0 && meas_meta.valid) {
 #if defined(CONFIG_BMS_SOC)
@@ -220,6 +233,8 @@ void bms_task_app_step(uint32_t now_ms)
 #else
 	ARG_UNUSED(now_ms);
 #endif
+
+	bms_sys_mon_task_exit(BMS_SYS_MON_APP, now_ms);
 }
 
 static void tsk_safety_10ms(void *p1, void *p2, void *p3)
@@ -300,6 +315,7 @@ int bms_task_init(void)
 #if defined(CONFIG_BMS_PROTECTION)
 	bms_protection_default_limits(&task_prot_limits);
 #endif
+	(void)bms_sys_mon_init();
 	task_bms_state = BMS_STATE_INIT;
 
 	next_sample = 0;
