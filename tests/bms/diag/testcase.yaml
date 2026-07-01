@@ -1,0 +1,8 @@
+tests:
+  bms.diag:
+    platform_allow:
+      - mps2/an386
+      - native_sim
+    tags:
+      - bms
+      - diag
