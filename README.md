@@ -46,7 +46,7 @@ west build -p always -b mps2/an386 app                # 构建（首次约 1–2
 west build -t run                                     # QEMU 运行（Ctrl-A X 退出）
 
 $env:QEMU_BIN_PATH = "D:\zephyr-sdk\zephyr-sdk-1.0.1\hosttools\qemu"
-west twister -T tests -p mps2/an386 -c               # 单元测试（预期 57/57）
+west twister -T tests -p mps2/an386 -c               # 单元测试（以 Twister 报告为准）
 ```
 
 > 运行后启动日志示例：`*** Booting Zephyr OS build v4.4.0 ***` →

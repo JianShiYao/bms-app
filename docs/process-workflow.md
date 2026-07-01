@@ -4,7 +4,8 @@
 也包括「如何协作交付」(分支→提交→PR→CI→发版)。环境安装/构建/运行/测试的命令见 [README](../README.md)。
 
 > 小 V 的**执行细节**(怎么调 agent 链、各阶段产出模板)见 [process-agents.md](process-agents.md) 与 [templates/](templates/);
-> 本文只定义**流程骨架与质量门**,不复制那些细节。
+> 本文只定义**流程骨架**与门禁触发时机。当前 CI 门禁事实表见
+> [quality-gates.md](quality-gates.md)，避免在多处维护易漂移状态。
 
 ---
 
@@ -63,7 +64,7 @@ REQ-<域>-NNN  →  DES-<域>-NNN  →  代码位置(file:行/函数)  →  ztes
 - **追溯链无断链**:每条 `REQ-<域>-NNN` 贯通 需求→架构→设计→代码→测试,`traceability.md` 无空链;
 - **变更已再基线**:本迭代若改动既有需求/安全项,其追溯链与受影响的右腿验证已同步更新(否则视为断链;依据 [concept-methodology.md §4 原则6](concept-methodology.md));
 - 所有 ⚠️ **失效安全**项均有对应需求与测试用例并通过;
-- 构建 + `twister` + 覆盖率达门限,无回归;**CI 6 门全绿**;
+- 构建 + `twister` + 覆盖率达门限,无回归;**CI 质量门全绿**;
 - 范围受控:非目标未被夹带实现。
 
 ### 1.4 小 V 的分支 / PR 粒度
@@ -129,12 +130,13 @@ git config core.hooksPath scripts/hooks   # 一次启用 pre-commit(格式) + pr
 
 ## 6. 提交前自检（开 PR 前跑 check.ps1）
 
-开 PR 前在**已激活 venv 的 PowerShell** 里本地复现 CI 全套门禁，避免 push 后才在 CI 发现问题：
+开 PR 前在**已激活 venv 的 PowerShell** 里跑 Windows 本地预检，尽量在 push 前发现常见问题：
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\check.ps1          # 全量：format/build×2/twister/sca/clang-tidy
 powershell -ExecutionPolicy Bypass -File scripts\check.ps1 -Fast    # 快跑：仅 format/build×2/twister(跳过较慢的 sca/clang-tidy)
 ```
 - 缺工具（如未装 clang-tidy）的门会标 `SKIP`（不计失败，CI 会补跑）；任一 `FAIL` 退出码非 0。
+- `check.ps1` 不是 Linux CI 的完整镜像；当前权威门禁状态见 [quality-gates.md](quality-gates.md)。
 - SCA / clang-tidy 做 `-p always` 干净构建，全量约数分钟；日常迭代可先 `-Fast`，开 PR 前再跑一次全量。
 - **clang-tidy 与覆盖率同属"Linux 可靠"项**：clang-tidy 的 parity 需 `native_sim`（提供 host flags），而 native_sim 在 Windows **配置失败**，且本地新版本 clang-tidy 与 CI 不一致——故 clang-tidy 以 **CI(Linux) 为准**，Windows 上 check.ps1 标 `SKIP`；要本地对齐用 **WSL2**（Zephyr 即装在 WSL）。
 - **cppcheck** 则不受此限：check.ps1 用 **mps2/an386 的 `compile_commands.json`**（Windows 可编）走 project 精查；覆盖率本地走 `..\run-tests-coverage.ps1`（QEMU 路线覆盖率不可靠，可靠覆盖率见 CI / WSL2+native_sim）。
@@ -147,7 +149,7 @@ git switch -c feat/xxx          # 从最新 master 切分支
 # ... 编码 + 本地自检 ...
 git push -u origin feat/xxx
 gh pr create --base master      # 开 PR（填模板）
-# CI 自动跑 → 5 个必过检查全绿 → Squash 合并 → 自动删分支
+# CI 自动跑 → 必过检查全绿 → Squash 合并 → 自动删分支
 ```
 - 合并策略：**仅 Squash**（master 线性、每 PR 一条规范提交）。
 - master 受保护：CI 必过才能合并；禁直推、禁强推、要求线性历史。
@@ -164,8 +166,8 @@ gh pr create --base master      # 开 PR（填模板）
 | ① 编辑时 | 写码/保存 | `.clang-format` + `.editorconfig`（编辑器即时，editorconfig 依赖插件） | 实时 | 软约束（自动套用） |
 | ② 提交前 | `git commit` | `scripts/hooks/pre-commit`（暂存 .c/.h 格式校验） | 秒级 | 本地拒绝提交 |
 | ③ 推送前 | `git push` | `scripts/hooks/pre-push`（push 范围 format + 机会性增量 clang-tidy + **cppcheck/MISRA 告警**） | 秒级~十几秒 | format/tidy 拒推；cppcheck/MISRA 仅告警 |
-| ④ 开 PR 前 | 手动 | `scripts/check.ps1`（本地全量镜像 CI） | 数分钟 | 自检（暴露 CI 必失项） |
-| ⑤ CI / PR | push / PR | `.github/workflows/ci.yml`（6 门，权威） | — | 分支保护拦合并 |
+| ④ 开 PR 前 | 手动 | `scripts/check.ps1`（Windows 本地预检） | 数分钟 | 自检（尽早暴露常见失败项） |
+| ⑤ CI / PR | push / PR | `.github/workflows/ci.yml`（见 [quality-gates.md](quality-gates.md)） | — | 分支保护拦合并 |
 | ⑥ 发布 | 打 tag | `.github/workflows/release.yml`（tag `v*`） | — | 发布失败即无 Release |
 | ⑦ 审计 | 持续 | `dependabot` / `CODEOWNERS` / `CHANGELOG` / PR 模板 | — | 软约束 |
 
@@ -188,42 +190,20 @@ gh pr create --base master      # 开 PR（填模板）
   在本地已有 `build/compile_commands.json` 时**复用它**增量跑 clang-tidy（绝不从零构建）、
   并用 [`scripts/cppcheck-run.sh`](../scripts/cppcheck-run.sh) 对改动的 `.c` 跑 **cppcheck + MISRA**
   （**独立粗筛**：无需构建、秒级；但无 Zephyr 头/宏上下文，会有已知假阳性如 MISRA 17.3/17.7，故 warn-only）。
-- `check.ps1`（开 PR 前手动）才做**全量镜像**：两板构建 + twister + SCA + clang-tidy + cppcheck/MISRA，对齐 CI。
-  其中 cppcheck/MISRA 走 **project 模式**（`cppcheck --project build/check-tidy/compile_commands.json`，复用 clang-tidy
-  那步的编译库），有真实 `-I/-D` 上下文，**假阳性基本消除**（实测 17→0）。
+- `check.ps1`（开 PR 前手动）做**Windows 本地预检**：构建 + twister + SCA + clang-tidy（可用时）+
+  cppcheck/MISRA（warn-only）。CI 仍是最终权威，尤其是 Linux `native_sim`、覆盖率、clang-tidy parity
+  与卫生类门禁。
 
-> **cppcheck/MISRA 双层**：pre-push 用独立模式图快（容忍假阳性、只告警）；check.ps1/CI 用 project 模式图准。
+> **cppcheck/MISRA 双层**：pre-push / check.ps1 用本地预检图快（本地只告警）；CI 用 project 模式图准并阻断合并。
 > MISRA addon（`misra.py`，GPLv3）不入库，按机器跑 [`scripts/setup-cppcheck-misra.sh`](../scripts/setup-cppcheck-misra.sh)
 > 下载到 gitignore 的 `scripts/.cppcheck-addons/`；噪声与 deviation 在 [`.cppcheck-suppressions`](../.cppcheck-suppressions) 集中维护。
 
-**新静态分析工具（cppcheck / MISRA）的引入按「阻断强度」递进，而非按位置：**
-直接把还很吵的工具设成 CI 必过门，会让每个 PR 都被误报卡死、且在 CI 上来回调参极慢。正确阶梯：
-
-| 阶段 | 在哪 | 阻断强度 | 目的 | 本项目现状 |
-|---|---|---|---|---|
-| ① 试跑调参 | 本地（反馈最快） | 不阻断 | 看噪声量、选规则子集、建 suppression/基线 | — |
-| ② 观察期 | pre-push（本地） / CI | **非阻断（告警）** | 跑若干轮，确认基线稳 | **当前在此**：pre-push + check.ps1（本地）+ CI `cppcheck-misra` job（`continue-on-error`，非必过）均 warn-only |
-| ③ 升门禁 | CI | **必过**（加入 required checks） | 噪声归零后才阻断合并 | 待噪声调稳后做 |
-| ④ 收紧本地 | pre-push | 本地拦截（`CPPCHECK_FAIL=1`） | 低噪后给开发者硬反馈 | 一个开关即可启用 |
-
-> 说明：②"非阻断观察"同时在**本地（pre-push / check.ps1 的 warn-only）**与 **CI（`cppcheck-misra` job，`continue-on-error`、不计入必过门、产出报告制品）**进行——
-> 本地反馈快、调 suppression 不必来回 push;CI 则给每个 PR 一份跨平台(Linux)的稳定基线观察。[`.cppcheck-suppressions`](../.cppcheck-suppressions)
-> 集中维护豁免与 MISRA deviation；噪声调稳后,去掉 `continue-on-error` 并把该 check 加入分支保护(③ 升必过),pre-push 设 `CPPCHECK_FAIL=1`(④ 收紧本地)。
-
-要点：**调参在本地做**（CI 来回 push 太慢）；**进 CI 第一步必须非阻断**；用 **baseline/suppression 只对新增代码报错**，不必先清零历史问题即可上线。
-
-CI（⑤）当前 6 道**必过**门禁：`format` → `build (mps2/an386)` + `build (native_sim)` + `test-coverage`(native_sim 覆盖率) + `sca-gcc`(gcc 静态分析) + `clang-tidy`(CERT/可读性)。
-另有 `editorconfig`、`yamllint` 两道**阻断作业**(卫生门:尾随空格/末行换行/LF/charset/YAML lint;缩进交由 clang-format 与编辑器,见 `.ecrc`/`.editorconfig`),已去 `continue-on-error`,**待本 PR 合并后加入分支保护必过列 → 8 道**。
-另有 1 个**非阻断观察** job `cppcheck-misra`(②阶梯,`continue-on-error`,不计入必过门、产出报告制品),待噪声稳后升必过。
-各阶段质量管控现状与待补齐的全景见 [quality-management.md](quality-management.md)；SCA/clang-tidy/覆盖率的路线图见 [quality-ci-checklist.md](quality-ci-checklist.md)。
-
+当前 CI 必过门禁以 [quality-gates.md](quality-gates.md) 为准。cppcheck/MISRA 已在 CI 中以
+`CPPCHECK_FAIL=1` 阻断合并；本地 pre-push / `check.ps1` 仍保持 warn-only，用于快速反馈和
+suppression 调整。各阶段质量管控现状与待补齐的全景见 [quality-management.md](quality-management.md)。
 ## 9. 分支保护说明
 
-master 受保护，必过检查（6 项）：`format`、`build (mps2/an386)`、`build (native_sim)`、`test-coverage`、`sca-gcc`、`clang-tidy`。
-- **待加入（本 PR 合并后执行）**：`editorconfig`、`yamllint`（已是阻断作业，加入后共 8 项）。命令：
-  `gh api -X POST repos/JianShiYao/bms-app/branches/master/protection/required_status_checks/contexts -f 'contexts[]=editorconfig' -f 'contexts[]=yamllint'`。
-  **须合并后执行**——否则未含这两作业的在途 PR 会因必过检查永不上报而被卡。
-- `clang-tidy` 已**硬门禁**（`.clang-tidy` 开启 `WarningsAsErrors`，当前 0 告警）并加入必过列。
+master 受保护，必过检查以 [quality-gates.md](quality-gates.md) 和 GitHub 分支保护配置为准。
 - **单人项目说明**：必需 reviewer = 0（无法要求他人评审），用「PR + CI 必过 + 自审 diff」替代第二双眼；
   团队化后改 reviewer ≥ 1、启用 `require_code_owner_reviews`、考虑 `enforce_admins`。
 
