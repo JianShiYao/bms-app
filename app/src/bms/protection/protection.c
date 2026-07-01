@@ -1,10 +1,15 @@
-/*
- * 保护状态机模块 —— 判定服务
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    protection.c
+ * @brief   保护状态机模块 —— 判定服务。
+ * @ingroup PROT
  *
- * 职责：评估过压/欠压/过流/过温，并给出保护判定。
- * 调度、诊断登记与接触器控制由 bms_task/bms_diag/bms_bms 负责。
- * 失效安全原则：默认接触器 OPEN，仅当判定 NORMAL 时才 CLOSED。
+ * @details 职责：评估过压/欠压/过流/过温，并给出保护判定。
+ *          调度、诊断登记与接触器控制由 bms_task/bms_diag/bms_bms 负责。
+ *          失效安全原则：默认接触器 OPEN，仅当判定 NORMAL 时才 CLOSED。
  */
+
 #include <errno.h>
 #include <stdlib.h>
 #include <zephyr/logging/log.h>

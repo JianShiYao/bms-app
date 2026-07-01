@@ -1,6 +1,11 @@
-/*
- * AFE（电芯采样）模块接口
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    afe.h
+ * @brief   AFE（电芯采样）模块接口。
+ * @ingroup AFE
  */
+
 #ifndef BMS_AFE_H_
 #define BMS_AFE_H_
 
@@ -20,7 +25,7 @@ int bms_afe_init(void);
 /**
  * @brief 执行一次采样并填充测量结构（供线程与单测复用）。
  * 业务层入口：委托给所选后端的 bms_afe_backend_read()，不感知后端种类。
- * @param out 输出测量数据
+ * @param[out] out 输出测量数据
  * @return 0 成功，负值为 errno。
  */
 int bms_afe_sample(struct bms_cell_meas *out);
@@ -32,7 +37,7 @@ int bms_afe_sample(struct bms_cell_meas *out);
  * 提供唯一实现：afe_stub.c（恒定桩）/ afe_sim.c（充放电仿真）/ afe_adc.c（真机 ADC）。
  * 硬件/仿真差异收敛到本函数实现，afe 线程与业务逻辑不变。
  *
- * @param out 输出一帧测量（非空）。
+ * @param[out] out 输出一帧测量（非空）。
  * @return 0 成功，负值为 errno。
  */
 int bms_afe_backend_read(struct bms_cell_meas *out);
@@ -65,8 +70,8 @@ struct bms_afe_limits {
  *  - TEMP   ：所有 temp_dci[i] ∈ [temp_dci_min, temp_dci_max]
  * 仅写 m->validity，不修改任何测量值。
  *
- * @param m   输入/输出测量（非空）；读取各量、写入 validity。
- * @param lim 合理性阈值（非空）。
+ * @param[in,out] m   输入/输出测量（非空）；读取各量、写入 validity。
+ * @param[in]     lim 合理性阈值（非空）。
  * @return 0 成功；-EINVAL（m 或 lim 为 NULL，不写 m）。
  */
 int bms_afe_validate(struct bms_cell_meas *m, const struct bms_afe_limits *lim);

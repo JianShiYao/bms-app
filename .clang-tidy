@@ -19,6 +19,10 @@ Checks: >
   -clang-diagnostic-padded,
   -clang-diagnostic-unsafe-buffer-usage,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+# 注：CS-16（函数 doxygen）的 -Wdocumentation 自动门待定。经 ExtraArgs 注入时 CI
+# clang-tidy 报 "no such file or directory: '-Wdocumentation'"（被当成输入文件），
+# 需在有本地 clang-tidy 的环境调通参数注入（ExtraArgsBefore / --extra-arg-before）后再启用。
+# 目前 CS-16 由代码评审把关。
 WarningsAsErrors:   '*'
 FormatStyle:        file
 # Only diagnose this project's own headers; silence transitively-included Zephyr headers.

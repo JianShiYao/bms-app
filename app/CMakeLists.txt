@@ -9,7 +9,8 @@ target_include_directories(app PRIVATE include)
 
 # 健壮性：app 自有源码的编译告警视为错误（仅限 app 目标，不波及 Zephyr/modules）。
 # 与 clang-tidy(WarningsAsErrors)/sca-gcc 形成互补，挡住编译器层告警。
-target_compile_options(app PRIVATE -Werror)
+# -Wswitch-default / -Wimplicit-fallthrough 落实 CS-18（switch 必有 default、禁隐式穿透）。
+target_compile_options(app PRIVATE -Werror -Wswitch-default -Wimplicit-fallthrough)
 
 # 核心源：main + compatibility zbus channel + foxBMS-style engine
 target_sources(app PRIVATE

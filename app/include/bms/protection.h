@@ -1,6 +1,11 @@
-/*
- * 保护状态机模块接口
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    protection.h
+ * @brief   保护状态机模块接口。
+ * @ingroup PROT
  */
+
 #ifndef BMS_PROTECTION_H_
 #define BMS_PROTECTION_H_
 
@@ -27,15 +32,18 @@ int bms_protection_init(void);
 
 /**
  * @brief 纯函数：根据测量与阈值评估保护状态（供线程与单测复用）。
- * @param meas   输入测量
- * @param limits 阈值
- * @param out    输出保护事件（含期望接触器状态）
+ * @param[in]  meas   输入测量
+ * @param[in]  limits 阈值
+ * @param[out] out    输出保护事件（含期望接触器状态）
  * @return 0 成功，负值为 errno。
  */
 int bms_protection_evaluate(const struct bms_cell_meas *meas, const struct bms_prot_limits *limits,
 			    struct bms_prot_evt *out);
 
-/** 获取默认阈值（桩） */
+/**
+ * @brief 获取默认保护阈值（桩值）。
+ * @param[out] limits 输出默认阈值（非空）。
+ */
 void bms_protection_default_limits(struct bms_prot_limits *limits);
 
 #ifdef __cplusplus

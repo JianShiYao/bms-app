@@ -1,9 +1,14 @@
-/*
- * BMS zbus channel 声明
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file    channels.h
+ * @brief   BMS zbus channel 声明。
+ * @ingroup SYS
  *
- * channel 在 src/bms/channels.c 中用 ZBUS_CHAN_DEFINE 定义，
- * 各模块通过 ZBUS_CHAN_ADD_OBS 订阅、zbus_chan_pub 发布。
+ * @details channel 在 src/bms/channels.c 中用 ZBUS_CHAN_DEFINE 定义，
+ *          各模块通过 ZBUS_CHAN_ADD_OBS 订阅、zbus_chan_pub 发布。
  */
+
 #ifndef BMS_CHANNELS_H_
 #define BMS_CHANNELS_H_
 

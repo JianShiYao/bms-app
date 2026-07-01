@@ -224,3 +224,26 @@ jobs:
         with:
           name: yamllint-report
           path: yamllint-report.txt
+
+  # Gate 8: file-header hygiene (coding-style C:002 SPDX + C:004 file-level
+  # doxygen), scoped to app/. Pure-stdlib Python, no pinned tool needed.
+  # See docs/coding-style.md. Blocking gate (§8 ladder step ③). After this
+  # merges, add `file-headers` to the master branch-protection required checks.
+  file-headers:
+    needs: format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check file headers (SPDX + @file/@brief/@ingroup)
+        run: |
+          set -o pipefail
+          python scripts/check-file-headers.py 2>&1 | tee file-headers-report.txt
+      - name: Upload file-headers report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: file-headers-report
+          path: file-headers-report.txt

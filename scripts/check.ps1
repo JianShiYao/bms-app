@@ -45,6 +45,15 @@ Gate "format" {
     if ($LASTEXITCODE -eq 0) { "PASS" } else { "FAIL" }
 }
 
+# --- Gate 1b: file-header hygiene (C:002 SPDX + C:004 doxygen; no west needed).
+Gate "file-headers" {
+    $py = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+    if (-not $py) { Write-Host "python not found; skipping." -ForegroundColor Yellow; return "SKIP" }
+    & $py.Source (Join-Path $Root "scripts\check-file-headers.py")
+    if ($LASTEXITCODE -eq 0) { "PASS" } else { "FAIL" }
+}
+
 if (-not (Have "west")) {
     Write-Host ""
     Write-Host "west not found on PATH -- activate the Zephyr venv to run build/test/SCA/tidy gates." -ForegroundColor Yellow
