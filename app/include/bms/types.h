@@ -9,6 +9,7 @@
 #ifndef BMS_TYPES_H_
 #define BMS_TYPES_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/autoconf.h>
 
@@ -94,6 +95,13 @@ struct bms_state_snapshot {
 	uint32_t timestamp_ms;
 	enum bms_state state;
 	enum bms_contactor contactor;
+};
+
+/** 接触器反馈快照（owner=bms_contactor，写入 DB_CONTACTOR_FB） */
+struct bms_contactor_fb {
+	uint32_t timestamp_ms;     /**< 本次反馈采集时刻 */
+	enum bms_contactor actual; /**< 实测接触器状态（反馈） */
+	bool precharge_active;     /**< 预充是否进行中（bms_f405 经 AFE，占位；fake 恒 false） */
 };
 
 /** 任务健康快照（owner=bms_sys_mon，写入 DB_TASK_HEALTH） */
