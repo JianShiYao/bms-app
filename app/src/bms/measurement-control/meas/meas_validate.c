@@ -1,23 +1,23 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * @file    afe_validate.c
- * @brief   AFE 测量合理性校验（afe_validate）—— 纯函数。
- * @ingroup AFE
+ * @file    meas_validate.c
+ * @brief   测量合理性校验（bms_meas_validate）—— 纯函数。
+ * @ingroup MEAS
  *
- * @details 详见 bms/afe.h 的 bms_afe_validate()。校验与采集分离（架构「测量数据纪律」）：
- *          afe 边缘在 backend_read 之后调用本函数，剔除明显坏帧并写 validity 位。
- *          无线程、无 zbus、无副作用，供 afe 线程与 ztest 直接复用。
+ * @details 详见 bms/meas.h 的 bms_meas_validate()。校验与采集分离（架构「测量数据纪律」）：
+ *          meas 边缘在后端 read 之后调用本函数，剔除明显坏帧并写 validity 位。
+ *          无线程、无 zbus、无副作用，供采集边缘与 ztest 直接复用。
  */
 
 #include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "bms/afe.h"
+#include "bms/meas.h"
 #include "bms/types.h"
 
-int bms_afe_validate(struct bms_cell_meas *m, const struct bms_afe_limits *lim)
+int bms_meas_validate(struct bms_cell_meas *m, const struct bms_meas_limits *lim)
 {
 	if ((m == NULL) || (lim == NULL)) {
 		return -EINVAL;
