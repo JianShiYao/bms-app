@@ -15,6 +15,7 @@
 #include "bms/bms.h"
 #include "bms/channels.h"
 #include "bms/comm.h"
+#include "bms/contactor.h"
 #include "bms/db.h"
 #include "bms/diag.h"
 #include "bms/meas.h"
@@ -167,6 +168,10 @@ static void run_protection_and_bms(uint32_t now_ms)
 	};
 
 	(void)bms_db_write_bms_state(&state);
+
+	/* 执行接触器期望态并回读反馈：写 DB_CONTACTOR_FB、按不一致上报 CONTACTOR_MISMATCH
+	 * （粘连/拒动越去抖 → CRITICAL+latch → 下一拍 bms_next_state 进 LOCKED，软失效安全）。 */
+	bms_contactor_step(state.contactor, now_ms);
 }
 
 void bms_task_safety_step(uint32_t now_ms)
