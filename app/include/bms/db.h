@@ -112,6 +112,25 @@ int bms_db_write_task_health(const struct bms_task_health *health);
  */
 int bms_db_read_task_health(struct bms_task_health *health, struct bms_db_meta *meta);
 
+/**
+ * @brief 写入最新接触器反馈快照（owner=bms_contactor，线程安全）。
+ * @details 由 @ref bms_contactor_step 采集实测接触器状态后写入 DB_CONTACTOR_FB；
+ *          契约见 docs/concept/data-model.md（owner=bms_contactor，消费者 bms/diag）。
+ * @param[in] fb 待写入接触器反馈快照（非空）。
+ * @return 0 成功；@p fb 为 NULL 返回 -EINVAL。
+ */
+int bms_db_write_contactor_fb(const struct bms_contactor_fb *fb);
+
+/**
+ * @brief 读取最新接触器反馈快照（线程安全）。
+ * @details stale/未写入（meta.valid==false）表示接触器反馈未知，下游按失效安全处理
+ *          （data-model.md：stale 视为诊断故障）。
+ * @param[out] fb   输出接触器反馈快照（非空）。
+ * @param[out] meta 输出槽位元数据（可为 NULL，此时不回填）。
+ * @return 0 成功；@p fb 为 NULL 返回 -EINVAL。
+ */
+int bms_db_read_contactor_fb(struct bms_contactor_fb *fb, struct bms_db_meta *meta);
+
 #ifdef __cplusplus
 }
 #endif

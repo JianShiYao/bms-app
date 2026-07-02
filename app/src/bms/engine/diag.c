@@ -47,6 +47,15 @@ static const struct bms_diag_entry_cfg DIAG_CFG[BMS_DIAG_COUNT] = {
 			.clear_time_ms = 0,
 			.latch = false,
 		},
+	[BMS_DIAG_CONTACTOR_MISMATCH] =
+		{
+			/* 接触器反馈与期望不一致（粘连/拒动，安全关键）：切换稳定去抖 200ms，
+			 * 确认后 CRITICAL 且锁存（→ LOCKED，失效安全最强）。 */
+			.severity = BMS_DIAG_CRITICAL,
+			.confirm_time_ms = 200,
+			.clear_time_ms = 0,
+			.latch = true,
+		},
 };
 
 static struct bms_diag_entry_rt diag_rt[BMS_DIAG_COUNT];

@@ -24,12 +24,14 @@ static struct bms_soc db_soc;
 static struct bms_prot_evt db_prot;
 static struct bms_state_snapshot db_bms_state;
 static struct bms_task_health db_task_health;
+static struct bms_contactor_fb db_contactor_fb;
 
 static struct bms_db_slot db_cell_meta;
 static struct bms_db_slot db_soc_meta;
 static struct bms_db_slot db_prot_meta;
 static struct bms_db_slot db_bms_state_meta;
 static struct bms_db_slot db_task_health_meta;
+static struct bms_db_slot db_contactor_fb_meta;
 
 static void copy_meta(const struct bms_db_slot *slot, struct bms_db_meta *meta)
 {
@@ -48,11 +50,13 @@ int bms_db_init(void)
 	memset(&db_prot, 0, sizeof(db_prot));
 	memset(&db_bms_state, 0, sizeof(db_bms_state));
 	memset(&db_task_health, 0, sizeof(db_task_health));
+	memset(&db_contactor_fb, 0, sizeof(db_contactor_fb));
 	memset(&db_cell_meta, 0, sizeof(db_cell_meta));
 	memset(&db_soc_meta, 0, sizeof(db_soc_meta));
 	memset(&db_prot_meta, 0, sizeof(db_prot_meta));
 	memset(&db_bms_state_meta, 0, sizeof(db_bms_state_meta));
 	memset(&db_task_health_meta, 0, sizeof(db_task_health_meta));
+	memset(&db_contactor_fb_meta, 0, sizeof(db_contactor_fb_meta));
 	k_mutex_unlock(&db_lock);
 	return 0;
 }
@@ -178,6 +182,31 @@ int bms_db_read_task_health(struct bms_task_health *health, struct bms_db_meta *
 	k_mutex_lock(&db_lock, K_FOREVER);
 	*health = db_task_health;
 	copy_meta(&db_task_health_meta, meta);
+	k_mutex_unlock(&db_lock);
+	return 0;
+}
+
+int bms_db_write_contactor_fb(const struct bms_contactor_fb *fb)
+{
+	if (fb == NULL) {
+		return -EINVAL;
+	}
+	k_mutex_lock(&db_lock, K_FOREVER);
+	db_contactor_fb = *fb;
+	db_contactor_fb_meta.sequence++;
+	db_contactor_fb_meta.valid = true;
+	k_mutex_unlock(&db_lock);
+	return 0;
+}
+
+int bms_db_read_contactor_fb(struct bms_contactor_fb *fb, struct bms_db_meta *meta)
+{
+	if (fb == NULL) {
+		return -EINVAL;
+	}
+	k_mutex_lock(&db_lock, K_FOREVER);
+	*fb = db_contactor_fb;
+	copy_meta(&db_contactor_fb_meta, meta);
 	k_mutex_unlock(&db_lock);
 	return 0;
 }
