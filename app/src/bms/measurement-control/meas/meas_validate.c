@@ -10,6 +10,7 @@
  *          无线程、无 zbus、无副作用，供采集边缘与 ztest 直接复用。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -17,6 +18,17 @@
 #include "bms/measurement-control/meas.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 int bms_meas_validate(struct bms_cell_meas *m, const struct bms_meas_limits *lim)
 {
 	if ((m == NULL) || (lim == NULL)) {
@@ -61,3 +73,5 @@ int bms_meas_validate(struct bms_cell_meas *m, const struct bms_meas_limits *lim
 	m->validity = valid; /* 仅写 validity，不改任何测量值 */
 	return 0;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

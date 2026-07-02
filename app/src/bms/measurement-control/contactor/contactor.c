@@ -11,11 +11,23 @@
  *          diag 生命周期负责）。本片不接 task.c（Phase 1-③b 再接）。
  */
 
+/*========== Includes ========================================================*/
 #include "bms/measurement-control/contactor.h"
 #include "bms/hal/contactor_io.h"
 #include "bms/engine/db.h"
 #include "bms/engine/diag.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 bool bms_contactor_eval(enum bms_contactor desired, enum bms_contactor actual)
 {
 	return actual != desired;
@@ -35,3 +47,5 @@ void bms_contactor_step(enum bms_contactor desired, uint32_t now_ms)
 	(void)bms_diag_report(BMS_DIAG_CONTACTOR_MISMATCH, bms_contactor_eval(desired, fb.actual),
 			      now_ms);
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

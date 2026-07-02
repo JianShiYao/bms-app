@@ -8,6 +8,7 @@
  * @details main 只做 engine/module 初始化；长期运行逻辑由 bms_task 统一调度。
  */
 
+/*========== Includes ========================================================*/
 #include <app_version.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -22,8 +23,18 @@
 #include "bms/application/soc.h"
 #include "bms/engine/task.h"
 
+/*========== Macros and Definitions ==========================================*/
 LOG_MODULE_REGISTER(bms_main, LOG_LEVEL_INF);
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 int main(void)
 {
 	/* 版本编进固件：应用语义化版本(app/VERSION) + git 描述(hash/dirty/距离)，供现场追溯 */
@@ -60,3 +71,5 @@ int main(void)
 
 	return 0;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

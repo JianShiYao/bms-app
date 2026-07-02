@@ -17,12 +17,23 @@
  *
  * 每个用例注释回链设计契约。
  */
+
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
 #include "bms/engine/sys_mon.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
 ZTEST_SUITE(bms_sys_mon, NULL, NULL, NULL, NULL, NULL);
 
 /* ============================================================
@@ -145,3 +156,7 @@ ZTEST(bms_sys_mon, test_heartbeat_timeout_wraparound_is_safe)
 	zassert_true(due.heartbeat_timeout,
 		     "wrapped now with signed elapsed(100) >= timeout(100) must report timeout");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

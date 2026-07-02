@@ -54,6 +54,7 @@
 | **CS-13** | 每个 `.c/.h` 首行为 SPDX：`/* SPDX-License-Identifier: Apache-2.0 */` | 项目约定 | 许可可机读、合规审计友好 | CI 文件头卫生门（阻断）+ `scripts/check-file-headers.py` |
 | **CS-14** | 紧随 SPDX 的文件级 doxygen：`@file`（= 文件名）、`@brief`（一句话职责）、`@ingroup`（模块域，见模板）；多行设计说明放 `@details` | 项目约定 | 供 doxygen 生成 API 文档；文件职责自解释 | CI 文件头卫生门（校验 `@file` 等于文件名、`@ingroup` ∈ 域集） |
 | **CS-15** | 头文件用 include guard `BMS_<FILE>_H_`（紧随文件级 doxygen） | 项目约定 | 防止重复包含 | 约定（clang-tidy 忽略 `*_H_` 命名告警） |
+| **CS-24** | `.c/.h` 用固定的**分节见出注释**划分功能块（foxBMS 风格），见出集合与顺序固定、见出文字原文照抄、空段亦保留见出行；`.c` 内实体按分节归位（含 `static`→`extern` 函数分区），并在 `Static Function Prototypes` 段**前置声明所有 `static` 函数** | 项目约定（参考 foxBMS 2） | 文件结构一眼可辨、跨模块布局一致、评审定位快；前置声明使实现顺序不影响编译，重排安全 | 约定 + 评审（模板见 §7.4） |
 
 ## 5. 注释与接口文档
 
@@ -154,6 +155,44 @@ int bms_afe_sample(struct bms_cell_meas *out)
 
 /* 避免：__ASSERT(out != NULL, ...) —— 触发 halt，违背 BMS 优雅降级 */
 ```
+
+### 7.4 分节见出注释（CS-24）
+
+见出行格式：`/*` + `==========`（10 个 `=`）+ ` ` + 见出文字 + ` ` + 补齐的 `=` + `*/`，整行**固定补齐到 80 列**（该见出为定宽装饰注释，与 CS-09 代码 100 列上限相互独立）。见出文字**原文照抄英文、不翻译、不改词序**；某段无内容时**仅保留见出行**（下空一行）。
+
+**`.c` 见出集合与顺序（固定）：**
+
+```c
+/*========== Includes ========================================================*/
+/*========== Macros and Definitions ==========================================*/
+/*========== Static Constant and Variable Definitions ========================*/
+/*========== Extern Constant and Variable Definitions ========================*/
+/*========== Static Function Prototypes ======================================*/
+/*========== Static Function Implementations =================================*/
+/*========== Extern Function Implementations =================================*/
+/*========== Externalized Static Function Implementations (Unit Test) ========*/
+```
+
+**`.h` 见出集合与顺序（固定，置于 include guard 与 `extern "C"` 之内）：**
+
+```c
+/*========== Includes ========================================================*/
+/*========== Macros and Definitions ==========================================*/
+/*========== Extern Constant and Variable Declarations =======================*/
+/*========== Extern Function Prototypes ======================================*/
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
+```
+
+**实体归位规则：**
+
+- `LOG_MODULE_REGISTER` 归 **Macros and Definitions** 段顶（保留 Zephyr「紧跟 include」惯例）。
+- 纯数据定义（`static` 变量、`static const` 表、`K_MUTEX_DEFINE`、`ZBUS_CHAN_DEFINE` 等）归 **Static Constant and Variable Definitions**。
+- **Static Function Prototypes** 段**前置声明本文件全部 `static` 函数**（消除定义前引用的顺序依赖）；无 `static` 函数时保留空见出行。
+- **所有 `static` 函数实现**归 **Static Function Implementations**；**所有非 `static`（extern）函数实现**归 **Extern Function Implementations**（即「先全 static、再全 extern」）。
+- 引用函数的对象定义宏（`K_THREAD_DEFINE` 等）紧随其所引用函数之后放置。
+- 见出**只组织、不改行为**：归位/重排属整形，须与功能改动**分开提交**。
+
+> 上述见出行已按 80 列补齐，可直接复制；改宽度或文字后须重新补齐等号。
 
 ## 8. 强制层级一览
 

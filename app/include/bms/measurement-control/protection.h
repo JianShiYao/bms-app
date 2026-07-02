@@ -9,12 +9,14 @@
 #ifndef BMS_PROTECTION_H_
 #define BMS_PROTECTION_H_
 
+/*========== Includes ========================================================*/
 #include "bms/types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
 /** 保护阈值（桩默认值，后续按电芯规格表配置/Kconfig 化） */
 struct bms_prot_limits {
 	int32_t cell_ov_mv;      /**< 单体过压阈值 mV */
@@ -23,6 +25,9 @@ struct bms_prot_limits {
 	int32_t over_temp_dci;   /**< 过温阈值 0.1℃ */
 };
 
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 初始化保护模块。失效安全：默认接触器断开。
  * 调度与诊断登记由 bms_task/bms_diag 统一负责。
@@ -45,6 +50,8 @@ int bms_protection_evaluate(const struct bms_cell_meas *meas, const struct bms_p
  * @param[out] limits 输出默认阈值（非空）。
  */
 void bms_protection_default_limits(struct bms_prot_limits *limits);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

@@ -9,12 +9,18 @@
 #ifndef BMS_TASK_H_
 #define BMS_TASK_H_
 
+/*========== Includes ========================================================*/
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 初始化任务框架状态并写入初始安全态（不启动线程）。
  * @details 按 Kconfig 复位 SOC 与保护状态，写入初始 BMS 状态（失效安全：接触器 OPEN）。
@@ -53,6 +59,8 @@ void bms_task_app_step(uint32_t now_ms);
  * @param now_ms 注入的当前单调毫秒时间。
  */
 void bms_task_wdt_step(uint32_t now_ms);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

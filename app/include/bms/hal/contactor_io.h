@@ -13,12 +13,18 @@
 #ifndef BMS_CONTACTOR_IO_H_
 #define BMS_CONTACTOR_IO_H_
 
+/*========== Includes ========================================================*/
 #include "bms/types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 执行期望接触器态（由所选 backend——fake/真实——提供）。
  * @param desired 期望接触器状态（失效安全默认 OPEN）。
@@ -37,6 +43,8 @@ int bms_contactor_io_read(struct bms_contactor_fb *out);
  * @param actual 注入的实测接触器状态。
  */
 void bms_contactor_io_fake_set(enum bms_contactor actual);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

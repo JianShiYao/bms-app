@@ -9,12 +9,18 @@
 #ifndef BMS_AFE_H_
 #define BMS_AFE_H_
 
+/*========== Includes ========================================================*/
 #include "bms/types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 初始化 AFE 模块。
  * 采样周期由 bms_task 统一调度，本函数只初始化模块服务。
@@ -33,6 +39,8 @@ int bms_afe_init(void);
  * @return 0 成功，负值为 errno。
  */
 int bms_afe_backend_read(struct bms_cell_meas *out);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

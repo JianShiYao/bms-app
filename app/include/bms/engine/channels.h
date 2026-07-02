@@ -12,6 +12,7 @@
 #ifndef BMS_CHANNELS_H_
 #define BMS_CHANNELS_H_
 
+/*========== Includes ========================================================*/
 #include <zephyr/zbus/zbus.h>
 #include "bms/types.h"
 
@@ -19,9 +20,16 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Extern Constant and Variable Declarations =======================*/
 ZBUS_CHAN_DECLARE(chan_cell_meas);  /**< struct bms_cell_meas，afe 发布 */
 ZBUS_CHAN_DECLARE(chan_soc);        /**< struct bms_soc，soc 发布 */
 ZBUS_CHAN_DECLARE(chan_prot_state); /**< struct bms_prot_evt，protection 发布 */
+
+/*========== Extern Function Prototypes ======================================*/
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

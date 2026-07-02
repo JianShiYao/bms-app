@@ -25,6 +25,8 @@
  * 时间判定用极端超时值（1e6 ms）触发心跳超时，不依赖 SYS_MON_CFG 具体阈值
  * （默认 APP 300ms / SAFETY 30ms）；有符号差回绕由 bms_time_after 保证安全。
  */
+
+/*========== Includes ========================================================*/
 #include <stdint.h>
 #include <zephyr/sys/util.h> /* BIT() */
 #include <zephyr/ztest.h>
@@ -38,9 +40,21 @@
 #include "bms/engine/time.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
 /* 注入时间源：受控单调毫秒，脱离内核时钟以确定驱动到期/心跳判定。 */
 static uint32_t test_now_ms;
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static uint32_t injected_time_source(void);
+static void *sys_mon_task_setup(void);
+static void sys_mon_task_before(void *fixture);
+static void sys_mon_task_teardown(void *fixture);
+
+/*========== Static Function Implementations =================================*/
 static uint32_t injected_time_source(void)
 {
 	return test_now_ms;
@@ -181,3 +195,7 @@ ZTEST(sys_mon_task, test_app_heartbeat_timeout_drives_failsafe)
 	zassert_equal(state.contactor, BMS_CONTACTOR_OPEN,
 		      "fail-safe: contactor must OPEN on TASK_OVERRUN");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

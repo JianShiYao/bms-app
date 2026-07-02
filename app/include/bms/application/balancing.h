@@ -9,6 +9,7 @@
 #ifndef BMS_BALANCING_H_
 #define BMS_BALANCING_H_
 
+/*========== Includes ========================================================*/
 #include <stddef.h>
 #include "bms/types.h"
 
@@ -16,6 +17,11 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 初始化均衡模块。
  * 调度与执行由 bms_task 统一负责。
@@ -34,6 +40,8 @@ int bms_balancing_init(void);
  */
 int bms_balancing_compute(const struct bms_cell_meas *meas, int32_t delta_mv, uint8_t *mask_out,
 			  size_t mask_len);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

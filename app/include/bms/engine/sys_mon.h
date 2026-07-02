@@ -19,6 +19,7 @@
 #ifndef BMS_SYS_MON_H_
 #define BMS_SYS_MON_H_
 
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -26,6 +27,7 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
 /** 每任务静态配置（登记表项）。 */
 struct bms_sys_mon_cfg {
 	uint32_t wcet_ms;              /**< 声明的最大运行时间上限（WCET） */
@@ -47,6 +49,16 @@ struct bms_sys_mon_health {
 	bool runtime_overrun;   /**< 运行超时（峰值运行时间 > 声明 WCET） */
 };
 
+/** 被监控任务 id（同时用作 DB_TASK_HEALTH 掩码的 bit 序号）。 */
+enum bms_sys_mon_task {
+	BMS_SYS_MON_SAFETY = 0, /**< safety cyclic 任务 */
+	BMS_SYS_MON_APP,        /**< app cyclic 任务 */
+	BMS_SYS_MON_COUNT,      /**< 被监控任务数量（哨兵，非具体任务） */
+};
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 记录任务进入时刻（心跳打点）。
  * @details 置 rt->last_enter_ms = now_ms、rt->seen = true。
@@ -88,13 +100,6 @@ struct bms_sys_mon_health bms_sys_mon_eval(const struct bms_sys_mon_cfg *cfg,
  * ---------------------------------------------------------------------------
  */
 
-/** 被监控任务 id（同时用作 DB_TASK_HEALTH 掩码的 bit 序号）。 */
-enum bms_sys_mon_task {
-	BMS_SYS_MON_SAFETY = 0, /**< safety cyclic 任务 */
-	BMS_SYS_MON_APP,        /**< app cyclic 任务 */
-	BMS_SYS_MON_COUNT,      /**< 被监控任务数量（哨兵，非具体任务） */
-};
-
 /**
  * @brief 初始化系统监控有状态层（清零内部每任务 rt[]）。
  * @details 每任务运行态归零（seen=false，开机未运行不误报，runtime-model §6）。
@@ -134,6 +139,8 @@ void bms_sys_mon_step(uint32_t now_ms);
  * @return true=允许喂狗；false=停喂（失效安全）。
  */
 bool bms_sys_mon_wdt_feed_allowed(uint32_t now_ms);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

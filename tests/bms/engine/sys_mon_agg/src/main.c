@@ -18,12 +18,25 @@
  * 故写库不产生 valid/timestamp/mask、diag 也不会被上报——用例 1/2/3 断言失败；
  * 用例 4（期望无故障）可能因存根全 0 恰好"通过"，coder 补齐后仍应通过。
  */
+
+/*========== Includes ========================================================*/
 #include <zephyr/ztest.h>
 
 #include "bms/engine/db.h"
 #include "bms/engine/diag.h"
 #include "bms/engine/sys_mon.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void reset_before(void *fixture);
+static bool task_overrun_active(void);
+
+/*========== Static Function Implementations =================================*/
 /* 每用例前重置全部有状态层：db / diag / sys_mon。 */
 static void reset_before(void *fixture)
 {
@@ -33,8 +46,6 @@ static void reset_before(void *fixture)
 	zassert_ok(bms_sys_mon_init());
 }
 
-ZTEST_SUITE(bms_sys_mon_agg, NULL, NULL, reset_before, NULL, NULL);
-
 /* BMS_DIAG_TASK_OVERRUN 当前是否激活（读诊断聚合）。 */
 static bool task_overrun_active(void)
 {
@@ -43,6 +54,8 @@ static bool task_overrun_active(void)
 	zassert_ok(bms_diag_get_state(&st));
 	return (st.active_mask & BIT(BMS_DIAG_TASK_OVERRUN)) != 0U;
 }
+
+ZTEST_SUITE(bms_sys_mon_agg, NULL, NULL, reset_before, NULL, NULL);
 
 /*
  * 用例 1（runtime-model §6 + data-model DB_TASK_HEALTH）：
@@ -133,3 +146,7 @@ ZTEST(bms_sys_mon_agg, test_healthy_tasks_no_fault)
 		      "健康任务不得置运行超时位");
 	zassert_false(task_overrun_active(), "健康任务不得上报 BMS_DIAG_TASK_OVERRUN");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

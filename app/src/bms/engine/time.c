@@ -6,10 +6,21 @@
  * @ingroup SYS
  */
 
+/*========== Includes ========================================================*/
 #include <zephyr/kernel.h>
 
 #include "bms/engine/time.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static uint32_t default_source(void);
+
+/*========== Static Function Implementations =================================*/
 static uint32_t default_source(void)
 {
 	return k_uptime_get_32();
@@ -17,6 +28,7 @@ static uint32_t default_source(void)
 
 static uint32_t (*s_source)(void) = default_source;
 
+/*========== Extern Function Implementations =================================*/
 uint32_t bms_time_now_ms(void)
 {
 	return s_source();
@@ -47,3 +59,5 @@ void bms_time_set_source(uint32_t (*source)(void))
 		s_source = default_source;
 	}
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

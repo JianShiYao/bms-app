@@ -11,6 +11,7 @@
  *          设计来源：docs/work/features/soc-coulomb/03-design.md。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -18,6 +19,7 @@
 
 #include "bms/application/soc.h"
 
+/*========== Macros and Definitions ==========================================*/
 LOG_MODULE_REGISTER(bms_soc, LOG_LEVEL_INF);
 
 /* 线性映射端点：3.0V→0%，4.2V→100%（电压映射初值器，REQ-SOC-C04） */
@@ -47,34 +49,15 @@ LOG_MODULE_REGISTER(bms_soc, LOG_LEVEL_INF);
  * 该 Kconfig 仅作显式关闭开关，故算法不直接依赖该宏（设计 §5.1）。
  */
 
-int bms_soc_estimate(const struct bms_cell_meas *meas, struct bms_soc *out)
-{
-	if (meas == NULL || out == NULL) {
-		return -EINVAL;
-	}
+/*========== Static Constant and Variable Definitions ========================*/
 
-	int64_t sum_mv = 0;
+/*========== Extern Constant and Variable Definitions ========================*/
 
-	for (int i = 0; i < BMS_CELL_COUNT; i++) {
-		sum_mv += meas->cell_mv[i];
-	}
-	int32_t avg_mv = (int32_t)(sum_mv / BMS_CELL_COUNT);
+/*========== Static Function Prototypes ======================================*/
+static bool soc_current_in_range(int32_t pack_current_ma);
+static uint16_t soc_charge_to_permille(int64_t acc_charge_ma_ms);
 
-	/* 线性映射到 0..1000 ‰ 并夹紧 */
-	int32_t permille = (avg_mv - SOC_EMPTY_MV) * 1000 / (SOC_FULL_MV - SOC_EMPTY_MV);
-	if (permille < 0) {
-		permille = 0;
-	} else if (permille > 1000) {
-		permille = 1000;
-	}
-
-	out->timestamp_ms = meas->timestamp_ms;
-	out->soc_permille = (uint16_t)permille;
-	out->soh_permille = 1000; /* TODO: 真实 SOH 估算 */
-
-	return 0;
-}
-
+/*========== Static Function Implementations =================================*/
 /*
  * 内部辅助（纯函数，设计 §2.4）：量程合理性检查。
  * |pack_current_ma| 是否在 [0, CONFIG_BMS_SOC_MAX_CURRENT_MA]。
@@ -103,6 +86,35 @@ static uint16_t soc_charge_to_permille(int64_t acc_charge_ma_ms)
 		pm = 1000;
 	}
 	return (uint16_t)pm;
+}
+
+/*========== Extern Function Implementations =================================*/
+int bms_soc_estimate(const struct bms_cell_meas *meas, struct bms_soc *out)
+{
+	if (meas == NULL || out == NULL) {
+		return -EINVAL;
+	}
+
+	int64_t sum_mv = 0;
+
+	for (int i = 0; i < BMS_CELL_COUNT; i++) {
+		sum_mv += meas->cell_mv[i];
+	}
+	int32_t avg_mv = (int32_t)(sum_mv / BMS_CELL_COUNT);
+
+	/* 线性映射到 0..1000 ‰ 并夹紧 */
+	int32_t permille = (avg_mv - SOC_EMPTY_MV) * 1000 / (SOC_FULL_MV - SOC_EMPTY_MV);
+	if (permille < 0) {
+		permille = 0;
+	} else if (permille > 1000) {
+		permille = 1000;
+	}
+
+	out->timestamp_ms = meas->timestamp_ms;
+	out->soc_permille = (uint16_t)permille;
+	out->soh_permille = 1000; /* TODO: 真实 SOH 估算 */
+
+	return 0;
 }
 
 /*
@@ -193,3 +205,5 @@ int bms_soc_init(void)
 		CONFIG_BMS_SOC_PACK_CAPACITY_MAH, SOC_EMPTY_MV, SOC_FULL_MV);
 	return 0;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

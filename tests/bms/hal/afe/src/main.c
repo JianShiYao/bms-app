@@ -12,6 +12,8 @@
  *   CONFIG_BMS_SOC_PACK_CAPACITY_MAH = 100000 (mAh)
  * 换算：DEN = 容量(mAh) × 3600 = 360,000,000 mA·ms/‰；充放电幅值 = 2000 mA。
  */
+
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <stdint.h>
 #include <string.h>
@@ -21,6 +23,7 @@
 #include "bms/hal/afe_sim.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
 /* 与 afe_sim.c 内部常量/回退默认一致的本地镜像，用于解析期望值断言 */
 #define TEST_CAP_MAH      100000
 #define TEST_DEN          ((int64_t)TEST_CAP_MAH * 3600) /* 360,000,000 mA·ms/‰ */
@@ -35,8 +38,14 @@
 /* 放电相位内的某时刻（now % CYCLE >= CYCLE/2）。 */
 #define DISCHARGE_PHASE_MS(dt) (1u + (TEST_CYCLE_MS / 2) + (dt))
 
-ZTEST_SUITE(bms_afe_sim, NULL, NULL, NULL, NULL, NULL);
+/*========== Static Constant and Variable Definitions ========================*/
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static int32_t avg_cell_mv(const struct bms_cell_meas *m);
+
+/*========== Static Function Implementations =================================*/
 static int32_t avg_cell_mv(const struct bms_cell_meas *m)
 {
 	int64_t sum = 0;
@@ -46,6 +55,8 @@ static int32_t avg_cell_mv(const struct bms_cell_meas *m)
 	}
 	return (int32_t)(sum / BMS_CELL_COUNT);
 }
+
+ZTEST_SUITE(bms_afe_sim, NULL, NULL, NULL, NULL, NULL);
 
 /* ============================================================
  * T-GUARD：参数校验（防御式，安全相关）
@@ -226,3 +237,7 @@ ZTEST(bms_afe_sim, test_deterministic_for_same_inputs)
  * 注：合理性校验（bms_meas_validate）用例已随 meas 模块迁至
  * tests/bms/measurement-control/meas（Phase 1-①b）。本套件只覆盖 afe_sim 后端。
  */
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

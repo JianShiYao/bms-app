@@ -11,6 +11,7 @@
  *           - bms_afe_backend_read()    afe 后端接口的仿真实现（薄包装：取 k_uptime + static 状态）
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -20,6 +21,7 @@
 #include "bms/hal/afe_sim.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
 /* 正常构建由 app/Kconfig 提供；单测等无 app Kconfig 的场景回退默认值（与 soc 一致）。 */
 #ifndef CONFIG_BMS_SOC_PACK_CAPACITY_MAH
 #define CONFIG_BMS_SOC_PACK_CAPACITY_MAH 100000
@@ -37,6 +39,15 @@
 /* ΔSOC(‰) 换算分母：容量(mAh) × 3600 = mA·ms/‰ */
 #define SIM_SOC_DEN ((int64_t)CONFIG_BMS_SOC_PACK_CAPACITY_MAH * 3600)
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static int32_t sim_noise(uint32_t *lcg, int32_t range);
+static int32_t sim_current_ma(uint32_t now_ms);
+
+/*========== Static Function Implementations =================================*/
 /* 极简 LCG，推进种子并返回 [-range, +range] 的小噪声（噪声叠加在状态内的种子上，
  * 故同一初始种子 + 同一调用序列 → 逐位可复现）。 */
 static int32_t sim_noise(uint32_t *lcg, int32_t range)
@@ -53,6 +64,7 @@ static int32_t sim_current_ma(uint32_t now_ms)
 	return (phase < SIM_CYCLE_MS / 2) ? SIM_CHARGE_MA : -SIM_CHARGE_MA;
 }
 
+/*========== Extern Function Implementations =================================*/
 void bms_afe_sim_state_reset(struct bms_afe_sim_state *st)
 {
 	if (st == NULL) {
@@ -129,3 +141,5 @@ int bms_afe_backend_read(struct bms_cell_meas *out)
 	}
 	return bms_afe_sim_step(&s_state, k_uptime_get_32(), out);
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

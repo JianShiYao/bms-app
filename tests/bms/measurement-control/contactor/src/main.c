@@ -21,6 +21,8 @@
  *
  * 每个用例注释回链设计契约。
  */
+
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/ztest.h>
@@ -31,6 +33,16 @@
 #include "bms/engine/diag.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void contactor_before(void *fixture);
+
+/*========== Static Function Implementations =================================*/
 /* 每例前重置引擎核心（db + diag），保证用例独立、无残留锁存。 */
 static void contactor_before(void *fixture)
 {
@@ -141,3 +153,7 @@ ZTEST(bms_contactor, test_step_mismatch_confirms_critical_latched)
 		     "清除后 CONTACTOR_MISMATCH 应锁存保持，latched_mask=0x%08x",
 		     diag.latched_mask);
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

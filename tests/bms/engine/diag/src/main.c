@@ -13,12 +13,23 @@
  *
  * 每个用例注释回链设计契约。
  */
+
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
 #include "bms/engine/diag.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
 ZTEST_SUITE(bms_diag, NULL, NULL, NULL, NULL, NULL);
 
 /* ============================================================
@@ -214,3 +225,7 @@ ZTEST(bms_diag, test_debounce_wraparound_is_safe)
 	zassert_equal(rt.state, BMS_DIAG_LIFE_ACTIVE,
 		      "wrapped now with signed diff >= confirm_time must reach ACTIVE");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

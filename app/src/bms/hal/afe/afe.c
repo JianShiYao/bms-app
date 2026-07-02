@@ -12,10 +12,12 @@
  *          afe_adc），见 architecture.md「数据源后端可切换（afe）」。
  */
 
+/*========== Includes ========================================================*/
 #include <zephyr/logging/log.h>
 
 #include "bms/hal/afe.h"
 
+/*========== Macros and Definitions ==========================================*/
 LOG_MODULE_REGISTER(bms_afe, LOG_LEVEL_INF);
 
 /* 正常构建由 app/Kconfig 提供；无 app Kconfig 的隔离测试场景回退默认值
@@ -24,9 +26,20 @@ LOG_MODULE_REGISTER(bms_afe, LOG_LEVEL_INF);
 #define CONFIG_BMS_AFE_SAMPLE_PERIOD_MS 100
 #endif
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 int bms_afe_init(void)
 {
 	LOG_INF("AFE init: period=%d ms, cells=%d, temps=%d", CONFIG_BMS_AFE_SAMPLE_PERIOD_MS,
 		BMS_CELL_COUNT, BMS_TEMP_SENSOR_COUNT);
 	return 0;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

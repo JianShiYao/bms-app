@@ -10,18 +10,29 @@
  *          当前为被动均衡策略桩：高于最低单体电压 + delta 的单体置位。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <string.h>
 #include <zephyr/logging/log.h>
 
 #include "bms/application/balancing.h"
 
+/*========== Macros and Definitions ==========================================*/
 LOG_MODULE_REGISTER(bms_balancing, LOG_LEVEL_INF);
 
 #define BAL_DELTA_MV 20 /* 压差阈值，桩 */
 
 #define BAL_MASK_BYTES ((BMS_CELL_COUNT + 7) / 8)
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 int bms_balancing_compute(const struct bms_cell_meas *meas, int32_t delta_mv, uint8_t *mask_out,
 			  size_t mask_len)
 {
@@ -53,3 +64,5 @@ int bms_balancing_init(void)
 	LOG_INF("Balancing init: passive-stub delta=%d mV", BAL_DELTA_MV);
 	return 0;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

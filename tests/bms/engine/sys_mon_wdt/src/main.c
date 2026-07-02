@@ -26,15 +26,26 @@
  *
  * 每个用例注释回链设计契约。
  */
+
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
 #include "bms/engine/sys_mon.h"
 
+/*========== Macros and Definitions ==========================================*/
 /* 极端超时增量：远超任何 SAFETY/APP 的 WCET 与心跳阈值，稳定触发超时/超限。 */
 #define HUGE_MS 1000000u /* 1e6 ms */
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void wdt_before(void *fixture);
+
+/*========== Static Function Implementations =================================*/
 /* 每用例前清零内部 rt[]（seen=false、时间归零），保证用例相互隔离。 */
 static void wdt_before(void *fixture)
 {
@@ -115,3 +126,7 @@ ZTEST(bms_sys_mon_wdt, test_feed_blocked_before_safety_seen)
 		      "safety task never seen must block feeding (fail-safe: close "
 		      "never-started gap)");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

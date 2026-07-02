@@ -24,6 +24,8 @@
  * 故 test_stale_meas_flags_and_faults 应**断言失败**（MEAS_STALE 位未置 /
  * 接触器未按失效安全 OPEN），属预期红灯（断言失败，非链接错 —— enum 值已加故可编译）。
  */
+
+/*========== Includes ========================================================*/
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
@@ -34,12 +36,24 @@
 #include "bms/engine/time.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
 /* 过期容忍默认 300ms（coder 实现时的判定阈值）；用例 2 用 400ms > 容忍确保过期。 */
 #define STALE_TOLERANCE_MS 300U
 
+/*========== Static Constant and Variable Definitions ========================*/
 /* 注入时间源：固定的单调毫秒，脱离内核时钟以确定驱动 stale 判定。 */
 static uint32_t test_now_ms;
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static uint32_t injected_time_source(void);
+static void inject_valid_meas_at(uint32_t ts_ms);
+static void *meas_stale_setup(void);
+static void meas_stale_before(void *fixture);
+static void meas_stale_teardown(void *fixture);
+
+/*========== Static Function Implementations =================================*/
 static uint32_t injected_time_source(void)
 {
 	return test_now_ms;
@@ -156,3 +170,7 @@ ZTEST(meas_stale, test_stale_meas_flags_and_faults)
 	zassert_equal(state.contactor, BMS_CONTACTOR_OPEN,
 		      "fail-safe: contactor must stay OPEN on stale measurement");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

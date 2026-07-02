@@ -9,6 +9,7 @@
 #ifndef BMS_BMS_H_
 #define BMS_BMS_H_
 
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 
 #include "bms/engine/diag.h"
@@ -18,6 +19,7 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
 /** BMS 主状态机的决策输入。 */
 struct bms_state_inputs {
 	bool close_allowed;         /**< 是否允许闭合接触器 */
@@ -29,6 +31,9 @@ struct bms_state_inputs {
 	struct bms_prot_evt prot;   /**< 保护事件快照 */
 };
 
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 纯函数：由当前状态与输入计算下一 BMS 状态（供线程与单测复用）。
  * @details 失效安全：诊断达 ERROR、保护非 NORMAL 或有断开请求时一律转 FAULT。
@@ -44,6 +49,8 @@ enum bms_state bms_next_state(enum bms_state cur, const struct bms_state_inputs 
  * @return 期望接触器状态（仅 NORMAL 闭合，其余一律断开）。
  */
 enum bms_contactor bms_contactor_for_state(enum bms_state state);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

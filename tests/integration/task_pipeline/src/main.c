@@ -13,6 +13,8 @@
  * 说明：初始化链用 init（不起线程）——bms_task_init 语义将改为「仅初始化，不启动线程」，
  * bms_task_start 才起线程，测试从不调用 start，以便单线程 ztest 中同步驱动 safety_step。
  */
+
+/*========== Includes ========================================================*/
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
@@ -24,9 +26,21 @@
 #include "bms/engine/time.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
 /* 注入时间源：固定/可递增的单调毫秒，脱离内核时钟以确定驱动到期判定。 */
 static uint32_t test_now_ms;
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static uint32_t injected_time_source(void);
+static void *task_pipeline_setup(void);
+static void task_pipeline_before(void *fixture);
+static void task_pipeline_teardown(void *fixture);
+
+/*========== Static Function Implementations =================================*/
 static uint32_t injected_time_source(void)
 {
 	return test_now_ms;
@@ -134,3 +148,7 @@ ZTEST(task_pipeline, test_safety_step_advances_sequence)
 	zassert_true(meta_later.sequence > meta_first.sequence,
 		     "repeated safety steps must advance the bms_state write sequence");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

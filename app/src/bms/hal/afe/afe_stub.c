@@ -10,12 +10,24 @@
  *          见 docs/concept/architecture.md「数据源后端可切换（afe）」。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <zephyr/kernel.h>
 
 #include "bms/hal/afe.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 int bms_afe_backend_read(struct bms_cell_meas *out)
 {
 	if (out == NULL) {
@@ -33,3 +45,5 @@ int bms_afe_backend_read(struct bms_cell_meas *out)
 
 	return 0;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

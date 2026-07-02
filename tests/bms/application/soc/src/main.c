@@ -14,12 +14,15 @@
  *   CONFIG_BMS_SOC_MAX_CURRENT_MA    = 200000 (mA)
  * 换算：DEN = 容量(mAh) × 3600 = 360,000,000 mA·ms / ‰；dt_cap = N×period = 1000ms。
  */
+
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
 #include "bms/application/soc.h"
 
+/*========== Macros and Definitions ==========================================*/
 /* 与 soc.c 回退默认一致的本地常量（设计 §5.1），用于解析期望值断言 */
 #define TEST_CAP_MAH     100000
 #define TEST_PERIOD_MS   100
@@ -28,8 +31,15 @@
 #define TEST_MAX_CURR_MA 200000
 #define TEST_DEN         ((int64_t)TEST_CAP_MAH * 3600) /* 360,000,000 mA·ms/‰ */
 
-ZTEST_SUITE(bms_soc, NULL, NULL, NULL, NULL, NULL);
+/*========== Static Constant and Variable Definitions ========================*/
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void fill_cells(struct bms_cell_meas *m, int32_t mv);
+static void make_meas(struct bms_cell_meas *m, int32_t mv, int32_t cur, uint32_t ts);
+
+/*========== Static Function Implementations =================================*/
 static void fill_cells(struct bms_cell_meas *m, int32_t mv)
 {
 	for (int i = 0; i < BMS_CELL_COUNT; i++) {
@@ -45,6 +55,8 @@ static void make_meas(struct bms_cell_meas *m, int32_t mv, int32_t cur, uint32_t
 	m->pack_current_ma = cur;
 	m->timestamp_ms = ts;
 }
+
+ZTEST_SUITE(bms_soc, NULL, NULL, NULL, NULL, NULL);
 
 /* ============================================================
  * T-EST：bms_soc_estimate 电压映射初值器（既有 5 用例，全部保留）
@@ -472,3 +484,7 @@ ZTEST(bms_soc, test_step_no_overflow_24h)
 	zassert_equal(out.soc_permille, 1000, "still clamped at full after 24h");
 	zassert_true(st.acc_charge_ma_ms > 0, "acc must remain positive (no int64 wrap)");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

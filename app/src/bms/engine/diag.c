@@ -6,12 +6,16 @@
  * @ingroup SYS
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <zephyr/kernel.h>
 
 #include "bms/engine/diag.h"
 #include "bms/engine/time.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
 static K_MUTEX_DEFINE(diag_lock);
 
 static struct bms_diag_state diag_state;
@@ -60,6 +64,38 @@ static const struct bms_diag_entry_cfg DIAG_CFG[BMS_DIAG_COUNT] = {
 
 static struct bms_diag_entry_rt diag_rt[BMS_DIAG_COUNT];
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void diag_recompute_locked(uint32_t now_ms);
+
+/*========== Static Function Implementations =================================*/
+/* 重算聚合状态（调用者须持锁）。 */
+static void diag_recompute_locked(uint32_t now_ms)
+{
+	uint32_t active_mask = 0U;
+	uint32_t latched_mask = 0U;
+	enum bms_diag_severity max_severity = BMS_DIAG_INFO;
+
+	for (int i = 0; i < BMS_DIAG_COUNT; i++) {
+		if (diag_rt[i].state == BMS_DIAG_LIFE_ACTIVE) {
+			active_mask |= BIT(i);
+			if (DIAG_CFG[i].severity > max_severity) {
+				max_severity = DIAG_CFG[i].severity;
+			}
+		}
+		if (diag_rt[i].state == BMS_DIAG_LIFE_LATCHED) {
+			latched_mask |= BIT(i);
+		}
+	}
+
+	diag_state.active_mask = active_mask;
+	diag_state.latched_mask = latched_mask;
+	diag_state.max_severity = max_severity;
+	diag_state.timestamp_ms = now_ms;
+}
+
+/*========== Extern Function Implementations =================================*/
 void bms_diag_entry_step(const struct bms_diag_entry_cfg *cfg, struct bms_diag_entry_rt *rt,
 			 bool raw_active, uint32_t now_ms)
 {
@@ -126,31 +162,6 @@ int bms_diag_init(void)
 	return 0;
 }
 
-/* 重算聚合状态（调用者须持锁）。 */
-static void diag_recompute_locked(uint32_t now_ms)
-{
-	uint32_t active_mask = 0U;
-	uint32_t latched_mask = 0U;
-	enum bms_diag_severity max_severity = BMS_DIAG_INFO;
-
-	for (int i = 0; i < BMS_DIAG_COUNT; i++) {
-		if (diag_rt[i].state == BMS_DIAG_LIFE_ACTIVE) {
-			active_mask |= BIT(i);
-			if (DIAG_CFG[i].severity > max_severity) {
-				max_severity = DIAG_CFG[i].severity;
-			}
-		}
-		if (diag_rt[i].state == BMS_DIAG_LIFE_LATCHED) {
-			latched_mask |= BIT(i);
-		}
-	}
-
-	diag_state.active_mask = active_mask;
-	diag_state.latched_mask = latched_mask;
-	diag_state.max_severity = max_severity;
-	diag_state.timestamp_ms = now_ms;
-}
-
 int bms_diag_report(enum bms_diag_id id, bool raw_active, uint32_t now_ms)
 {
 	if (id >= BMS_DIAG_COUNT) {
@@ -182,3 +193,5 @@ bool bms_diag_has_error(void)
 	(void)bms_diag_get_state(&state);
 	return state.latched_mask != 0U || state.max_severity >= BMS_DIAG_ERROR;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

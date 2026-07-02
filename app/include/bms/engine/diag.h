@@ -9,6 +9,7 @@
 #ifndef BMS_DIAG_H_
 #define BMS_DIAG_H_
 
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -18,6 +19,7 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
 /** 诊断条目 id（同时用作位掩码的 bit 序号）。 */
 enum bms_diag_id {
 	BMS_DIAG_INVALID_MEAS = 0,   /**< 测量无效/超界 */
@@ -46,6 +48,32 @@ struct bms_diag_state {
 			     NORMAL） */
 };
 
+/** 诊断条目生命周期状态。 */
+enum bms_diag_life {
+	BMS_DIAG_LIFE_INACTIVE = 0,
+	BMS_DIAG_LIFE_CONFIRMING, /**< 原始已激活、等待 confirm_time 去抖 */
+	BMS_DIAG_LIFE_ACTIVE,
+	BMS_DIAG_LIFE_CLEARING, /**< 原始已消失、等待 clear_time 去抖 */
+	BMS_DIAG_LIFE_LATCHED,  /**< 锁存：清除条件满足后仍保持，直至复位 */
+};
+
+/** 每条目静态配置（登记表项）。 */
+struct bms_diag_entry_cfg {
+	enum bms_diag_severity severity;
+	uint32_t confirm_time_ms; /**< 置位去抖：原始持续激活多久才 ACTIVE（0=立即） */
+	uint32_t clear_time_ms;   /**< 恢复去抖：原始持续消失多久才允许清除（0=立即） */
+	bool latch;               /**< 清除后是否转 LATCHED（保持） */
+};
+
+/** 每条目运行态。 */
+struct bms_diag_entry_rt {
+	enum bms_diag_life state;
+	uint32_t since_ms; /**< 当前 CONFIRMING/CLEARING 阶段起始时间 */
+};
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 初始化诊断中心（清空激活/锁存状态）。
  * @return 0 成功。
@@ -77,29 +105,6 @@ int bms_diag_get_state(struct bms_diag_state *out);
  */
 bool bms_diag_has_error(void);
 
-/** 诊断条目生命周期状态。 */
-enum bms_diag_life {
-	BMS_DIAG_LIFE_INACTIVE = 0,
-	BMS_DIAG_LIFE_CONFIRMING, /**< 原始已激活、等待 confirm_time 去抖 */
-	BMS_DIAG_LIFE_ACTIVE,
-	BMS_DIAG_LIFE_CLEARING, /**< 原始已消失、等待 clear_time 去抖 */
-	BMS_DIAG_LIFE_LATCHED,  /**< 锁存：清除条件满足后仍保持，直至复位 */
-};
-
-/** 每条目静态配置（登记表项）。 */
-struct bms_diag_entry_cfg {
-	enum bms_diag_severity severity;
-	uint32_t confirm_time_ms; /**< 置位去抖：原始持续激活多久才 ACTIVE（0=立即） */
-	uint32_t clear_time_ms;   /**< 恢复去抖：原始持续消失多久才允许清除（0=立即） */
-	bool latch;               /**< 清除后是否转 LATCHED（保持） */
-};
-
-/** 每条目运行态。 */
-struct bms_diag_entry_rt {
-	enum bms_diag_life state;
-	uint32_t since_ms; /**< 当前 CONFIRMING/CLEARING 阶段起始时间 */
-};
-
 /**
  * @brief 诊断条目生命周期纯步进（无副作用；输入注入时间）。落 diagnostics-fault-model §4。
  * @param cfg   条目配置（severity/confirm/clear/latch）
@@ -109,6 +114,8 @@ struct bms_diag_entry_rt {
  */
 void bms_diag_entry_step(const struct bms_diag_entry_cfg *cfg, struct bms_diag_entry_rt *rt,
 			 bool raw_active, uint32_t now_ms);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

@@ -14,11 +14,13 @@
  *          时钟快进时刷屏。高频的逐帧测量数据走 DBG，需要时再开。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <zephyr/logging/log.h>
 
 #include "bms/application/comm.h"
 
+/*========== Macros and Definitions ==========================================*/
 LOG_MODULE_REGISTER(bms_comm, LOG_LEVEL_INF);
 
 /* 运行期防御性钳制的边界源——数值必须与 app/Kconfig 中
@@ -27,6 +29,22 @@ LOG_MODULE_REGISTER(bms_comm, LOG_LEVEL_INF);
 #define BMS_COMM_PERIOD_MIN_MS 10
 #define BMS_COMM_PERIOD_MAX_MS 60000
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void comm_tx_meas(const struct bms_cell_meas *m);
+
+/*========== Static Function Implementations =================================*/
+static void comm_tx_meas(const struct bms_cell_meas *m)
+{
+	/* TODO: 打包为 CAN 帧并 can_send()。当前仅 DBG 桩。 */
+	LOG_DBG("CAN TX meas: cell0=%dmV I=%dmA T0=%d.%d C", m->cell_mv[0], m->pack_current_ma,
+		m->temp_dci[0] / 10, m->temp_dci[0] % 10);
+}
+
+/*========== Extern Function Implementations =================================*/
 /* 生效上报周期 = 对编译期配置值施加运行期防御性钳制后的确定值。
  * 把 CONFIG_* 注入点收敛到唯一一处，线程与 init 共用，避免散落 k_msleep(CONFIG_*)。
  * (DES-COMM-003; REQ-COMM-004/005) */
@@ -34,13 +52,6 @@ int32_t bms_comm_effective_period_ms(void)
 {
 	return bms_comm_clamp_period_ms((int32_t)CONFIG_BMS_COMM_REPORT_PERIOD_MS,
 					BMS_COMM_PERIOD_MIN_MS, BMS_COMM_PERIOD_MAX_MS);
-}
-
-static void comm_tx_meas(const struct bms_cell_meas *m)
-{
-	/* TODO: 打包为 CAN 帧并 can_send()。当前仅 DBG 桩。 */
-	LOG_DBG("CAN TX meas: cell0=%dmV I=%dmA T0=%d.%d C", m->cell_mv[0], m->pack_current_ma,
-		m->temp_dci[0] / 10, m->temp_dci[0] % 10);
 }
 
 void bms_comm_tx_snapshot(const struct bms_cell_meas *meas, const struct bms_soc *soc,
@@ -89,3 +100,5 @@ int bms_comm_init(void)
 		period, CONFIG_BMS_COMM_REPORT_PERIOD_MS);
 	return 0;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

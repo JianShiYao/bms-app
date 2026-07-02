@@ -10,14 +10,25 @@
  *          失效安全原则：默认接触器 OPEN，仅当判定 NORMAL 时才 CLOSED。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <stdlib.h>
 #include <zephyr/logging/log.h>
 
 #include "bms/measurement-control/protection.h"
 
+/*========== Macros and Definitions ==========================================*/
 LOG_MODULE_REGISTER(bms_protection, LOG_LEVEL_INF);
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 void bms_protection_default_limits(struct bms_prot_limits *limits)
 {
 	if (limits == NULL) {
@@ -93,3 +104,5 @@ int bms_protection_init(void)
 	LOG_INF("Protection init: fail-safe default contactor OPEN");
 	return 0;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

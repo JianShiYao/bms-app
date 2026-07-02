@@ -23,6 +23,8 @@
  * 无 CONTACTOR_MISMATCH、不进 LOCKED → 相关断言失败（编译链接通过、断言失败型红灯）。
  * 符号（bms_contactor_step / contactor_io_fake / db_read_contactor_fb）均已存在，非链接错。
  */
+
+/*========== Includes ========================================================*/
 #include <stdint.h>
 #include <zephyr/sys/util.h> /* BIT() */
 #include <zephyr/ztest.h>
@@ -37,9 +39,21 @@
 #include "bms/engine/time.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
 /* 注入时间源：受控单调毫秒，脱离内核时钟以确定驱动去抖/锁存与反馈时间戳。 */
 static uint32_t test_now_ms;
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static uint32_t injected_time_source(void);
+static void *contactor_task_setup(void);
+static void contactor_task_before(void *fixture);
+static void contactor_task_teardown(void *fixture);
+
+/*========== Static Function Implementations =================================*/
 static uint32_t injected_time_source(void)
 {
 	return test_now_ms;
@@ -171,3 +185,7 @@ ZTEST(contactor_task, test_welded_contactor_drives_locked)
 	zassert_equal(state.contactor, BMS_CONTACTOR_OPEN,
 		      "fail-safe: contactor must be OPEN in LOCKED");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

@@ -11,6 +11,7 @@
  *  以有符号差回绕安全（runtime-model §2）。
  */
 
+/*========== Includes ========================================================*/
 #include <string.h>
 
 #include "bms/engine/db.h"
@@ -18,6 +19,33 @@
 #include "bms/engine/sys_mon.h"
 #include "bms/engine/time.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+/*
+ * ---------------------------------------------------------------------------
+ * 有状态聚合层：内部维护每任务 rt[]，enter/exit 委托上方纯核；step 评估全部任务、
+ * 聚合掩码写 DB_TASK_HEALTH、并把「任一超时/超限」上报 BMS_DIAG_TASK_OVERRUN。
+ * 契约见 docs/concept/runtime-model.md §6。
+ *
+ * 每任务静态配置为**内联默认值**（暂不依赖 Kconfig，避免脱离 app 构建的纯单测取不到
+ * CONFIG 而误判；按板精调留后续片）：wcet 为周期任务体单轮预算上限，心跳超时取数倍周期。
+ * ---------------------------------------------------------------------------
+ */
+static const struct bms_sys_mon_cfg SYS_MON_CFG[BMS_SYS_MON_COUNT] = {
+	[BMS_SYS_MON_SAFETY] = {.wcet_ms = 5, .heartbeat_timeout_ms = 30, .safety_critical = true},
+	[BMS_SYS_MON_APP] = {.wcet_ms = 20, .heartbeat_timeout_ms = 300, .safety_critical = false},
+};
+
+static struct bms_sys_mon_rt sys_mon_rt[BMS_SYS_MON_COUNT];
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 void bms_sys_mon_enter(struct bms_sys_mon_rt *rt, uint32_t now_ms)
 {
 	rt->last_enter_ms = now_ms;
@@ -47,23 +75,6 @@ struct bms_sys_mon_health bms_sys_mon_eval(const struct bms_sys_mon_cfg *cfg,
 		.runtime_overrun = rt->peak_runtime_ms > cfg->wcet_ms,
 	};
 }
-
-/*
- * ---------------------------------------------------------------------------
- * 有状态聚合层：内部维护每任务 rt[]，enter/exit 委托上方纯核；step 评估全部任务、
- * 聚合掩码写 DB_TASK_HEALTH、并把「任一超时/超限」上报 BMS_DIAG_TASK_OVERRUN。
- * 契约见 docs/concept/runtime-model.md §6。
- *
- * 每任务静态配置为**内联默认值**（暂不依赖 Kconfig，避免脱离 app 构建的纯单测取不到
- * CONFIG 而误判；按板精调留后续片）：wcet 为周期任务体单轮预算上限，心跳超时取数倍周期。
- * ---------------------------------------------------------------------------
- */
-static const struct bms_sys_mon_cfg SYS_MON_CFG[BMS_SYS_MON_COUNT] = {
-	[BMS_SYS_MON_SAFETY] = {.wcet_ms = 5, .heartbeat_timeout_ms = 30, .safety_critical = true},
-	[BMS_SYS_MON_APP] = {.wcet_ms = 20, .heartbeat_timeout_ms = 300, .safety_critical = false},
-};
-
-static struct bms_sys_mon_rt sys_mon_rt[BMS_SYS_MON_COUNT];
 
 int bms_sys_mon_init(void)
 {
@@ -139,3 +150,5 @@ bool bms_sys_mon_wdt_feed_allowed(uint32_t now_ms)
 
 	return true;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

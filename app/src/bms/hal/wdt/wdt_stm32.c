@@ -15,6 +15,7 @@
  *  DEVICE_DT_GET。真板 bms_f405 链接的是真实分支。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
@@ -22,14 +23,25 @@
 
 #include "bms/hal/wdt.h"
 
+/*========== Macros and Definitions ==========================================*/
 #ifndef CONFIG_BMS_WDT_TIMEOUT_MS
 #define CONFIG_BMS_WDT_TIMEOUT_MS 1000
 #endif
 
+/*========== Static Constant and Variable Definitions ========================*/
 #if DT_NODE_HAS_STATUS(DT_NODELABEL(iwdg), okay)
-
 static const struct device *wdt_dev = DEVICE_DT_GET(DT_NODELABEL(iwdg));
 static int wdt_channel = -1;
+#endif
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
+#if DT_NODE_HAS_STATUS(DT_NODELABEL(iwdg), okay)
 
 int bms_wdt_init(void)
 {
@@ -70,3 +82,5 @@ void bms_wdt_feed(void)
 }
 
 #endif
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

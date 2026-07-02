@@ -22,12 +22,18 @@
 #ifndef BMS_WDT_H_
 #define BMS_WDT_H_
 
+/*========== Includes ========================================================*/
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 初始化硬件看门狗。
  * @details sim 板为 stub 后端时为 no-op；bms_f405 配置并启动 STM32 IWDG。
@@ -46,6 +52,8 @@ void bms_wdt_feed(void);
  * @return 自进程启动以来 @ref bms_wdt_feed 被调用的累计次数。
  */
 uint32_t bms_wdt_stub_feed_count(void);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }
