@@ -71,12 +71,12 @@
 
 | SG | 安全需求（参考/目标） | bms-app 当前实现 | 测试 |
 |---|---|---|---|
-| SG-01 | REQ-PROT-003/005 | `bms_protection_evaluate` OV（单接触器） | `tests/bms/protection` |
-| SG-02 | REQ-PROT-004/006 | `bms_protection_evaluate` UV | `tests/bms/protection` |
+| SG-01 | REQ-PROT-003/005 | `bms_protection_evaluate` OV（单接触器） | `tests/bms/measurement-control/protection` |
+| SG-02 | REQ-PROT-004/006 | `bms_protection_evaluate` UV | `tests/bms/measurement-control/protection` |
 | SG-03 | REQ-PROT-011/012/013/014 | OC（绝对值）；短路/二级过流**未实现** | 部分 |
 | SG-04 | REQ-PROT-008/015/017 | OT（单体）；MOS/环境温**未实现** | 部分 |
 | SG-05 | REQ-PROT-009 | **未实现** | — |
-| SG-06 | architecture「测量数据纪律」 | `bms_afe_validate` + `bms_protection_evaluate`：validity 不全 → FAULT/OPEN | `tests/bms/afe`、protection |
+| SG-06 | architecture「测量数据纪律」 | `bms_afe_validate` + `bms_protection_evaluate`：validity 不全 → FAULT/OPEN | `tests/bms/afe/afe`、measurement-control/protection |
 | SG-07 | REQ-PROT-023/024/025/026 | **未实现**（MOS 失效检测） | — |
 | SG-08 | REQ-PROT-022 | **未实现**（预充逻辑） | — |
 | SG-09 | REQ-PWR-024（看门狗） | **未实现**（见 §6 S1） | — |

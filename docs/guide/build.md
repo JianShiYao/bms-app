@@ -271,7 +271,7 @@ west twister -T tests -p mps2/an386 -c        # 预期 47/47 通过
 - 测试规模不在文档写死，以 `west twister` / CI 报告为准（CLAUDE.md §3）。
 - ⚠️ **QEMU soc 超时 flake**：`bms.soc` 套件在 QEMU 下较易触发 harness 超时（用例本身全过），
   按需加 `--timeout-multiplier 4`；CI 走 `native_sim` 不受此限。
-- 跑单个套件：限定 `-T` 路径，如 `west twister -T tests/bms/soc -p mps2/an386 -c`。
+- 跑单个套件：限定 `-T` 路径，如 `west twister -T tests/bms/application/soc -p mps2/an386 -c`。
 - 覆盖率：用 workspace 根的 `..\run-tests-coverage.ps1`（QEMU 覆盖率不稳，可靠覆盖率见 CI / WSL2+native_sim）。
 
 **提交前本地全量镜像 CI**（format→build×2→test→SCA→tidy→cppcheck）：
