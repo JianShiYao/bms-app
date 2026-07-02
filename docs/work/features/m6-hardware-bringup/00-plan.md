@@ -19,11 +19,13 @@
 |---|---|---|---|---|
 | 1 | **通信** | 多处假设 **CAN** | 两路隔离 **RS485 + Modbus RTU / 私有(0xA5 0x5A)** | comm/hal 契约从「CAN」泛化为「传输无关帧」，或明确本板 RS485 backend |
 | 2 | **「接触器」** | 独立 **GPIO 接触器 + 反馈** | **AFE 驱动充放电 MOS**（`AFEChg/DsgMosEn`）+ ChargerEn(PC5) | `contactor` 抽象落到「经 AFE 的 MOS 使能 + 状态回读」，非 GPIO |
-| 3 | **预充** | M4 已建 PRECHARGE 态 + `precharge_complete/timeout` 输入 | safety.md SG-08 标「预充逻辑未实现」，接口未见独立预充回路/反馈 | 需向硬件确认本板有无预充硬件；否则 `precharge_complete` 语义按本板 MOS 使能时序实际定义 |
+| 3 | **预充** | M4 已建 PRECHARGE 态 + `precharge_complete/timeout` 输入 | **预充经 AFE(SH3673520) SPI 实现**（同功率通路） | `precharge_complete/timeout` 由 AFE 预充状态/电压回读得出；PRECHARGE 执行 = AFE 预充命令时序 |
 | 4 | **WDT** | 通用 WDT wrapper | STM32 **内部 IWDG** | hal/wdt 落 Zephyr stm32 wdt driver |
 | 5 | **AFE** | 通用 AFE | **SH3673520** 私有 SPI（0x01/02/0B + CRC8，16 串 CV0~16 + 4 温 + 电流 + 总压） | 真实 backend 待写；现 sim/stub 占位 |
 
 > 结论：**Phase 0 是一个纯文档 PR**，改 `concept/architecture.md`、`concept/hardware-abstraction.md`、`concept/safety.md` 相关条款以反映 `bms_f405` 真板，再进 Phase 1。
+>
+> **Phase 0 决策（已定）**：① 采**泛化契约措辞 + bms_f405 板级注脚**（保持芯片无关）；② 预充**经 AFE(SH3673520) SPI 实现**（与充放电 MOS 同为 AFE 驱动的功率通路，非独立预充回路），`precharge_complete/timeout` 由 AFE 状态回读。已落 architecture §10「板级具体绑定」、hardware-abstraction §8、safety SG-08/SG-09。
 
 ## C. M6 分解（标注「本环境可做」vs「需真板 / HIL」）
 

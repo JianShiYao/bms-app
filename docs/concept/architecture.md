@@ -43,7 +43,7 @@ Application
   bms_bms          主状态机、接触器期望态 owner
   bms_algorithm    SOC/SOH/SOE 等算法
   bms_balancing    均衡策略
-  bms_comm         CAN/上位机命令与上报
+  bms_comm         通信（CAN 或 RS485/Modbus）/上位机命令与上报
 
 Engine
   bms_task         统一任务调度
@@ -250,7 +250,7 @@ DB_CELL_MEAS + limits -> DB_PROT_STATE -> bms_diag -> bms_bms
 ### 配置分层
 
 - **编译期配置**：系统规模、启用模块、板级能力，使用 Kconfig / devicetree。
-- **板级绑定**：AFE、CAN、GPIO、接触器反馈、预充控制，使用 devicetree 和 wrapper。
+- **板级绑定**：AFE、通信总线（CAN 或 RS485）、GPIO、接触器/功率 MOS 反馈、预充控制，使用 devicetree 和 wrapper。
 - **运行/标定参数**：保护阈值、滤波参数、容量、诊断老化、通信周期等需要版本、单位、合法范围、默认值、变更验证。
 
 Kconfig 可以作为早期参数载体，但不得把“参数治理”简化为“加一个 Kconfig”。参数/标定治理契约见 [configuration-calibration.md](configuration-calibration.md)。
@@ -258,8 +258,17 @@ Kconfig 可以作为早期参数载体，但不得把“参数治理”简化为
 ### 硬件抽象
 
 - 业务模块不直接依赖 STM32 HAL/寄存器。
-- 业务模块不直接操作未经 wrapper 的 GPIO/CAN/ADC/WDT/flash。
+- 业务模块不直接操作未经 wrapper 的 GPIO/通信总线/ADC/WDT/flash。
 - wrapper 暴露稳定接口，隐藏具体芯片、devicetree 节点和驱动差异。
+
+### 板级具体绑定（bms_f405 / S16100B）
+
+> 文中 `CAN`、GPIO 接触器等为**通用示例**；具体总线/执行器经 hal/ wrapper 抽象（[hardware-abstraction.md](hardware-abstraction.md) §2），业务逻辑与设计契约芯片无关。首个真板 `bms_f405`（S16100B / STM32F405RGT6，规格见 [../reference/hardware/software-interface.md](../reference/hardware/software-interface.md)）的板级 backend：
+>
+> - **通信**：两路隔离 **RS485 + Modbus RTU / 私有(0xA5 0x5A)**（非 CAN）。
+> - **功率通路**：充放电 MOS 与**预充**均由 **AFE(SH3673520) 经 SPI2** 驱动（非独立 GPIO 接触器/预充回路）；`bms_bms` 的接触器期望态经 AFE 命令执行、实际状态经 AFE 寄存器回读，`PRECHARGE` 的 `precharge_complete/timeout` 由 AFE 预充状态/电压回读得出。
+> - **看门狗**：STM32 **内部 IWDG**。
+> - **测量/采集**：AFE(SH3673520) 私有 SPI（16 串电压 + 4 温 + 电流 + 总压）+ ADC1（NTC 温度 / Vmos / 进水）。
 
 wrapper 边界、接口契约、ISR/zero-latency 与仿真桩化的权威契约见 [hardware-abstraction.md](hardware-abstraction.md)。
 
@@ -282,7 +291,7 @@ wrapper 边界、接口契约、ISR/zero-latency 与仿真桩化的权威契约�
 | M3 | 诊断中心化到 `bms_diag` | protection/meas/comm/sys_mon 故障进入诊断 entry |
 | M4 | `bms_bms` 持有接触器期望态 | protection 不直接闭合接触器；失效安全状态机测试通过 |
 | M5 | `bms_sys_mon` / watchdog 门控 | 任务超时进入诊断；watchdog 统一喂狗策略明确 |
-| M6 | 真机安全闭环 | 接触器 GPIO、反馈、预充、硬件 ALERT、NVM 故障记录验证 |
+| M6 | 真机安全闭环 | 接触器/功率 MOS 执行、反馈、预充、硬件 ALERT、NVM 故障记录验证（bms_f405：MOS/预充经 AFE） |
 
 迁移期间允许 zbus 与 DB 共存，但目标架构契约以 DB 为准。每一步必须保持现有 CI 与相关 ztest 通过。
 

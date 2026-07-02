@@ -68,7 +68,7 @@ driver read → wrapper（原始帧 + 错误码） → bms_meas 可信化（vali
 ## 8. 仿真与真板（契约）
 
 - `native_sim`/QEMU：AFE 用 `afe_sim` 后端；WDT、NVM、GPIO 等按需**桩化或关闭**；桩实现**不得**放宽安全默认（如不得让"无硬件"等价于"允许闭合"）、**不得**跳过错误路径。
-- 真板（`bms_f405` 等）：按 §2 逐个实现真实 wrapper，经 dts 绑定，M6 完成硬件安全闭环（接触器 GPIO + 反馈 + 预充 + 硬件 ALERT + NVM 故障记录）。
+- 真板（`bms_f405` 等）：按 §2 逐个实现真实 wrapper，经 dts 绑定，M6 完成硬件安全闭环（接触器/功率 MOS 执行 + 反馈 + 预充 + 硬件 ALERT + NVM 故障记录）。`bms_f405`（S16100B）具体：通信=RS485/Modbus、功率通路（MOS+预充）经 AFE(SH3673520) SPI、看门狗=STM32 IWDG（见 [architecture.md](architecture.md) §10「板级具体绑定」）。
 - 同一业务逻辑**必须**在仿真与真板下不改代码即可运行（后端可切换，[architecture.md](architecture.md) §9「数据源后端可切换」）。
 
 ## 9. 可测性约束
