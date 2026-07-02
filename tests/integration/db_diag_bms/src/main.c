@@ -4,14 +4,26 @@
  * These tests pin the foxBMS 2 inspired engine contracts without starting the
  * long-running Zephyr task threads.
  */
+
+/*========== Includes ========================================================*/
 #include <zephyr/ztest.h>
 
 #include "bms/application/bms.h"
 #include "bms/engine/db.h"
 #include "bms/engine/diag.h"
 
-ZTEST_SUITE(bms_integration, NULL, NULL, NULL, NULL, NULL);
+/*========== Macros and Definitions ==========================================*/
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void reset_engine_core(void);
+static struct bms_prot_evt normal_protection(void);
+static struct bms_state_inputs normal_inputs(void);
+
+/*========== Static Function Implementations =================================*/
 static void reset_engine_core(void)
 {
 	zassert_ok(bms_db_init());
@@ -39,6 +51,8 @@ static struct bms_state_inputs normal_inputs(void)
 		.prot = normal_protection(),
 	};
 }
+
+ZTEST_SUITE(bms_integration, NULL, NULL, NULL, NULL, NULL);
 
 /* Verifies REQ-ENG-001: database stores typed snapshots with validity and sequence metadata. */
 ZTEST(bms_integration, test_db_write_read_snapshot)
@@ -146,3 +160,7 @@ ZTEST(bms_integration, test_bms_fault_opens_contactor)
 	zassert_equal(snapshot.contactor, BMS_CONTACTOR_OPEN,
 		      "protection fault must result in contactor OPEN");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

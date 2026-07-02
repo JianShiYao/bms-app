@@ -5,6 +5,8 @@
  * 回链：docs/concept/architecture.md「测量数据纪律」、docs/concept/data-model.md
  *       （raw → meas 可信化 → DB）。校验为纯函数（无后端/线程/zbus），直接 ztest。
  */
+
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <stdint.h>
 #include <string.h>
@@ -13,8 +15,9 @@
 #include "bms/measurement-control/meas.h"
 #include "bms/types.h"
 
-ZTEST_SUITE(bms_meas, NULL, NULL, NULL, NULL, NULL);
+/*========== Macros and Definitions ==========================================*/
 
+/*========== Static Constant and Variable Definitions ========================*/
 /* 与 meas.c 经 Kconfig 注入的回退默认一致的本地镜像 */
 static const struct bms_meas_limits TEST_LIMITS = {
 	.cell_mv_min = 0,
@@ -24,6 +27,12 @@ static const struct bms_meas_limits TEST_LIMITS = {
 	.temp_dci_max = 1250,
 };
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void make_good_frame(struct bms_cell_meas *m);
+
+/*========== Static Function Implementations =================================*/
 /* 构造一帧"全部在合理范围内"的测量 */
 static void make_good_frame(struct bms_cell_meas *m)
 {
@@ -36,6 +45,8 @@ static void make_good_frame(struct bms_cell_meas *m)
 		m->temp_dci[i] = 250;
 	}
 }
+
+ZTEST_SUITE(bms_meas, NULL, NULL, NULL, NULL, NULL);
 
 ZTEST(bms_meas, test_validate_null_returns_einval)
 {
@@ -111,3 +122,7 @@ ZTEST(bms_meas, test_validate_does_not_modify_values)
 	before.validity = m.validity;
 	zassert_equal(memcmp(&m, &before, sizeof(m)), 0, "校验不得修改测量值，仅写 validity");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

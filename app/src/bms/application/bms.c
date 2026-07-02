@@ -6,10 +6,22 @@
  * @ingroup SYS
  */
 
+/*========== Includes ========================================================*/
 #include <stddef.h>
 
 #include "bms/application/bms.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 enum bms_contactor bms_contactor_for_state(enum bms_state state)
 {
 	return (state == BMS_STATE_NORMAL) ? BMS_CONTACTOR_CLOSED : BMS_CONTACTOR_OPEN;
@@ -57,3 +69,5 @@ enum bms_state bms_next_state(enum bms_state cur, const struct bms_state_inputs 
 		return BMS_STATE_LOCKED;
 	}
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

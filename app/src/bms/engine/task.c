@@ -6,6 +6,7 @@
  * @ingroup SYS
  */
 
+/*========== Includes ========================================================*/
 #include <stdint.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -26,6 +27,7 @@
 #include "bms/engine/task.h"
 #include "bms/engine/time.h"
 
+/*========== Macros and Definitions ==========================================*/
 LOG_MODULE_REGISTER(bms_task, LOG_LEVEL_INF);
 
 #ifndef CONFIG_BMS_TASK_SAFETY_PERIOD_MS
@@ -52,6 +54,7 @@ LOG_MODULE_REGISTER(bms_task, LOG_LEVEL_INF);
 #define BAL_DELTA_MV   20
 #define BAL_MASK_BYTES ((BMS_CELL_COUNT + 7) / 8)
 
+/*========== Static Constant and Variable Definitions ========================*/
 #if defined(CONFIG_BMS_SOC)
 static struct bms_soc_coulomb_state task_soc_state;
 #endif
@@ -70,6 +73,23 @@ static uint32_t next_comm;
 static uint32_t last_soc_meas_seq;
 #endif
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+#if defined(CONFIG_BMS_AFE)
+static void publish_cell_compat(const struct bms_cell_meas *meas);
+#endif
+#if defined(CONFIG_BMS_SOC)
+static void publish_soc_compat(const struct bms_soc *soc);
+#endif
+static void publish_prot_compat(const struct bms_prot_evt *prot);
+static void run_measurement(uint32_t now);
+static void run_protection_and_bms(uint32_t now_ms);
+static void tsk_safety_10ms(void *p1, void *p2, void *p3);
+static void tsk_app_100ms(void *p1, void *p2, void *p3);
+static void tsk_background(void *p1, void *p2, void *p3);
+
+/*========== Static Function Implementations =================================*/
 #if defined(CONFIG_BMS_AFE)
 static void publish_cell_compat(const struct bms_cell_meas *meas)
 {
@@ -175,6 +195,79 @@ static void run_protection_and_bms(uint32_t now_ms)
 	bms_contactor_step(state.contactor, now_ms);
 }
 
+static void tsk_safety_10ms(void *p1, void *p2, void *p3)
+{
+	ARG_UNUSED(p1);
+	ARG_UNUSED(p2);
+	ARG_UNUSED(p3);
+
+	uint32_t next_wake = bms_time_now_ms();
+
+	while (1) {
+		uint32_t now = bms_time_now_ms();
+
+		bms_task_safety_step(now);
+		bms_task_wdt_step(now); /* 门控喂狗：安全任务健康才喂，否则让硬狗复位 */
+
+		next_wake += CONFIG_BMS_TASK_SAFETY_PERIOD_MS;
+		int32_t delay = (int32_t)(next_wake - bms_time_now_ms());
+
+		if (delay > 0) {
+			k_msleep((uint32_t)delay);
+		} else {
+			next_wake = bms_time_now_ms(); /* 落后则重置，不追赶 */
+		}
+	}
+}
+
+static void tsk_app_100ms(void *p1, void *p2, void *p3)
+{
+	ARG_UNUSED(p1);
+	ARG_UNUSED(p2);
+	ARG_UNUSED(p3);
+
+	uint32_t next_wake = bms_time_now_ms();
+
+	while (1) {
+		bms_task_app_step(bms_time_now_ms());
+
+		next_wake += CONFIG_BMS_TASK_APP_PERIOD_MS;
+		int32_t delay = (int32_t)(next_wake - bms_time_now_ms());
+
+		if (delay > 0) {
+			k_msleep((uint32_t)delay);
+		} else {
+			next_wake = bms_time_now_ms(); /* 落后则重置，不追赶 */
+		}
+	}
+}
+
+static void tsk_background(void *p1, void *p2, void *p3)
+{
+	ARG_UNUSED(p1);
+	ARG_UNUSED(p2);
+	ARG_UNUSED(p3);
+
+	while (1) {
+		struct bms_state_snapshot state;
+		struct bms_db_meta meta;
+
+		if (bms_db_read_bms_state(&state, &meta) == 0 && meta.valid) {
+			LOG_INF("health: bms_state=%d contactor=%s", state.state,
+				state.contactor == BMS_CONTACTOR_CLOSED ? "CLOSED" : "OPEN");
+		}
+		k_sleep(K_SECONDS(5));
+	}
+}
+
+K_THREAD_DEFINE(bms_tsk_safety_tid, TASK_SAFETY_STACK, tsk_safety_10ms, NULL, NULL, NULL,
+		TASK_SAFETY_PRIO, 0, SYS_FOREVER_MS);
+K_THREAD_DEFINE(bms_tsk_app_tid, TASK_APP_STACK, tsk_app_100ms, NULL, NULL, NULL, TASK_APP_PRIO, 0,
+		SYS_FOREVER_MS);
+K_THREAD_DEFINE(bms_tsk_bg_tid, TASK_BG_STACK, tsk_background, NULL, NULL, NULL, TASK_BG_PRIO, 0,
+		SYS_FOREVER_MS);
+
+/*========== Extern Function Implementations =================================*/
 void bms_task_safety_step(uint32_t now_ms)
 {
 	bms_sys_mon_task_enter(BMS_SYS_MON_SAFETY, now_ms);
@@ -257,78 +350,6 @@ void bms_task_wdt_step(uint32_t now_ms)
 	}
 }
 
-static void tsk_safety_10ms(void *p1, void *p2, void *p3)
-{
-	ARG_UNUSED(p1);
-	ARG_UNUSED(p2);
-	ARG_UNUSED(p3);
-
-	uint32_t next_wake = bms_time_now_ms();
-
-	while (1) {
-		uint32_t now = bms_time_now_ms();
-
-		bms_task_safety_step(now);
-		bms_task_wdt_step(now); /* 门控喂狗：安全任务健康才喂，否则让硬狗复位 */
-
-		next_wake += CONFIG_BMS_TASK_SAFETY_PERIOD_MS;
-		int32_t delay = (int32_t)(next_wake - bms_time_now_ms());
-
-		if (delay > 0) {
-			k_msleep((uint32_t)delay);
-		} else {
-			next_wake = bms_time_now_ms(); /* 落后则重置，不追赶 */
-		}
-	}
-}
-
-static void tsk_app_100ms(void *p1, void *p2, void *p3)
-{
-	ARG_UNUSED(p1);
-	ARG_UNUSED(p2);
-	ARG_UNUSED(p3);
-
-	uint32_t next_wake = bms_time_now_ms();
-
-	while (1) {
-		bms_task_app_step(bms_time_now_ms());
-
-		next_wake += CONFIG_BMS_TASK_APP_PERIOD_MS;
-		int32_t delay = (int32_t)(next_wake - bms_time_now_ms());
-
-		if (delay > 0) {
-			k_msleep((uint32_t)delay);
-		} else {
-			next_wake = bms_time_now_ms(); /* 落后则重置，不追赶 */
-		}
-	}
-}
-
-static void tsk_background(void *p1, void *p2, void *p3)
-{
-	ARG_UNUSED(p1);
-	ARG_UNUSED(p2);
-	ARG_UNUSED(p3);
-
-	while (1) {
-		struct bms_state_snapshot state;
-		struct bms_db_meta meta;
-
-		if (bms_db_read_bms_state(&state, &meta) == 0 && meta.valid) {
-			LOG_INF("health: bms_state=%d contactor=%s", state.state,
-				state.contactor == BMS_CONTACTOR_CLOSED ? "CLOSED" : "OPEN");
-		}
-		k_sleep(K_SECONDS(5));
-	}
-}
-
-K_THREAD_DEFINE(bms_tsk_safety_tid, TASK_SAFETY_STACK, tsk_safety_10ms, NULL, NULL, NULL,
-		TASK_SAFETY_PRIO, 0, SYS_FOREVER_MS);
-K_THREAD_DEFINE(bms_tsk_app_tid, TASK_APP_STACK, tsk_app_100ms, NULL, NULL, NULL, TASK_APP_PRIO, 0,
-		SYS_FOREVER_MS);
-K_THREAD_DEFINE(bms_tsk_bg_tid, TASK_BG_STACK, tsk_background, NULL, NULL, NULL, TASK_BG_PRIO, 0,
-		SYS_FOREVER_MS);
-
 int bms_task_init(void)
 {
 #if defined(CONFIG_BMS_SOC)
@@ -366,3 +387,5 @@ void bms_task_start(void)
 	k_thread_start(bms_tsk_app_tid);
 	k_thread_start(bms_tsk_bg_tid);
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

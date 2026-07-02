@@ -13,15 +13,25 @@
  *
  * 设计：03-design.md §7.2（套件名 bms_comm）。每用例回链 REQ-COMM-NNN。
  */
+
+/*========== Includes ========================================================*/
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
 #include "bms/application/comm.h"
 
+/*========== Macros and Definitions ==========================================*/
 /* 镜像 Kconfig `range 10 60000` 端点（= comm.c 的 BMS_COMM_PERIOD_MIN/MAX_MS）。 */
 #define TEST_P_MIN 10
 #define TEST_P_MAX 60000
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
 ZTEST_SUITE(bms_comm, NULL, NULL, NULL, NULL, NULL);
 
 /* ============================================================
@@ -140,3 +150,7 @@ ZTEST(bms_comm, test_clamp_invariant_holds)
 		zassert_true(ret > 0, "样本 %d: ret(%d) 应恒 > 0", samples[i], ret);
 	}
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

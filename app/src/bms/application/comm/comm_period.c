@@ -13,10 +13,22 @@
  *          (DES-COMM-002; REQ-COMM-004/005/007)
  */
 
+/*========== Includes ========================================================*/
 #include <stdint.h>
 
 #include "bms/application/comm.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 int32_t bms_comm_clamp_period_ms(int32_t requested, int32_t lo, int32_t hi)
 {
 	if (requested < lo) {
@@ -28,3 +40,5 @@ int32_t bms_comm_clamp_period_ms(int32_t requested, int32_t lo, int32_t hi)
 	}
 	return requested;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

@@ -9,6 +9,7 @@
 #ifndef BMS_TYPES_H_
 #define BMS_TYPES_H_
 
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/autoconf.h>
@@ -17,6 +18,7 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
 /* 正常构建由 app/Kconfig 提供；单测等无 app Kconfig 的场景回退默认值。 */
 #ifndef CONFIG_BMS_CELL_COUNT
 #define CONFIG_BMS_CELL_COUNT 16
@@ -110,6 +112,12 @@ struct bms_task_health {
 	uint32_t heartbeat_timeout_mask; /**< 心跳超时任务位掩码（bit = bms_sys_mon_task） */
 	uint32_t runtime_overrun_mask;   /**< 运行超时任务位掩码 */
 };
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

@@ -16,6 +16,7 @@
 #ifndef BMS_TIME_H_
 #define BMS_TIME_H_
 
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -23,6 +24,11 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 返回全系统唯一的单调递增毫秒时间。
  * @details 默认由内核 `k_uptime_get_32()` 提供；可经 @ref bms_time_set_source 注入替换。
@@ -59,6 +65,8 @@ bool bms_time_due(uint32_t now, uint32_t *next, uint32_t period_ms);
  * @param source 返回单调毫秒的函数指针；传 NULL 复位为默认内核源（k_uptime_get_32）。
  */
 void bms_time_set_source(uint32_t (*source)(void));
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

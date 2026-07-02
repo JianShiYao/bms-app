@@ -9,6 +9,7 @@
 #ifndef BMS_COMM_H_
 #define BMS_COMM_H_
 
+/*========== Includes ========================================================*/
 #include <stdint.h>
 
 #include "bms/types.h"
@@ -17,6 +18,11 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 初始化通信模块。
  * 调度由 bms_task 统一负责；native_sim 下无真实 CAN，走日志桩。
@@ -62,6 +68,8 @@ void bms_comm_tx_snapshot(const struct bms_cell_meas *meas, const struct bms_soc
  * (DES-COMM-002; REQ-COMM-004/005/007)
  */
 int32_t bms_comm_clamp_period_ms(int32_t requested, int32_t lo, int32_t hi);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

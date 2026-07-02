@@ -4,14 +4,24 @@
  * 重点验证失效安全：异常/无效数据时接触器必须 OPEN；仅 NORMAL 才 CLOSED。
  * 含红线不变量扫描（CLOSED ⟺ NORMAL）与无效测量隔离（REQ-PROT-033）。
  */
+
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <string.h>
 #include <zephyr/ztest.h>
 
 #include "bms/measurement-control/protection.h"
 
-ZTEST_SUITE(bms_protection, NULL, NULL, NULL, NULL, NULL);
+/*========== Macros and Definitions ==========================================*/
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void make_normal(struct bms_cell_meas *m);
+
+/*========== Static Function Implementations =================================*/
 /* 构造一帧全部正常的测量 */
 static void make_normal(struct bms_cell_meas *m)
 {
@@ -25,6 +35,8 @@ static void make_normal(struct bms_cell_meas *m)
 	}
 	m->validity = BMS_MEAS_VALID_ALL; /* 正常帧：测量全有效，否则失效安全强制 OPEN */
 }
+
+ZTEST_SUITE(bms_protection, NULL, NULL, NULL, NULL, NULL);
 
 ZTEST(bms_protection, test_normal_closes_contactor)
 {
@@ -293,3 +305,7 @@ ZTEST(bms_protection, test_null_each_arg)
 	zassert_equal(bms_protection_evaluate(&m, NULL, &evt), -EINVAL, "limits=NULL");
 	zassert_equal(bms_protection_evaluate(&m, &lim, NULL), -EINVAL, "out=NULL");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

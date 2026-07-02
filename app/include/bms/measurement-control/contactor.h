@@ -13,6 +13,7 @@
 #ifndef BMS_CONTACTOR_H_
 #define BMS_CONTACTOR_H_
 
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 
 #include "bms/types.h"
@@ -21,6 +22,11 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 纯判定：反馈是否与期望不一致（actual != desired）。
  * @param desired 期望接触器状态。
@@ -36,6 +42,8 @@ bool bms_contactor_eval(enum bms_contactor desired, enum bms_contactor actual);
  * @param now_ms  注入的单调毫秒时间（用于诊断去抖/锁存与反馈时间戳）。
  */
 void bms_contactor_step(enum bms_contactor desired, uint32_t now_ms);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

@@ -9,6 +9,7 @@
 #ifndef BMS_SOC_H_
 #define BMS_SOC_H_
 
+/*========== Includes ========================================================*/
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -18,6 +19,7 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
 /**
  * @brief SOC 库仑积分跨帧状态（模块私有；不进 types.h，非 zbus 载荷）。
  *
@@ -39,6 +41,9 @@ struct bms_soc_coulomb_state {
 	bool initialized;         /**< 是否已完成上电一次性初始化（电压映射，REQ-SOC-C04）。 */
 };
 
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 初始化 SOC 模块。
  * 调度与 database 写入由 bms_task 统一负责。
@@ -84,6 +89,8 @@ int bms_soc_coulomb_step(struct bms_soc_coulomb_state *state, const struct bms_c
  * @param[out] state 为 NULL 时安全返回（无操作）。
  */
 void bms_soc_coulomb_state_reset(struct bms_soc_coulomb_state *state);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

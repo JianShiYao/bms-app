@@ -13,15 +13,29 @@
  *          仅在 CONFIG_BMS_AFE_BACKEND_ADC=y（真机板）时编译，QEMU/native_sim 不选此后端。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <zephyr/sys/util.h>
 
 #include "bms/hal/afe.h"
 #include "bms/types.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 int bms_afe_backend_read(struct bms_cell_meas *out)
 {
 	ARG_UNUSED(out);
 	/* TODO(bms_f405)：DEVICE_DT_GET(ADC/AFE) → 采样 → 填充 out。 */
 	return -ENOSYS;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

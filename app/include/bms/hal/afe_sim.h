@@ -19,6 +19,7 @@
 #ifndef BMS_AFE_SIM_H_
 #define BMS_AFE_SIM_H_
 
+/*========== Includes ========================================================*/
 #include <stdint.h>
 
 #include "bms/types.h"
@@ -27,6 +28,7 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
 /**
  * @brief 仿真后端跨帧状态（后端私有；不进 types.h，非 zbus 载荷）。
  *
@@ -45,6 +47,9 @@ struct bms_afe_sim_state {
 	uint32_t lcg;         /**< LCG 伪随机噪声种子。 */
 };
 
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 复位仿真状态到确定起点（便于上电/单测）。
  *
@@ -73,6 +78,8 @@ int bms_afe_sim_step(struct bms_afe_sim_state *st, uint32_t now_ms, struct bms_c
 /*
  * 注：后端无关的 bms_afe_backend_read() seam 声明在 bms/afe.h（afe_sim.c 在此实现其仿真版本）。
  */
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

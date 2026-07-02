@@ -12,11 +12,29 @@
  *
  * 每个用例注释回链设计契约（runtime-model §2 有符号差回绕安全 / §4 到期判定纯函数）。
  */
+
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
 #include "bms/engine/time.h"
+
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
+static uint32_t fake_clock_value;
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static uint32_t fake_clock(void);
+
+/*========== Static Function Implementations =================================*/
+static uint32_t fake_clock(void)
+{
+	return fake_clock_value;
+}
 
 ZTEST_SUITE(bms_time, NULL, NULL, NULL, NULL, NULL);
 
@@ -109,13 +127,6 @@ ZTEST(bms_time, test_due_wraparound_is_safe)
  * 回链：runtime-model §2「now_ms 必须可注入」、§9 可测性
  * ============================================================ */
 
-static uint32_t fake_clock_value;
-
-static uint32_t fake_clock(void)
-{
-	return fake_clock_value;
-}
-
 /* 注入返回固定值的假时钟 → bms_time_now_ms() 返回该值 */
 ZTEST(bms_time, test_set_source_injects_clock)
 {
@@ -144,3 +155,7 @@ ZTEST(bms_time, test_set_source_null_resets_to_default)
 	zassert_not_equal(bms_time_now_ms(), 777u,
 			  "after NULL reset, now must no longer return the injected constant");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

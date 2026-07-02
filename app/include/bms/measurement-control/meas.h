@@ -14,6 +14,7 @@
 #ifndef BMS_MEAS_H_
 #define BMS_MEAS_H_
 
+/*========== Includes ========================================================*/
 #include <stdint.h>
 
 #include "bms/types.h"
@@ -22,6 +23,7 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
 /**
  * @brief 测量合理性校验阈值。
  *
@@ -37,6 +39,9 @@ struct bms_meas_limits {
 	int32_t temp_dci_max;       /**< 温度合理上限 (0.1℃) */
 };
 
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 对一帧测量做合理性校验，按结果设置 m->validity 位（纯函数）。
  *
@@ -64,6 +69,8 @@ int bms_meas_validate(struct bms_cell_meas *m, const struct bms_meas_limits *lim
  * @return 0 成功；负值为 errno（out 为 NULL 或后端读取失败）。
  */
 int bms_meas_acquire(struct bms_cell_meas *out, uint32_t now_ms);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }

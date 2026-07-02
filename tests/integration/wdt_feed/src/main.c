@@ -26,6 +26,8 @@
  * 有符号差回绕由 bms_time_after 保证安全。计数用「调用前后差」判定，避免依赖
  * stub 静态计数在用例间的绝对值残留。
  */
+
+/*========== Includes ========================================================*/
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
@@ -38,9 +40,21 @@
 #include "bms/engine/time.h"
 #include "bms/hal/wdt.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
 /* 注入时间源：受控单调毫秒，脱离内核时钟以确定驱动心跳判定。 */
 static uint32_t test_now_ms;
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static uint32_t injected_time_source(void);
+static void *wdt_feed_setup(void);
+static void wdt_feed_before(void *fixture);
+static void wdt_feed_teardown(void *fixture);
+
+/*========== Static Function Implementations =================================*/
 static uint32_t injected_time_source(void)
 {
 	return test_now_ms;
@@ -149,3 +163,7 @@ ZTEST(wdt_feed, test_wdt_step_blocks_before_safety_seen)
 	zassert_equal(bms_wdt_stub_feed_count(), c0,
 		      "never-seen safety task must NOT feed the watchdog (fail-safe)");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

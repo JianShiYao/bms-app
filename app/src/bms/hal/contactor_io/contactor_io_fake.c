@@ -11,16 +11,27 @@
  *          （bms_f405 经 AFE(SH3673520)）属 Phase 3。契约见 hardware-abstraction.md §2。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
 
 #include "bms/hal/contactor_io.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
 /* 失效安全默认 OPEN；被 fake_set 强制后 apply 不再回显（用于造粘连/拒动）。 */
 static enum bms_contactor fake_actual = BMS_CONTACTOR_OPEN;
 static bool fake_forced;
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 void bms_contactor_io_apply(enum bms_contactor desired)
 {
 	if (!fake_forced) {
@@ -43,3 +54,5 @@ void bms_contactor_io_fake_set(enum bms_contactor actual)
 	fake_actual = actual;
 	fake_forced = true;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

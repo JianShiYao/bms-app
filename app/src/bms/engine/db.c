@@ -6,17 +6,20 @@
  * @ingroup SYS
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <string.h>
 #include <zephyr/kernel.h>
 
 #include "bms/engine/db.h"
 
+/*========== Macros and Definitions ==========================================*/
 struct bms_db_slot {
 	uint32_t sequence;
 	bool valid;
 };
 
+/*========== Static Constant and Variable Definitions ========================*/
 static K_MUTEX_DEFINE(db_lock);
 
 static struct bms_cell_meas db_cell_meas;
@@ -33,6 +36,12 @@ static struct bms_db_slot db_bms_state_meta;
 static struct bms_db_slot db_task_health_meta;
 static struct bms_db_slot db_contactor_fb_meta;
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static void copy_meta(const struct bms_db_slot *slot, struct bms_db_meta *meta);
+
+/*========== Static Function Implementations =================================*/
 static void copy_meta(const struct bms_db_slot *slot, struct bms_db_meta *meta)
 {
 	if (meta == NULL) {
@@ -42,6 +51,7 @@ static void copy_meta(const struct bms_db_slot *slot, struct bms_db_meta *meta)
 	meta->valid = slot->valid;
 }
 
+/*========== Extern Function Implementations =================================*/
 int bms_db_init(void)
 {
 	k_mutex_lock(&db_lock, K_FOREVER);
@@ -210,3 +220,5 @@ int bms_db_read_contactor_fb(struct bms_contactor_fb *fb, struct bms_db_meta *me
 	k_mutex_unlock(&db_lock);
 	return 0;
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

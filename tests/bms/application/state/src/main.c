@@ -23,6 +23,8 @@
  *   coder 在 bms_next_state 补齐 PRECHARGE 路由后，红灯用例转绿。
  *   tester 不实现路由、不改 bms.c/diag.c 实现、不改 task.c。
  */
+
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/ztest.h>
@@ -31,8 +33,16 @@
 #include "bms/engine/diag.h"
 #include "bms/types.h"
 
-ZTEST_SUITE(bms_state, NULL, NULL, NULL, NULL, NULL);
+/*========== Macros and Definitions ==========================================*/
 
+/*========== Static Constant and Variable Definitions ========================*/
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+static struct bms_state_inputs clean_inputs(void);
+
+/*========== Static Function Implementations =================================*/
 /*
  * 构造一组"干净且允许闭合、且预充就绪"的输入：无硬件故障、无断开请求、允许闭合，
  * 预充完成且未超时，诊断已初始化且无任何激活/锁存项、严重度 INFO，
@@ -61,6 +71,8 @@ static struct bms_state_inputs clean_inputs(void)
 			},
 	};
 }
+
+ZTEST_SUITE(bms_state, NULL, NULL, NULL, NULL, NULL);
 
 /* ============================================================
  * M3b 核心红灯：诊断未初始化不得进 NORMAL
@@ -231,3 +243,7 @@ ZTEST(bms_state, test_contactor_only_closed_in_normal)
 	zassert_equal(bms_contactor_for_state(BMS_STATE_LOCKED), BMS_CONTACTOR_OPEN,
 		      "LOCKED must map to OPEN");
 }
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

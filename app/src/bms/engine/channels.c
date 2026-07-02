@@ -9,8 +9,12 @@
  *          因此这里以 ZBUS_OBSERVERS_EMPTY 定义，保持 channel 与模块解耦。
  */
 
+/*========== Includes ========================================================*/
 #include "bms/engine/channels.h"
 
+/*========== Macros and Definitions ==========================================*/
+
+/*========== Static Constant and Variable Definitions ========================*/
 ZBUS_CHAN_DEFINE(chan_cell_meas,       /* name */
 		 struct bms_cell_meas, /* type */
 		 NULL,                 /* validator */
@@ -23,3 +27,13 @@ ZBUS_CHAN_DEFINE(chan_soc, struct bms_soc, NULL, NULL, ZBUS_OBSERVERS_EMPTY, ZBU
 
 ZBUS_CHAN_DEFINE(chan_prot_state, struct bms_prot_evt, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
 		 ZBUS_MSG_INIT(0));
+
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

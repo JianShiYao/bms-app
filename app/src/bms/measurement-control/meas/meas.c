@@ -10,12 +10,14 @@
  *          Kconfig（CONFIG_BMS_MEAS_PLAUSIBLE_*）；纯校验逻辑见 meas_validate.c。
  */
 
+/*========== Includes ========================================================*/
 #include <errno.h>
 #include <stddef.h>
 
 #include "bms/hal/afe.h"
 #include "bms/measurement-control/meas.h"
 
+/*========== Macros and Definitions ==========================================*/
 /* 正常构建由 app/Kconfig 提供；无 app Kconfig 的隔离测试场景回退默认值
  * （与 app/Kconfig 各 default 一致）。 */
 #ifndef CONFIG_BMS_MEAS_PLAUSIBLE_CELL_MV_MIN
@@ -34,6 +36,7 @@
 #define CONFIG_BMS_MEAS_PLAUSIBLE_TEMP_DCI_MAX 1250
 #endif
 
+/*========== Static Constant and Variable Definitions ========================*/
 /* 合理性校验阈值（来自 Kconfig）。语义为"读数是否物理可信"，非保护阈值。 */
 static const struct bms_meas_limits MEAS_LIMITS = {
 	.cell_mv_min = CONFIG_BMS_MEAS_PLAUSIBLE_CELL_MV_MIN,
@@ -43,6 +46,13 @@ static const struct bms_meas_limits MEAS_LIMITS = {
 	.temp_dci_max = CONFIG_BMS_MEAS_PLAUSIBLE_TEMP_DCI_MAX,
 };
 
+/*========== Extern Constant and Variable Definitions ========================*/
+
+/*========== Static Function Prototypes ======================================*/
+
+/*========== Static Function Implementations =================================*/
+
+/*========== Extern Function Implementations =================================*/
 int bms_meas_acquire(struct bms_cell_meas *out, uint32_t now_ms)
 {
 	if (out == NULL) {
@@ -59,3 +69,5 @@ int bms_meas_acquire(struct bms_cell_meas *out, uint32_t now_ms)
 	out->timestamp_ms = now_ms;
 	return bms_meas_validate(out, &MEAS_LIMITS);
 }
+
+/*========== Externalized Static Function Implementations (Unit Test) ========*/

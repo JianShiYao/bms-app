@@ -12,6 +12,7 @@
 #ifndef BMS_DB_H_
 #define BMS_DB_H_
 
+/*========== Includes ========================================================*/
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -21,12 +22,16 @@
 extern "C" {
 #endif
 
+/*========== Macros and Definitions ==========================================*/
 /** 数据槽位元数据（随快照一同返回）。 */
 struct bms_db_meta {
 	uint32_t sequence; /**< 写入序号，每次成功写入自增（用于检测新数据） */
 	bool valid;        /**< 该槽位是否已写入过有效数据 */
 };
 
+/*========== Extern Constant and Variable Declarations =======================*/
+
+/*========== Extern Function Prototypes ======================================*/
 /**
  * @brief 初始化数据库：清零所有快照槽位与元数据（线程安全）。
  * @return 0 成功。
@@ -130,6 +135,8 @@ int bms_db_write_contactor_fb(const struct bms_contactor_fb *fb);
  * @return 0 成功；@p fb 为 NULL 返回 -EINVAL。
  */
 int bms_db_read_contactor_fb(struct bms_contactor_fb *fb, struct bms_db_meta *meta);
+
+/*========== Externalized Static Function Prototypes (Unit Test) =============*/
 
 #ifdef __cplusplus
 }
