@@ -52,8 +52,9 @@
   3. `measurement-control/contactor` 抽象（经 AFE MOS 期望态 + 反馈）+ fake，接 M4 PRECHARGE / bms_bms 接触器期望态
   4. 其余 hal/ wrapper 接口 + fake（wdt / rtc / storage / comm / adc）
 - **Phase 2（板 port，编译级）**：
-  5. `bms_f405` dts/defconfig 补外设节点（对原理图 V0.4 核引脚）
+  5. `bms_f405` dts/defconfig：时钟地基 + console(USART1) 已落（进 CI）；外设节点照 §9 逐个补。
   6. IWDG 喂狗接线（M5 门控 → hal/wdt → stm32 wdt）
+  > **引脚权威（2026-07-02 定案）**：`software-interface.md` §9（原理图 V0.4 校对版）+ 原理图 PDF 为准；`.ioc`（CubeMX 草稿，与 §9 约半数 GPIO/UART 冲突）**弃用**。
 - **Phase 3（真板 bring-up / HIL，需物理板——本环境做不了）**：
   7. SH3673520 真实 SPI backend
   8. W25Q32 NVM 故障记录 + 参数持久化

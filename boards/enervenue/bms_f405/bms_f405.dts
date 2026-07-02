@@ -1,13 +1,16 @@
 /*
  * BMS STM32F405 自定义板（enervenue / S16100B 目标）devicetree。
  *
- * 本增量（M6 Phase 2-⑤）只落**无争议的时钟地基**，使板可构建并进 CI 编译门。
- * 外设/console 引脚**暂不写入**：通信/console UART 与多数 GPIO 的引脚在两份硬件参考间
- * 冲突（`docs/reference/hardware/STM32F405RGT6_BMS.ioc` 记 USART3(PB10/11)、SD_CS=PA10…；
- * `docs/reference/hardware/software-interface.md` §9 记 USART1(PA9/10)、SD_CS=PC2…），
- * 须先核实**原理图 V0.4** 定案，再补 &usartX / &spiX / &adc1 / iwdg / rtc 等节点与 pinctrl。
+ * 引脚权威（用户 2026-07-02 定案）：`docs/reference/hardware/software-interface.md` §9
+ * （原理图 V0.4 校对版）+ 原理图 PDF 为准；`STM32F405RGT6_BMS.ioc`（CubeMX 草稿）弃用。
  *
- * 一致且已确认的地基（.ioc 与 §9 一致）：HSE 8MHz、LSE 32.768k、SYSCLK 168MHz。
+ * 本增量：时钟地基 + console(USART1 PA9/10, §9 主 RS485 口)。其余外设（SPI2/AFE、
+ * SPI1/flash、ADC1、IWDG、RTC）随各自 Phase 2-⑥/Phase 3 backend 逐个补（引脚照 §9）。
+ * 注：USART1 物理上是隔离 RS485 主口（经 CA-IS2092A，方向脚 PA11=DE/RE）；此处作
+ * 开发期 Zephyr console（RS485 收发方向控制与 Modbus 9600 属 Phase 3 comm 驱动，届时
+ * 与 console 复用一并厘清）。
+ *
+ * 地基频率（.ioc 与 §9 一致，已确认）：HSE 8MHz、LSE 32.768k、SYSCLK 168MHz。
  */
 /dts-v1/;
 
@@ -19,14 +22,19 @@
 	compatible = "enervenue,bms-f405";
 
 	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
-		/*
-		 * zephyr,console / shell-uart 暂不指定：通信/console UART 引脚待原理图 V0.4
-		 * 核实（.ioc=USART3(PB10/11) vs §9=USART1(PA9/10)，冲突）。定案后启用对应
-		 * &usartX + pinctrl 并在此设 zephyr,console。
-		 */
 	};
+};
+
+/* 主 RS485 口 USART1（PA9 TX / PA10 RX，§9）——开发期作 Zephyr console。 */
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
 };
 
 /*
