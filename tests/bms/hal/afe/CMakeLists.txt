@@ -8,6 +8,6 @@ set(APP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../../app)
 target_include_directories(app PRIVATE ${APP_DIR}/include)
 target_sources(app PRIVATE
   src/main.c
-  ${APP_DIR}/src/bms/afe/afe_sim.c
-  ${APP_DIR}/src/bms/afe/afe_validate.c
+  ${APP_DIR}/src/bms/hal/afe/afe_sim.c
+  ${APP_DIR}/src/bms/hal/afe/afe_validate.c
 )
