@@ -10,5 +10,6 @@ ram: 192
 flash: 1024
 supported:
   - gpio
-# uart/adc/spi/watchdog/counter 等待原理图 V0.4 核实引脚、补 dts 节点后再加
-# （见 boards/enervenue/bms_f405/bms_f405.dts 说明）。
+  - uart
+# adc/spi/watchdog/counter 等随 Phase 2-⑥/Phase 3 backend 补 dts 节点后再加
+# （引脚照 software-interface.md §9；见 boards/enervenue/bms_f405/bms_f405.dts 说明）。

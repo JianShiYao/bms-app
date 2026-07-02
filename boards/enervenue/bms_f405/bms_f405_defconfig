@@ -1,6 +1,9 @@
-# bms_f405 板级最小可构建配置（时钟地基 + CI 编译门）。
-# console/串口/外设子系统待原理图 V0.4 核实引脚后再开（见 bms_f405.dts 说明）。
+# bms_f405 板级配置：时钟地基 + console(USART1)。
+# 其余外设子系统（ADC/SPI/WATCHDOG/COUNTER）随 Phase 2-⑥/Phase 3 backend 按需开。
 
 CONFIG_ARM_MPU=y
 CONFIG_HW_STACK_PROTECTION=y
 CONFIG_GPIO=y
+CONFIG_SERIAL=y
+CONFIG_CONSOLE=y
+CONFIG_UART_CONSOLE=y
