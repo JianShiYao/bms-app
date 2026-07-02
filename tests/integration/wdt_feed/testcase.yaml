@@ -1,0 +1,8 @@
+tests:
+  bms.wdt_feed:
+    platform_allow:
+      - native_sim
+      - mps2/an386
+    tags:
+      - bms
+      - wdt

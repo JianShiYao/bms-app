@@ -44,6 +44,16 @@ void bms_task_safety_step(uint32_t now_ms);
  */
 void bms_task_app_step(uint32_t now_ms);
 
+/**
+ * @brief 按 sys_mon 门控喂硬 watchdog（仅安全关键任务健康时才喂）。
+ * @details 落实 docs/concept/runtime-model.md §7：当且仅当
+ *          @ref bms_sys_mon_wdt_feed_allowed 返回 true（所有安全关键任务已 seen
+ *          且健康）时调用 @ref bms_wdt_feed；否则停喂（失效安全 → watchdog 复位）。
+ *          供 main 的 safety 线程与集成测试复用；now_ms 为注入时间。
+ * @param now_ms 注入的当前单调毫秒时间。
+ */
+void bms_task_wdt_step(uint32_t now_ms);
+
 #ifdef __cplusplus
 }
 #endif

@@ -37,6 +37,7 @@ target_sources(app PRIVATE
   ${APP_DIR}/src/bms/application/bms.c
   ${APP_DIR}/src/bms/measurement-control/protection/protection.c
   ${APP_DIR}/src/bms/engine/channels.c
+  ${APP_DIR}/src/bms/hal/wdt/wdt_stub.c
   ${APP_DIR}/src/bms/measurement-control/contactor/contactor.c
   ${APP_DIR}/src/bms/hal/contactor_io/contactor_io_fake.c
   ${APP_DIR}/src/bms/hal/afe/afe.c

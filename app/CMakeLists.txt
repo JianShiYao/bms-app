@@ -57,3 +57,6 @@ target_sources_ifdef(CONFIG_BMS_BALANCING  app PRIVATE src/bms/application/balan
 target_sources_ifdef(CONFIG_BMS_COMM       app PRIVATE src/bms/application/comm/comm.c)
 # comm 周期合法化（纯函数，运行期防御性钳制；单测只链此源）
 target_sources_ifdef(CONFIG_BMS_COMM       app PRIVATE src/bms/application/comm/comm_period.c)
+# 看门狗 hal 后端：二选一（stub=sim 无硬件狗 / stm32=真板 IWDG）
+target_sources_ifdef(CONFIG_BMS_WDT_BACKEND_STUB  app PRIVATE src/bms/hal/wdt/wdt_stub.c)
+target_sources_ifdef(CONFIG_BMS_WDT_BACKEND_STM32 app PRIVATE src/bms/hal/wdt/wdt_stm32.c)

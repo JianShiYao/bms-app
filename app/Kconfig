@@ -173,6 +173,27 @@ config BMS_COMM_REPORT_PERIOD_MS
 	  运行期另有防御性钳制（bms_comm_clamp_period_ms）作第二道防线。
 	  (DES-COMM-001; REQ-COMM-001/002/003/004)
 
+choice BMS_WDT_BACKEND
+	prompt "BMS 硬件看门狗后端"
+	default BMS_WDT_BACKEND_STUB
+	help
+	  hal/wdt wrapper 后端。sim 板（native_sim/mps2/qmxx）用 stub（软件计数、无复位）；
+	  真板（bms_f405）用 STM32 内部 IWDG。喂狗门控见 bms_sys_mon_wdt_feed_allowed。
+
+config BMS_WDT_BACKEND_STUB
+	bool "Stub（无硬件看门狗，sim）"
+
+config BMS_WDT_BACKEND_STM32
+	bool "STM32 IWDG（真板）"
+	depends on WATCHDOG
+endchoice
+
+config BMS_WDT_TIMEOUT_MS
+	int "硬件看门狗超时 (ms)"
+	default 1000
+	help
+	  IWDG 超时窗口上界；喂狗须比此更频繁（safety 周期 10ms << 此值）。仅 STM32 后端用。
+
 endmenu
 
 # 必须在文件末尾引入 Zephyr 的 Kconfig 树
