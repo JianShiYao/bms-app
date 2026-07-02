@@ -66,3 +66,8 @@
 	apb1-prescaler = <4>;
 	apb2-prescaler = <2>;
 };
+
+/* 内部独立看门狗（IWDG，无外部脚）——hal/wdt STM32 后端的设备（软先于硬兜底，§7）。 */
+&iwdg {
+	status = "okay";
+};

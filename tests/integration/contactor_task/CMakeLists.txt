@@ -42,6 +42,7 @@ target_sources(app PRIVATE
   ${APP_DIR}/src/bms/application/bms.c
   ${APP_DIR}/src/bms/measurement-control/protection/protection.c
   ${APP_DIR}/src/bms/engine/channels.c
+  ${APP_DIR}/src/bms/hal/wdt/wdt_stub.c
   ${APP_DIR}/src/bms/hal/afe/afe.c
   ${APP_DIR}/src/bms/hal/afe/afe_sim.c
   ${APP_DIR}/src/bms/measurement-control/meas/meas.c

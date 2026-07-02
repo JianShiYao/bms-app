@@ -1,5 +1,5 @@
-# bms_f405 板级配置：时钟地基 + console(USART1)。
-# 其余外设子系统（ADC/SPI/WATCHDOG/COUNTER）随 Phase 2-⑥/Phase 3 backend 按需开。
+# bms_f405 板级配置：时钟地基 + console(USART1) + 硬件看门狗(IWDG)。
+# 其余外设子系统（ADC/SPI/COUNTER）随 Phase 3 backend 按需开。
 
 CONFIG_ARM_MPU=y
 CONFIG_HW_STACK_PROTECTION=y
@@ -7,3 +7,7 @@ CONFIG_GPIO=y
 CONFIG_SERIAL=y
 CONFIG_CONSOLE=y
 CONFIG_UART_CONSOLE=y
+
+# 硬件看门狗：IWDG（hal/wdt STM32 后端；喂狗门控见 bms_sys_mon）。
+CONFIG_WATCHDOG=y
+CONFIG_BMS_WDT_BACKEND_STM32=y

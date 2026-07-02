@@ -22,6 +22,7 @@
 #include "bms/measurement-control/protection.h"
 #include "bms/application/soc.h"
 #include "bms/engine/sys_mon.h"
+#include "bms/hal/wdt.h"
 #include "bms/engine/task.h"
 #include "bms/engine/time.h"
 
@@ -247,6 +248,15 @@ void bms_task_app_step(uint32_t now_ms)
 	bms_sys_mon_task_exit(BMS_SYS_MON_APP, now_ms);
 }
 
+void bms_task_wdt_step(uint32_t now_ms)
+{
+	/* 仅当所有安全关键任务健康时喂硬狗；否则停喂 → （真板）IWDG 复位进上电安全态
+	 * （runtime-model §7 软先于硬：sys_mon→diag→bms 已先行，喂狗停止是最后兜底）。 */
+	if (bms_sys_mon_wdt_feed_allowed(now_ms)) {
+		bms_wdt_feed();
+	}
+}
+
 static void tsk_safety_10ms(void *p1, void *p2, void *p3)
 {
 	ARG_UNUSED(p1);
@@ -256,7 +266,10 @@ static void tsk_safety_10ms(void *p1, void *p2, void *p3)
 	uint32_t next_wake = bms_time_now_ms();
 
 	while (1) {
-		bms_task_safety_step(bms_time_now_ms());
+		uint32_t now = bms_time_now_ms();
+
+		bms_task_safety_step(now);
+		bms_task_wdt_step(now); /* 门控喂狗：安全任务健康才喂，否则让硬狗复位 */
 
 		next_wake += CONFIG_BMS_TASK_SAFETY_PERIOD_MS;
 		int32_t delay = (int32_t)(next_wake - bms_time_now_ms());
@@ -326,6 +339,7 @@ int bms_task_init(void)
 	bms_protection_default_limits(&task_prot_limits);
 #endif
 	(void)bms_sys_mon_init();
+	(void)bms_wdt_init();
 	task_bms_state = BMS_STATE_INIT;
 
 	next_sample = 0;
