@@ -43,17 +43,17 @@
 | 上电时序 | PowerHold(PD2) 早置、AFE_WAKE 1s、上电全关 MOS、硬件 ALERT ISR | ❌ | 全需 HW |
 | ADC NTC | 温度 / Vmos / 进水换算 | ⚠️ 换算可测 | 采集 |
 
-## D. 建议切片顺序
+## D. 建议切片顺序（进度）
 
-- **Phase 0（对账）**：落 B 节契约调和（纯文档 PR）。
-- **Phase 1（软件结构，本环境可全绿）**：
-  1. `afe` 拆 `hal/afe`（backends）+ `measurement-control/meas`（可信化）
-  2. `include/bms` 镜像分层 + tests 树同步下沉
-  3. `measurement-control/contactor` 抽象（经 AFE MOS 期望态 + 反馈）+ fake，接 M4 PRECHARGE / bms_bms 接触器期望态
-  4. 其余 hal/ wrapper 接口 + fake（wdt / rtc / storage / comm / adc）
-- **Phase 2（板 port，编译级）**：
-  5. `bms_f405` dts/defconfig：时钟地基 + console(USART1) 已落（进 CI）；外设节点照 §9 逐个补。
-  6. IWDG 喂狗接线（M5 门控 → hal/wdt → stm32 wdt）
+- **Phase 0（对账）✅ 完成**：契约调和落地（架构/hardware-abstraction/safety + 引脚权威定案）。
+- **Phase 1（软件结构，本环境可全绿）✅ 完成**：
+  1. ✅ `afe` 拆 `hal/afe`（①a 搬迁）+ `measurement-control/meas` 可信化（①b）
+  2. ✅ `include/bms` 镜像分层（②）——src/include/tests 三树分层一致
+  3. ✅ `measurement-control/contactor` 抽象 + fake（③a）+ 接 task 闭环（③b）
+  4. ⏭️ 其余 hal/ wrapper（wdt/rtc/storage/comm/adc）——判定过早，改随各自 Phase 2/3 消费者建（wdt 已随 ⑥ 落地）
+- **Phase 2（板 port，编译级）✅ 完成**：
+  5. ✅ `bms_f405` dts/defconfig：时钟地基 + console(USART1)（进 CI 4 板矩阵）；其余外设节点照 §9 随 Phase 3 backend 补。
+  6. ✅ IWDG 喂狗接线（M5 门控 → hal/wdt → stm32 IWDG；sim 桩 / 真板 IWDG，复位行为待 HIL）
   > **引脚权威（2026-07-02 定案）**：`software-interface.md` §9（原理图 V0.4 校对版）+ 原理图 PDF 为准；`.ioc`（CubeMX 草稿，与 §9 约半数 GPIO/UART 冲突）**弃用**。
 - **Phase 3（真板 bring-up / HIL，需物理板——本环境做不了）**：
   7. SH3673520 真实 SPI backend
@@ -68,4 +68,6 @@
 
 ## F. 下一步
 
-**Phase 0 设计对账**（B 节）——纯文档 PR，改 concept 契约以反映 `bms_f405` 真板（尤其 CAN→RS485、接触器→MOS、预充语义、WDT=IWDG）。之后进 Phase 1-①（afe 拆分）。
+**Phase 0–2 已完成**（sim/编译级验证，进 CI 4 板矩阵；追溯见 [../../traceability.md](../../traceability.md) M6 节）。
+**下一步 = Phase 3（真板 bring-up / HIL）**，需物理 S16100B 板 + SWD 调试器，本环境无法功能验证：
+SH3673520 真 SPI backend、W25Q32 NVM 故障记录、RS485/Modbus comm、ADC 采集、预充/反馈/上电时序实测、硬件 ALERT ISR。届时逐个补 `bms_f405` 外设 dts 节点（引脚照 §9）+ 真实 backend + HIL 验证。
