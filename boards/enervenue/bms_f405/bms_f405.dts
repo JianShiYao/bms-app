@@ -16,6 +16,7 @@
 
 #include <st/f4/stm32f405Xg.dtsi>
 #include <st/f4/stm32f405rgtx-pinctrl.dtsi>
+#include <zephyr/dt-bindings/gpio/gpio.h>
 
 / {
 	model = "BMS STM32F405 custom board (enervenue)";
@@ -71,3 +72,43 @@
 &iwdg {
 	status = "okay";
 };
+
+/*
+ * ---------------------------------------------------------------------------
+ * 板级外设节点（引脚按 software-interface.md §9；**编译级硬件描述**为 Phase 3 铺路）。
+ * 各总线/ADC/RTC 的**从设备与 backend**（SH3673520、W25Q32、SD、ADC 采集、RTC 时间戳）
+ * 属 Phase 3（真板/HIL），此处只声明控制器节点 + pinctrl/CS，使驱动实例化、编译门守护。
+ * ---------------------------------------------------------------------------
+ */
+
+/* SPI2 → AFE(SH3673520)：SCK PB13 / MISO PB14 / MOSI PB15；CS PB12（GPIO 手动，低有效）。 */
+&spi2 {
+	pinctrl-0 = <&spi2_sck_pb13 &spi2_miso_pb14 &spi2_mosi_pb15>;
+	pinctrl-names = "default";
+	cs-gpios = <&gpiob 12 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+/* SPI1 → 外部 Flash(W25Q32) + SD 卡（共享总线）：SCK PA5 / MISO PA6 / MOSI PA7；
+ * 片选 FLASH_CS PC4、SD_CS PC2（分时选通）。从设备节点属 Phase 3。 */
+&spi1 {
+	pinctrl-0 = <&spi1_sck_pa5 &spi1_miso_pa6 &spi1_mosi_pa7>;
+	pinctrl-names = "default";
+	cs-gpios = <&gpioc 4 GPIO_ACTIVE_LOW>, <&gpioc 2 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+/* ADC1：温度/电压/进水采集通道（PA1/2/4、PB0/1、PC0/1，§9）。通道 io-channels 配置随
+ * Phase 3 采集 backend/overlay。注：§9 与 §4.4 对 PA1/PB1 归属有笔误待硬件核（§9 末）。 */
+&adc1 {
+	pinctrl-0 = <&adc1_in1_pa1 &adc1_in2_pa2 &adc1_in4_pa4
+		     &adc1_in8_pb0 &adc1_in9_pb1 &adc1_in10_pc0 &adc1_in11_pc1>;
+	pinctrl-names = "default";
+	st,adc-prescaler = <4>; /* APB2 84MHz ÷4 = 21MHz < 36MHz ADC 上限 */
+	status = "okay";
+};
+
+/*
+ * RTC（LSE 32.768k，§9）延后到 Phase 3：STM32 RTC 需 dts 显式选时钟源
+ * （STM32_SRC_LSE RTC_SEL + BDCR 门控），与真实时间源 backend 一并配置/核实，不在编译级铺。
+ */

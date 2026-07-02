@@ -11,3 +11,8 @@ CONFIG_UART_CONSOLE=y
 # 硬件看门狗：IWDG（hal/wdt STM32 后端；喂狗门控见 bms_sys_mon）。
 CONFIG_WATCHDOG=y
 CONFIG_BMS_WDT_BACKEND_STM32=y
+
+# 板级外设子系统（编译级硬件描述，为 Phase 3 backend 铺路；引脚 §9）。
+# RTC 延后到 Phase 3（需显式时钟源 dts + 时间源 backend）。
+CONFIG_SPI=y
+CONFIG_ADC=y
