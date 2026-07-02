@@ -24,6 +24,8 @@
 | **CS-04** | 表示物理量的变量/成员加单位后缀：`_mv`/`_ma`/`_dci`（0.1℃）等 | 项目约定 | 量纲自带，防止单位错配（mV 当 V 用等） | 约定 + 评审 |
 | **CS-05** | 聚合类型不 `typedef`，直接用 `struct bms_xxx` / `enum bms_xxx` | Zephyr 上游 | 与 Zephyr 惯例一致，类型种类在使用处即可见 | `.clang-tidy`（`StructCase/EnumCase=lower_case`）+ 评审 |
 | **CS-06** | 指针变量无匈牙利前缀；声明时 `*` 紧贴变量名 | Zephyr / clang-format | 命名表达用途而非类型，与内核风格一致 | clang-format（指针对齐）+ 评审 |
+| **CS-25** | 函数指针类型**必须**用 `typedef`，命名 `bms_<用途>_fn_t`（纯回调可用 `_cb_t`）；声明/传参用该类型名，不写裸函数指针语法 | 参考 foxBMS 2（C:018，适配 snake_case） | 裸函数指针语法易错难读；typedef 后声明与传参清晰，且与 Zephyr 回调 typedef 惯例一致（CS-05 仅禁 struct/enum 的 typedef，函数指针为明确例外） | 约定 + 评审（示例见 §7.5） |
+| **CS-26** | 遍历电池维度的 `for` 计数变量用固定短名：`BMS_CELL_COUNT` → `cb`（cell block）、`BMS_TEMP_SENSOR_COUNT` → `ts`；其余循环用描述性名或 `i`。新增维度宏须在此扩充映射 | 参考 foxBMS 2（C:028，适配本项目维度） | 固定计数名让「循环边界 ↔ 物理维度」一眼对应，嵌套循环不易错配 | 约定 + 评审（既有 `i` 循环不强制回改；示例见 §7.5） |
 
 **CS-04 合法单位后缀**（物理量变量/成员专用；需新增量纲时在评审中扩充本表）：
 
@@ -46,6 +48,7 @@
 | **CS-10** | `#include` 分组顺序：本地头 → C 标准库 → `zephyr/` → 其它；**只分组不重排** | `.clang-format` | 顺序稳定、可读 | clang-format（`IncludeCategories` + `SortIncludes: Never`） |
 | **CS-11** | 仅用 ANSI-C 注释 `/* */`，不用 `//` | 项目约定 / C 传统 | 风格统一，避免行注释与块注释混用 | 约定 + 评审 |
 | **CS-12** | 文件名小写；文件末尾单一空行；无尾随空格；行尾 LF | `.editorconfig` | diff 干净、跨平台一致、POSIX 合规 | `.editorconfig` + CI `editorconfig` 门 + `InsertNewlineAtEOF` |
+| **CS-28** | include 遵循 **include-what-you-use**：直接用到的符号所在头文件都要 `#include`（不多不少）；**不用前向声明**替代 include | 参考 foxBMS 2（C:007） | 依赖显式、可追溯，避免隐式传递依赖在重构时断裂 | 约定 + 评审（分组顺序另见 CS-10） |
 
 ## 4. 文件结构
 
@@ -71,8 +74,9 @@
 | **CS-19** | 十六进制字面量大写：`0xFF` 而非 `0xff` | 项目约定 | 可读、避免与标识符混淆 | 约定 + cppcheck |
 | **CS-20** | 浮点字面量两侧都带数字（`1.0f` 而非 `1.f`/`.5f`）；优先用 `float` | 项目约定 | 防误读为整型；目标 MCU 有硬件 FPU，`float` 由硬件执行 | 评审 |
 | **CS-21** | 一行只声明/初始化一个变量；尽量定义即初始化，否则注释说明原因 | 项目约定 | 避免使用未初始化值、便于 diff | 评审 |
-| **CS-22** | 公开函数对指针入参必须做 NULL 检查，采用 **fail-safe 返回**（`if (p == NULL) return -EINVAL;` 或返回安全默认），**不使用会 halt 的断言**；可空入参在 doxygen 显式标注 | 安全要求（safety-first） | BMS 须优雅降级（如接触器默认 OPEN），不可因编程错误崩溃 | 评审 |
+| **CS-22** | 公开函数对指针入参必须**在函数开头**做 NULL 检查，采用 **fail-safe 返回**（`if (p == NULL) return -EINVAL;` 或返回安全默认），**不使用会 halt 的断言**；可空入参在 doxygen 显式标注 | 安全要求（safety-first） | BMS 须优雅降级（如接触器默认 OPEN），不可因编程错误崩溃；开头集中检查便于审阅 | 评审 |
 | **CS-23** | 标识符声明在尽可能窄的作用域；仅文件内使用的函数/变量声明为 `static` | Zephyr / 通用 | 限制可见性、降低耦合与误用 | clang-tidy + 评审 |
+| **CS-27** | 计数型 enum 以哨兵末元素 `BMS_<MODULE>_COUNT` 收尾（表条目总数，非具体成员），用作定长数组尺寸与遍历上界 | 项目现有实践（`bms_diag`/`bms_sys_mon`）+ 参考 foxBMS 2（C:023；本项目用 `_COUNT` 而非其 `_MAX`） | 数组尺寸与循环上界单一事实源，新增成员自动增长、防越界 | 约定 + 评审（示例见 §7.5） |
 
 ## 7. 模板
 
@@ -194,6 +198,28 @@ int bms_afe_sample(struct bms_cell_meas *out)
 
 > 上述见出行已按 80 列补齐，可直接复制；改宽度或文字后须重新补齐等号。
 
+### 7.5 扩展约定示例（CS-25 / CS-26 / CS-27）
+
+```c
+/* CS-25 函数指针必用 typedef（而非裸 uint32_t (*fp)(void)） */
+typedef uint32_t (*bms_time_source_fn_t)(void);
+
+/* CS-26 维度循环计数变量用固定短名 */
+for (int cb = 0; cb < BMS_CELL_COUNT; cb++) {        /* cell block */
+    /* ... */
+}
+for (int ts = 0; ts < BMS_TEMP_SENSOR_COUNT; ts++) { /* temp sensor */
+    /* ... */
+}
+
+/* CS-27 计数型 enum 以哨兵末元素收尾 */
+enum bms_diag_id {
+    BMS_DIAG_INVALID_MEAS,
+    /* ... */
+    BMS_DIAG_COUNT, /**< 哨兵：条目总数，用作数组尺寸/遍历上界 */
+};
+```
+
 ## 8. 强制层级一览
 
 | 层级 | 覆盖条目 |
@@ -204,7 +230,7 @@ int bms_afe_sample(struct bms_cell_meas *out)
 | `.editorconfig`（CI `editorconfig` 门） | CS-12 |
 | CI 文件头卫生门（`scripts/check-file-headers.py`） | CS-13/14 |
 | cppcheck / SCA（观察 + 兜底） | CS-19 |
-| 约定 + 代码评审 | CS-03/04、CS-11、CS-15~CS-17、CS-20~CS-22 |
+| 约定 + 代码评审 | CS-03/04、CS-11、CS-15~CS-17、CS-20~CS-22、CS-24~CS-28 |
 
-> 工具未硬门禁的条目（CS-03/04、CS-11、CS-15~CS-17、CS-20~CS-22）由代码评审把关。
+> 工具未硬门禁的条目（CS-03/04、CS-11、CS-15~CS-17、CS-20~CS-22、CS-24~CS-28）由代码评审把关。
 > **CS-16 自动门待定**：拟用 clang-tidy `-Wdocumentation`，但其参数注入在当前 CI 下报错（见 `.clang-tidy` 注），需本地 clang-tidy 环境调通后再启用。
