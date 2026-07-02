@@ -17,6 +17,7 @@
 #include "bms/comm.h"
 #include "bms/db.h"
 #include "bms/diag.h"
+#include "bms/meas.h"
 #include "bms/protection.h"
 #include "bms/soc.h"
 #include "bms/sys_mon.h"
@@ -91,12 +92,12 @@ static void run_measurement(uint32_t now)
 #if defined(CONFIG_BMS_AFE)
 	struct bms_cell_meas meas;
 
-	if (bms_afe_sample(&meas) != 0) {
+	/* 采集边缘：meas 层读原始帧 → 置 validity → 盖时间戳（now）。 */
+	if (bms_meas_acquire(&meas, now) != 0) {
 		(void)bms_diag_report(BMS_DIAG_INVALID_MEAS, true, now);
 		return;
 	}
 
-	meas.timestamp_ms = now;
 	(void)bms_db_write_cell_meas(&meas);
 	publish_cell_compat(&meas);
 

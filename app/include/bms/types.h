@@ -32,7 +32,7 @@ extern "C" {
  *
  * 设计来源：docs/concept/architecture.md「测量数据纪律」。某位为 1 表示对应量本帧通过
  * 合理性校验、下游方可采用；为 0 表示无效，下游须失效安全处理（如电流无效则
- * SOC 不积分、保护不据此闭合接触器）。位由 afe 边缘的纯函数 bms_afe_validate() 置位。
+ * SOC 不积分、保护不据此闭合接触器）。位由 meas 边缘的纯函数 bms_meas_validate() 置位。
  */
 #define BMS_MEAS_VALID_VOLTAGE (1U << 0) /**< 电压量合理 */
 #define BMS_MEAS_VALID_CURRENT (1U << 1) /**< 电流量合理 */

@@ -1,0 +1,8 @@
+tests:
+  bms.meas:
+    platform_allow:
+      - native_sim
+      - mps2/an386
+    tags:
+      - bms
+      - meas

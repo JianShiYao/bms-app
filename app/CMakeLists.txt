@@ -42,8 +42,9 @@ target_sources(app PRIVATE
 
 # 各 BMS 模块按 Kconfig 开关裁剪编译
 target_sources_ifdef(CONFIG_BMS_AFE        app PRIVATE src/bms/hal/afe/afe.c)
-# afe 测量合理性校验（纯函数，测量数据纪律）
-target_sources_ifdef(CONFIG_BMS_AFE        app PRIVATE src/bms/hal/afe/afe_validate.c)
+# 测量可信化（measurement-control/meas）：raw → validity/时间戳 → DB（测量数据纪律）
+target_sources_ifdef(CONFIG_BMS_AFE        app PRIVATE src/bms/measurement-control/meas/meas.c)
+target_sources_ifdef(CONFIG_BMS_AFE        app PRIVATE src/bms/measurement-control/meas/meas_validate.c)
 # afe 采样后端：三选一（choice 保证恰好一个 backend 提供 bms_afe_backend_read）
 target_sources_ifdef(CONFIG_BMS_AFE_BACKEND_STUB app PRIVATE src/bms/hal/afe/afe_stub.c)
 target_sources_ifdef(CONFIG_BMS_AFE_BACKEND_SIM  app PRIVATE src/bms/hal/afe/afe_sim.c)

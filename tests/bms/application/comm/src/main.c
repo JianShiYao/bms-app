@@ -6,7 +6,7 @@
  *
  * 该函数为「编译期 Kconfig range + 运行期 clamp」双保险中运行期那一侧：把请求
  * 周期钳制到合法闭区间 [lo, hi]。无副作用、无全局/硬件/Kconfig 依赖、边界以入参
- * 注入，故 host 可直接调用断言（对齐 bms_afe_validate(m, limits) 范式）。
+ * 注入，故 host 可直接调用断言（对齐 bms_meas_validate(m, limits) 范式）。
  *
  * 测试侧本地常量镜像 app/Kconfig 中 BMS_COMM_REPORT_PERIOD_MS 的 `range 10 60000`
  * 端点（与 comm.c 内 BMS_COMM_PERIOD_MIN/MAX_MS 一致），供边界断言。

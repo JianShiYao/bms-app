@@ -44,7 +44,7 @@ void bms_comm_tx_snapshot(const struct bms_cell_meas *meas, const struct bms_soc
  * @brief 纯函数：把请求的上报周期(ms)钳制到合法闭区间 [lo, hi]（供线程与单测复用）。
  *
  * 无副作用、不依赖全局状态/硬件/Kconfig 宏；边界以入参注入，便于 host 单测
- * （对齐 bms_afe_validate(m, limits) 的「边界入参注入」范式）。
+ * （对齐 bms_meas_validate(m, limits) 的「边界入参注入」范式）。
  *
  * 钳制规则（确定且唯一）：
  *   requested <  lo  -> 返回 lo   （含 requested <= 0 的全部情形，因 lo > 0）

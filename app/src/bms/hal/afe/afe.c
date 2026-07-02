@@ -2,16 +2,16 @@
 
 /**
  * @file    afe.c
- * @brief   AFE（电芯采样）模块 —— 测量服务。
+ * @brief   AFE（电芯采样）模块 —— hal wrapper 边缘（初始化）。
  * @ingroup AFE
  *
- * @details 职责：采集电压/电流/温度，并执行测量可信化。
- *          周期调度由 bms_task 统一负责，本模块不再自启动线程。
- *          采样实现按 Kconfig 选后端（afe_stub / afe_sim / afe_adc），业务逻辑不变，
- *          见 docs/concept/architecture.md「数据源后端可切换（afe）」。
+ * @details hal/afe 职责：只出**原始帧**（@ref bms_afe_backend_read，由所选后端实现），
+ *          不做有效性判定。测量可信化（validity / 时间戳）在 measurement-control/meas
+ *          （见 bms/meas.h、architecture.md「测量数据纪律」）。周期调度由 bms_task 统一
+ *          负责，本模块不自启动线程。采样后端按 Kconfig 三选一（afe_stub / afe_sim /
+ *          afe_adc），见 architecture.md「数据源后端可切换（afe）」。
  */
 
-#include <errno.h>
 #include <zephyr/logging/log.h>
 
 #include "bms/afe.h"
@@ -19,50 +19,10 @@
 LOG_MODULE_REGISTER(bms_afe, LOG_LEVEL_INF);
 
 /* 正常构建由 app/Kconfig 提供；无 app Kconfig 的隔离测试场景回退默认值
- * （与 app/Kconfig 各 default 一致；同 afe_sim.c/ task.c 的回退惯例）。 */
+ * （与 app/Kconfig default 一致；同 afe_sim.c / task.c 的回退惯例）。 */
 #ifndef CONFIG_BMS_AFE_SAMPLE_PERIOD_MS
 #define CONFIG_BMS_AFE_SAMPLE_PERIOD_MS 100
 #endif
-#ifndef CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MIN
-#define CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MIN 0
-#endif
-#ifndef CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MAX
-#define CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MAX 6000
-#endif
-#ifndef CONFIG_BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA
-#define CONFIG_BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA 300000
-#endif
-#ifndef CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MIN
-#define CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MIN (-400)
-#endif
-#ifndef CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX
-#define CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX 1250
-#endif
-
-/* 合理性校验阈值（来自 Kconfig）。语义为"读数是否物理可信"，非保护阈值。 */
-static const struct bms_afe_limits AFE_LIMITS = {
-	.cell_mv_min = CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MIN,
-	.cell_mv_max = CONFIG_BMS_AFE_PLAUSIBLE_CELL_MV_MAX,
-	.current_abs_max_ma = CONFIG_BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA,
-	.temp_dci_min = CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MIN,
-	.temp_dci_max = CONFIG_BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX,
-};
-
-int bms_afe_sample(struct bms_cell_meas *out)
-{
-	if (out == NULL) {
-		return -EINVAL;
-	}
-
-	/* 数据源边缘：acquire（所选后端）→ validate（纯函数置 validity）→ 交业务层。
-	 * 见 docs/concept/architecture.md「测量数据纪律」：业务层只看到带有效位的可信帧。 */
-	int ret = bms_afe_backend_read(out);
-
-	if (ret != 0) {
-		return ret;
-	}
-	return bms_afe_validate(out, &AFE_LIMITS);
-}
 
 int bms_afe_init(void)
 {

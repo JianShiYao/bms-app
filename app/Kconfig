@@ -72,27 +72,27 @@ endchoice
 
 # 测量合理性校验阈值（"读数是否物理可信"，区别于 protection 的保护阈值）。
 # 取很宽的量程，只剔除明显坏帧（断线/量程溢出/ADC 异常），见架构「测量数据纪律」。
-config BMS_AFE_PLAUSIBLE_CELL_MV_MIN
+config BMS_MEAS_PLAUSIBLE_CELL_MV_MIN
 	int "单体电压合理下限 (mV)"
 	depends on BMS_AFE
 	default 0
 
-config BMS_AFE_PLAUSIBLE_CELL_MV_MAX
+config BMS_MEAS_PLAUSIBLE_CELL_MV_MAX
 	int "单体电压合理上限 (mV)"
 	depends on BMS_AFE
 	default 6000
 
-config BMS_AFE_PLAUSIBLE_CURRENT_ABS_MAX_MA
+config BMS_MEAS_PLAUSIBLE_CURRENT_ABS_MAX_MA
 	int "电流绝对值合理上限 (mA)"
 	depends on BMS_AFE
 	default 300000
 
-config BMS_AFE_PLAUSIBLE_TEMP_DCI_MIN
+config BMS_MEAS_PLAUSIBLE_TEMP_DCI_MIN
 	int "温度合理下限 (0.1℃)"
 	depends on BMS_AFE
 	default -400
 
-config BMS_AFE_PLAUSIBLE_TEMP_DCI_MAX
+config BMS_MEAS_PLAUSIBLE_TEMP_DCI_MAX
 	int "温度合理上限 (0.1℃)"
 	depends on BMS_AFE
 	default 1250
