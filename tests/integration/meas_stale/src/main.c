@@ -27,11 +27,11 @@
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
-#include "bms/db.h"
-#include "bms/diag.h"
-#include "bms/protection.h"
-#include "bms/task.h"
-#include "bms/time.h"
+#include "bms/engine/db.h"
+#include "bms/engine/diag.h"
+#include "bms/measurement-control/protection.h"
+#include "bms/engine/task.h"
+#include "bms/engine/time.h"
 #include "bms/types.h"
 
 /* 过期容忍默认 300ms（coder 实现时的判定阈值）；用例 2 用 400ms > 容忍确保过期。 */

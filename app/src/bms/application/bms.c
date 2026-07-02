@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 
-#include "bms/bms.h"
+#include "bms/application/bms.h"
 
 enum bms_contactor bms_contactor_for_state(enum bms_state state)
 {

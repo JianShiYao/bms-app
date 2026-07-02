@@ -6,9 +6,9 @@
  */
 #include <zephyr/ztest.h>
 
-#include "bms/bms.h"
-#include "bms/db.h"
-#include "bms/diag.h"
+#include "bms/application/bms.h"
+#include "bms/engine/db.h"
+#include "bms/engine/diag.h"
 
 ZTEST_SUITE(bms_integration, NULL, NULL, NULL, NULL, NULL);
 

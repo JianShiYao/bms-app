@@ -14,7 +14,7 @@
 #include <string.h>
 #include <zephyr/logging/log.h>
 
-#include "bms/balancing.h"
+#include "bms/application/balancing.h"
 
 LOG_MODULE_REGISTER(bms_balancing, LOG_LEVEL_INF);
 

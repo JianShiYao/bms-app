@@ -10,7 +10,7 @@
 #include <string.h>
 #include <zephyr/ztest.h>
 
-#include "bms/meas.h"
+#include "bms/measurement-control/meas.h"
 #include "bms/types.h"
 
 ZTEST_SUITE(bms_meas, NULL, NULL, NULL, NULL, NULL);

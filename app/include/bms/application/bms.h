@@ -11,7 +11,7 @@
 
 #include <stdbool.h>
 
-#include "bms/diag.h"
+#include "bms/engine/diag.h"
 #include "bms/types.h"
 
 #ifdef __cplusplus

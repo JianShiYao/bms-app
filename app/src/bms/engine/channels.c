@@ -9,7 +9,7 @@
  *          因此这里以 ZBUS_OBSERVERS_EMPTY 定义，保持 channel 与模块解耦。
  */
 
-#include "bms/channels.h"
+#include "bms/engine/channels.h"
 
 ZBUS_CHAN_DEFINE(chan_cell_meas,       /* name */
 		 struct bms_cell_meas, /* type */

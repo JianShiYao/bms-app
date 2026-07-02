@@ -20,9 +20,9 @@
  */
 #include <zephyr/ztest.h>
 
-#include "bms/db.h"
-#include "bms/diag.h"
-#include "bms/sys_mon.h"
+#include "bms/engine/db.h"
+#include "bms/engine/diag.h"
+#include "bms/engine/sys_mon.h"
 
 /* 每用例前重置全部有状态层：db / diag / sys_mon。 */
 static void reset_before(void *fixture)

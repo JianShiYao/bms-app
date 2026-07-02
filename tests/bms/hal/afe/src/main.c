@@ -17,8 +17,8 @@
 #include <string.h>
 #include <zephyr/ztest.h>
 
-#include "bms/afe.h"
-#include "bms/afe_sim.h"
+#include "bms/hal/afe.h"
+#include "bms/hal/afe_sim.h"
 #include "bms/types.h"
 
 /* 与 afe_sim.c 内部常量/回退默认一致的本地镜像，用于解析期望值断言 */

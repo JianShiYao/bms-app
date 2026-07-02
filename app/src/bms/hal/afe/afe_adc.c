@@ -16,7 +16,7 @@
 #include <errno.h>
 #include <zephyr/sys/util.h>
 
-#include "bms/afe.h"
+#include "bms/hal/afe.h"
 #include "bms/types.h"
 
 int bms_afe_backend_read(struct bms_cell_meas *out)

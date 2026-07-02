@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
-#include "bms/comm.h"
+#include "bms/application/comm.h"
 
 /* 镜像 Kconfig `range 10 60000` 端点（= comm.c 的 BMS_COMM_PERIOD_MIN/MAX_MS）。 */
 #define TEST_P_MIN 10

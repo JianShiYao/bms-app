@@ -16,7 +16,7 @@
 #include <stdbool.h>
 #include <zephyr/logging/log.h>
 
-#include "bms/soc.h"
+#include "bms/application/soc.h"
 
 LOG_MODULE_REGISTER(bms_soc, LOG_LEVEL_INF);
 

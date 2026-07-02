@@ -10,20 +10,20 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
-#include "bms/afe.h"
-#include "bms/balancing.h"
-#include "bms/bms.h"
-#include "bms/channels.h"
-#include "bms/comm.h"
-#include "bms/contactor.h"
-#include "bms/db.h"
-#include "bms/diag.h"
-#include "bms/meas.h"
-#include "bms/protection.h"
-#include "bms/soc.h"
-#include "bms/sys_mon.h"
-#include "bms/task.h"
-#include "bms/time.h"
+#include "bms/hal/afe.h"
+#include "bms/application/balancing.h"
+#include "bms/application/bms.h"
+#include "bms/engine/channels.h"
+#include "bms/application/comm.h"
+#include "bms/measurement-control/contactor.h"
+#include "bms/engine/db.h"
+#include "bms/engine/diag.h"
+#include "bms/measurement-control/meas.h"
+#include "bms/measurement-control/protection.h"
+#include "bms/application/soc.h"
+#include "bms/engine/sys_mon.h"
+#include "bms/engine/task.h"
+#include "bms/engine/time.h"
 
 LOG_MODULE_REGISTER(bms_task, LOG_LEVEL_INF);
 

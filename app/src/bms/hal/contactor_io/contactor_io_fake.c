@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "bms/contactor_io.h"
+#include "bms/hal/contactor_io.h"
 
 /* 失效安全默认 OPEN；被 fake_set 强制后 apply 不再回显（用于造粘连/拒动）。 */
 static enum bms_contactor fake_actual = BMS_CONTACTOR_OPEN;

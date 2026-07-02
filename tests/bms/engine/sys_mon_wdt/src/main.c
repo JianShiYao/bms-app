@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
-#include "bms/sys_mon.h"
+#include "bms/engine/sys_mon.h"
 
 /* 极端超时增量：远超任何 SAFETY/APP 的 WCET 与心跳阈值，稳定触发超时/超限。 */
 #define HUGE_MS 1000000u /* 1e6 ms */

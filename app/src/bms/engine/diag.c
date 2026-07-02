@@ -9,8 +9,8 @@
 #include <errno.h>
 #include <zephyr/kernel.h>
 
-#include "bms/diag.h"
-#include "bms/time.h"
+#include "bms/engine/diag.h"
+#include "bms/engine/time.h"
 
 static K_MUTEX_DEFINE(diag_lock);
 

@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
-#include "bms/time.h"
+#include "bms/engine/time.h"
 
 ZTEST_SUITE(bms_time, NULL, NULL, NULL, NULL, NULL);
 

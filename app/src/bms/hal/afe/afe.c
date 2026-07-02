@@ -14,7 +14,7 @@
 
 #include <zephyr/logging/log.h>
 
-#include "bms/afe.h"
+#include "bms/hal/afe.h"
 
 LOG_MODULE_REGISTER(bms_afe, LOG_LEVEL_INF);
 

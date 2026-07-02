@@ -11,10 +11,10 @@
  *          diag 生命周期负责）。本片不接 task.c（Phase 1-③b 再接）。
  */
 
-#include "bms/contactor.h"
-#include "bms/contactor_io.h"
-#include "bms/db.h"
-#include "bms/diag.h"
+#include "bms/measurement-control/contactor.h"
+#include "bms/hal/contactor_io.h"
+#include "bms/engine/db.h"
+#include "bms/engine/diag.h"
 
 bool bms_contactor_eval(enum bms_contactor desired, enum bms_contactor actual)
 {

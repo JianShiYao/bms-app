@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "bms/meas.h"
+#include "bms/measurement-control/meas.h"
 #include "bms/types.h"
 
 int bms_meas_validate(struct bms_cell_meas *m, const struct bms_meas_limits *lim)

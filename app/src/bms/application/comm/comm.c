@@ -17,7 +17,7 @@
 #include <errno.h>
 #include <zephyr/logging/log.h>
 
-#include "bms/comm.h"
+#include "bms/application/comm.h"
 
 LOG_MODULE_REGISTER(bms_comm, LOG_LEVEL_INF);
 

@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <zephyr/logging/log.h>
 
-#include "bms/protection.h"
+#include "bms/measurement-control/protection.h"
 
 LOG_MODULE_REGISTER(bms_protection, LOG_LEVEL_INF);
 

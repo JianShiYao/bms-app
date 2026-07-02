@@ -13,8 +13,8 @@
 #include <errno.h>
 #include <stddef.h>
 
-#include "bms/afe.h"
-#include "bms/meas.h"
+#include "bms/hal/afe.h"
+#include "bms/measurement-control/meas.h"
 
 /* 正常构建由 app/Kconfig 提供；无 app Kconfig 的隔离测试场景回退默认值
  * （与 app/Kconfig 各 default 一致）。 */

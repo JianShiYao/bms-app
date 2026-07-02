@@ -10,7 +10,7 @@
 #include <string.h>
 #include <zephyr/kernel.h>
 
-#include "bms/db.h"
+#include "bms/engine/db.h"
 
 struct bms_db_slot {
 	uint32_t sequence;

@@ -25,10 +25,10 @@
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
-#include "bms/contactor.h"
-#include "bms/contactor_io.h"
-#include "bms/db.h"
-#include "bms/diag.h"
+#include "bms/measurement-control/contactor.h"
+#include "bms/hal/contactor_io.h"
+#include "bms/engine/db.h"
+#include "bms/engine/diag.h"
 #include "bms/types.h"
 
 /* 每例前重置引擎核心（db + diag），保证用例独立、无残留锁存。 */

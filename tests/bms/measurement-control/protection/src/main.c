@@ -8,7 +8,7 @@
 #include <string.h>
 #include <zephyr/ztest.h>
 
-#include "bms/protection.h"
+#include "bms/measurement-control/protection.h"
 
 ZTEST_SUITE(bms_protection, NULL, NULL, NULL, NULL, NULL);
 

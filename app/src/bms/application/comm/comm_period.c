@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 
-#include "bms/comm.h"
+#include "bms/application/comm.h"
 
 int32_t bms_comm_clamp_period_ms(int32_t requested, int32_t lo, int32_t hi)
 {

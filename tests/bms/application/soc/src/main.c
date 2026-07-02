@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
-#include "bms/soc.h"
+#include "bms/application/soc.h"
 
 /* 与 soc.c 回退默认一致的本地常量（设计 §5.1），用于解析期望值断言 */
 #define TEST_CAP_MAH     100000

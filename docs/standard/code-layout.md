@@ -37,7 +37,7 @@ app/src/bms/
   main.c                  应用入口
 ```
 
-- `app/include/bms/` **必须镜像**同一层级：`include/bms/<层>/<模块>.h`（公共头）。私有头与其 `.c` 同目录。
+- `app/include/bms/` **必须镜像**同一层级：`include/bms/<层>/<模块>.h`（公共头）。私有头与其 `.c` 同目录。**跨层共享的公共类型头**（如 `types.h`，非单一模块所有）留 `include/bms/` 根。
 - `channels.c`（zbus 过渡兼容）归 `engine/`，随迁移逐步退场。
 
 ## 3. 层↔目录映射（契约）

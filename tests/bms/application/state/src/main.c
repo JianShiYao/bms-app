@@ -27,8 +27,8 @@
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
-#include "bms/bms.h"
-#include "bms/diag.h"
+#include "bms/application/bms.h"
+#include "bms/engine/diag.h"
 #include "bms/types.h"
 
 ZTEST_SUITE(bms_state, NULL, NULL, NULL, NULL, NULL);

@@ -16,8 +16,8 @@
 #include <stdint.h>
 #include <zephyr/kernel.h>
 
-#include "bms/afe.h"
-#include "bms/afe_sim.h"
+#include "bms/hal/afe.h"
+#include "bms/hal/afe_sim.h"
 #include "bms/types.h"
 
 /* 正常构建由 app/Kconfig 提供；单测等无 app Kconfig 的场景回退默认值（与 soc 一致）。 */

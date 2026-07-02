@@ -29,13 +29,13 @@
 #include <zephyr/sys/util.h> /* BIT() */
 #include <zephyr/ztest.h>
 
-#include "bms/afe.h"
-#include "bms/db.h"
-#include "bms/diag.h"
-#include "bms/protection.h"
-#include "bms/sys_mon.h"
-#include "bms/task.h"
-#include "bms/time.h"
+#include "bms/hal/afe.h"
+#include "bms/engine/db.h"
+#include "bms/engine/diag.h"
+#include "bms/measurement-control/protection.h"
+#include "bms/engine/sys_mon.h"
+#include "bms/engine/task.h"
+#include "bms/engine/time.h"
 #include "bms/types.h"
 
 /* 注入时间源：受控单调毫秒，脱离内核时钟以确定驱动到期/心跳判定。 */

@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <zephyr/ztest.h>
 
-#include "bms/sys_mon.h"
+#include "bms/engine/sys_mon.h"
 
 ZTEST_SUITE(bms_sys_mon, NULL, NULL, NULL, NULL, NULL);
 
