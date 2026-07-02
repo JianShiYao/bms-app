@@ -76,7 +76,7 @@
 | SG-03 | REQ-PROT-011/012/013/014 | OC（绝对值）；短路/二级过流**未实现** | 部分 |
 | SG-04 | REQ-PROT-008/015/017 | OT（单体）；MOS/环境温**未实现** | 部分 |
 | SG-05 | REQ-PROT-009 | **未实现** | — |
-| SG-06 | architecture「测量数据纪律」 | `bms_afe_validate` + `bms_protection_evaluate`：validity 不全 → FAULT/OPEN | `tests/bms/afe/afe`、measurement-control/protection |
+| SG-06 | architecture「测量数据纪律」 | `bms_afe_validate` + `bms_protection_evaluate`：validity 不全 → FAULT/OPEN | `tests/bms/hal/afe`、measurement-control/protection |
 | SG-07 | REQ-PROT-023/024/025/026 | **未实现**（MOS 失效检测） | — |
 | SG-08 | REQ-PROT-022 | PRECHARGE 状态骨架已实现（`bms_next_state`：complete→NORMAL / timeout→FAULT / 撤销→STANDBY）；**执行经 AFE 预充待 M6**（bms_f405 经 SH3673520 SPI） | `tests/bms/application/state` |
 | SG-09 | REQ-PWR-024（看门狗） | 喂狗门控策略已实现（`bms_sys_mon`：仅安全关键任务健康才喂）；**IWDG 接线待 M6** | `tests/bms/engine/sys_mon_wdt` |
