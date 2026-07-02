@@ -56,12 +56,29 @@
 
 > 红线不变量「接触器 CLOSED ⟺ NORMAL」由 `test_invariant_closed_iff_normal` 扫描覆盖（电压/电流/温度/有效位组合）。
 
+## M6 引擎 / 测量-控制 / HAL 模块（`m6-hardware-bringup`）
+
+> M6 Phase 0–2 落地的模块，设计源自 `concept/{architecture,runtime-model,data-model,hardware-abstraction,safety}` 契约（非编号 legacy REQ），故下表以**契约条款为追溯锚**、测试用例为 twister id。sim/编译级已验证；真板功能（Phase 3）待 HIL。证据包见 [features/m6-hardware-bringup/](features/m6-hardware-bringup)。
+
+| 契约锚 | 模块 / 职责 | 设计（源） | 验证 | 测试用例 | 状态 |
+|---|---|---|---|---|---|
+| architecture「测量数据纪律」/ data-model raw→meas→DB | `meas` 可信化（validity + 时间戳，wrapper 只出原始帧） | `measurement-control/meas/{meas_validate,meas}.c`、`hal/afe/afe.c` | 测试 | `bms.meas.*`（7 用例） | 已验证 |
+| data-model stale / diagnostics §5 | 测量过期/源失联 → `MEAS_STALE` 失效安全 | `engine/task.c`、`engine/diag.c` | 测试 | `bms.meas_stale.*` | 已验证 |
+| diagnostics §4/§5 生命周期 | `diag` 去抖/锁存/严重度 + 未初始化门控 | `engine/diag.c`、`application/bms.c` | 测试 | `bms.diag.*`、`bms.state.test_uninitialized_diag_blocks_normal` | 已验证 |
+| runtime-model §6 任务健康 | `sys_mon` 心跳/运行时间 + 聚合 `DB_TASK_HEALTH` + 接线 | `engine/sys_mon.c`、`engine/task.c` | 测试 | `bms.sys_mon.*`、`bms.sys_mon_agg.*`、`bms.sys_mon_task.*` | 已验证（sim） |
+| runtime-model §7 watchdog 门控（软先于硬） | `sys_mon_wdt_feed_allowed` + `hal/wdt` 门控喂狗 | `engine/sys_mon.c`、`hal/wdt/{wdt_stub,wdt_stm32}.c`、`engine/task.c:bms_task_wdt_step` | 测试 / 构建 | `bms.sys_mon_wdt.*`、`bms.wdt_feed.*` | sim 已验证；真板 IWDG 复位待 HIL |
+| architecture §7 PRECHARGE 时序 | `bms_next_state` 预充门控（complete→NORMAL / timeout→FAULT） | `application/bms.c` | 测试 | `bms.state.test_precharge_*` | 逻辑已验证；真板预充（经 AFE）待 Phase 3 |
+| architecture §7/§8 接触器执行+反馈+诊断 | `contactor` 期望态执行 / 反馈 / 不一致（粘连/拒动）诊断 | `measurement-control/contactor/contactor.c`、`hal/contactor_io/contactor_io_fake.c`、`engine/task.c` | 测试 | `bms.contactor.*`、`bms.contactor_task.*` | sim 已验证；真板 MOS/预充经 AFE 待 Phase 3 |
+| hardware-abstraction §8 / M6 Phase 2 | `bms_f405` 真板 port（时钟 + console + IWDG，进 CI 编译门） | `boards/enervenue/bms_f405/*` | 构建 | 4 板 CI build 矩阵（含 `bms_f405`） | 编译级已验证；功能待 HIL |
+
+> M6 小结：Phase 0（契约对账）+ Phase 1（软件结构：hal/afe 拆分、meas 可信化、contactor 抽象+接线、include 三树分层）+ Phase 2（bms_f405 时钟+console+IWDG）**已完成并 sim/编译验证**；Phase 3（SH3673520 真 SPI、W25Q32 NVM、RS485/Modbus、ADC、预充/反馈/上电时序实测）**待物理板 + HIL**。引脚权威见 `reference/hardware/software-interface.md` §9（原理图 V0.4；`.ioc` 弃用）。
+
 ## 其他模块（待补 REQ 链接）
 
 | 模块 | 现状 | 待补 |
 |---|---|---|
 | protection（OV/UV/OC/OT） | 6 个阈值 ztest + REQ-PROT-033 失效安全测试；OV/UV/OC/OT 用例**尚无 `REQ-PROT-NNN` 注释** | 把 OV/UV/OC/OT 等用例映射到遗留 `prot.md` 的 `REQ-PROT-NNN` 并补注释 + 入本表 |
-| afe | 有 20 个 ztest（`tests/bms/afe/`），同样**无 REQ 注释** | 同上，映射到 `REQ-AFE-NNN` |
+| afe（hal 后端） | sim 后端 ztest 在 `tests/bms/hal/afe/`（可信化 validate 已迁 `tests/bms/measurement-control/meas/`，见上 M6 表），仍**无 REQ 注释** | 映射到 `REQ-AFE-NNN` |
 | balancing / comm / main | 无专门单测 | 先补单测（见 [management.md](../quality/management.md) 待补齐清单） |
 
 > 说明：protection/afe 的测试已存在但未带 REQ 注释，链接需逐用例映射到遗留需求，属独立后续项（增量 backfill，见 [methodology.md §4 原则3 立场](../concept/methodology.md)）。
