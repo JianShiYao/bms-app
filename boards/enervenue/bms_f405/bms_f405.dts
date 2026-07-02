@@ -1,13 +1,13 @@
 /*
- * BMS STM32F405 自定义板 devicetree（模板）
+ * BMS STM32F405 自定义板（enervenue / S16100B 目标）devicetree。
  *
- * TODO（接入真实硬件时填写）：
- *   - 确认 SoC 变体 dtsi 路径（封装/Flash 容量）
- *   - 配置时钟树（HSE 晶振频率、PLL）
- *   - 配置 console UART 引脚（pinctrl）
- *   - 配置 ADC 通道（电压/电流/温度采样）
- *   - 配置 can1（对外通信）
- *   - 配置 GPIO：接触器控制、均衡开关
+ * 本增量（M6 Phase 2-⑤）只落**无争议的时钟地基**，使板可构建并进 CI 编译门。
+ * 外设/console 引脚**暂不写入**：通信/console UART 与多数 GPIO 的引脚在两份硬件参考间
+ * 冲突（`docs/reference/hardware/STM32F405RGT6_BMS.ioc` 记 USART3(PB10/11)、SD_CS=PA10…；
+ * `docs/reference/hardware/software-interface.md` §9 记 USART1(PA9/10)、SD_CS=PC2…），
+ * 须先核实**原理图 V0.4** 定案，再补 &usartX / &spiX / &adc1 / iwdg / rtc 等节点与 pinctrl。
+ *
+ * 一致且已确认的地基（.ioc 与 §9 一致）：HSE 8MHz、LSE 32.768k、SYSCLK 168MHz。
  */
 /dts-v1/;
 
@@ -15,28 +15,46 @@
 #include <st/f4/stm32f405rgtx-pinctrl.dtsi>
 
 / {
-	model = "BMS STM32F405 custom board";
+	model = "BMS STM32F405 custom board (enervenue)";
 	compatible = "enervenue,bms-f405";
 
 	chosen {
-		zephyr,console = &usart1;
-		zephyr,shell-uart = &usart1;
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
+		/*
+		 * zephyr,console / shell-uart 暂不指定：通信/console UART 引脚待原理图 V0.4
+		 * 核实（.ioc=USART3(PB10/11) vs §9=USART1(PA9/10)，冲突）。定案后启用对应
+		 * &usartX + pinctrl 并在此设 zephyr,console。
+		 */
 	};
-
-	/* TODO: bms 相关别名/节点，例如接触器 GPIO、均衡 GPIO */
 };
 
-/* TODO: 示例——按真实原理图启用并配置外设
-&usart1 {
-	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
-	pinctrl-names = "default";
-	current-speed = <115200>;
+/*
+ * 时钟树：HSE 8MHz → PLL → SYSCLK 168MHz（F4 标准：VCO=8/8*336=336MHz，/P=2→168MHz，
+ * /Q=7→48MHz 供 USB）。HSE/LSE 频率与 .ioc、原理图一致；bus 分频 AHB÷1/APB1÷4/APB2÷2。
+ */
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(8)>;
 	status = "okay";
 };
 
-&can1 {
+&clk_lse {
 	status = "okay";
 };
-*/
+
+&pll {
+	div-m = <8>;
+	mul-n = <336>;
+	div-p = <2>;
+	div-q = <7>;
+	clocks = <&clk_hse>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(168)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <4>;
+	apb2-prescaler = <2>;
+};
