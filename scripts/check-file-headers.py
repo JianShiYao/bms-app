@@ -27,7 +27,7 @@ import re
 import sys
 
 # Module domains, kept in sync with CLAUDE.md / docs/work/traceability.md.
-ALLOWED_INGROUPS = {"SYS", "AFE", "SOC", "PROT", "BAL", "COMM", "BOARD"}
+ALLOWED_INGROUPS = {"SYS", "AFE", "MEAS", "SOC", "PROT", "BAL", "COMM", "BOARD"}
 
 SPDX_FIRST_LINE = "/* SPDX-License-Identifier: Apache-2.0 */"
 
