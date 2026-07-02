@@ -38,6 +38,8 @@ target_sources(app PRIVATE
   src/bms/engine/sys_mon.c
   src/bms/engine/task.c
   src/bms/application/bms.c
+  src/bms/measurement-control/contactor/contactor.c
+  src/bms/hal/contactor_io/contactor_io_fake.c
 )
 
 # 各 BMS 模块按 Kconfig 开关裁剪编译
