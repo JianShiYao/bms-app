@@ -1,6 +1,6 @@
 <!--
   需求↔设计↔测试 追溯矩阵（活文档）。特性：comm CAN 上报周期 Kconfig 可配。
-  套用模板：docs/templates/traceability-matrix-template.md
+  参考 `docs/work/traceability.md` 的格式
   原则：每条 REQ 至少有一个验证手段；安全相关需求优先有自动化测试。
   状态取值：草稿 / 已实现 / 已验证 / 缺口。
 -->

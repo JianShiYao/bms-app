@@ -34,11 +34,9 @@
 
 ## 2b. 产物与参考目录（非常青规范）
 
-除上面 5 类规范目录外，还有 4 类**不参与"依据谁"派生链**的目录：
+除上面 5 类规范目录外，还有 3 类**不参与"依据谁"派生链**的目录：
 
 - `work/` —— **活的工程产物**：需求↔设计↔测试的**唯一权威活矩阵** `traceability.md`，与各小 V 的证据包 `features/<slug>/`。新固件需求随小 V 记入 `features/<slug>/01-requirements.md`，它是**该特性的证据包快照**（非常青规范）；跨特性的权威现状以汇总的 `traceability.md` 为准。⚠️ **设计权威是 `concept/` 契约**（architecture / runtime-model / data-model / diagnostics-fault-model / safety），requirements 不凌驾其上；`reference/legacy-requirements/` 仅为 S16100B 逆向参考，不等于当前承诺。
-- `archive/` —— 历史归档：设计 spec、实施 plan，按 `YYYY-MM-DD` 沉淀。
-- `templates/` —— 可复制的产出骨架（非参考阅读）。
 - `reference/` —— 参考阅读资料：硬件原理图/BOM/数据手册（`hardware/`）、旧固件 S16100B 逆向需求参考（`legacy-requirements/`）。
 
 每个顶层目录都有自己的 `README.md`（三段式：放什么/不放什么/权威文件）——**先看目录 README，再进文件**。

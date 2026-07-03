@@ -174,10 +174,9 @@ BMS 固件不仅要"算对",还要"及时、安全、资源可控"。建议**视
 | [module-interface.md](../standard/module-interface.md) | §4 原则2·3·4 / §6.5 | 模块接口、数据 owner、任务 owner、诊断路径、安全默认态 |
 | [integration-test-strategy.md](../quality/integration-test-strategy.md) | §4 原则2·3·5 / §6.3 | 多模块集成测试分层、首批集成场景、CI 演进 |
 | [agents.md](../process/agents.md) + `.claude/agents/*` | §3 小 V 各阶段 / §4 全部 | 把小 V 各阶段实现为 subagent 与编排 |
-| [templates/](../templates) | §4 原则3·7 / §6.2 | REQ/DES ID 规范、追溯矩阵、EARS 模板、需求元数据 |
 | CI(`.github/workflows/ci.yml`) | §4 原则2·5 / §6.3·6.4·6.6 | 自动化验证门、实时/资源/证据归档的后续承载点 |
 | [gates.md](../quality/gates.md) | §4 原则5 / §6.3·6.4·6.6 | 当前 CI/本地门禁事实表、阈值与阻断状态 |
-| [superpowers/specs/2026-06-19-bms-agile-v-agents-design.md](../archive/specs/2026-06-19-bms-agile-v-agents-design.md) | §3 模型 / §4 | agent 体系的设计取舍 |
+| [process/agents.md](../process/agents.md) | §3 模型 / §4 | agent 体系的现行使用约定 |
 | [management.md](../quality/management.md) | §4 原则2·3·5·7 / §6 | 各阶段质量管控现状与缺口、对七原则与功能安全增强层的符合性 |
 
 ## 8. 术语表

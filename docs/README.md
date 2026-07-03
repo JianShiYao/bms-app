@@ -1,57 +1,45 @@
-# 文档索引（docs/）
+# docs 文档入口
 
-bms-app 的文档导航。**目录即分类**——打开一个子目录，先看它的 `README.md`（三段式：**放什么 / 不放什么 / 权威文件**），再进具体文件。文件名**不带类别前缀**（类别由所在目录表达，如 `concept/architecture.md`）。
+本文档目录只回答三个问题：**怎么做、证据在哪、事实以谁为准**。细节不要在多处重复，能链接就链接。
 
-## 顶层地图
+## 先看哪里
 
-| 目录 | 是什么 | 权威文件 |
-|------|--------|----------|
-| [concept/](concept/) | 为什么这么做 / 目标模型（方法论、架构/运行时/数据/诊断/安全设计契约） | `methodology.md` |
-| [process/](process/) | 研发活动怎么走、门在哪 | `workflow.md` |
-| [standard/](standard/) | 必须遵守的工程契约（接口、代码布局、编码） | `module-interface.md` |
-| [quality/](quality/) | 如何证明做得够好 | `gates.md` |
-| [guide/](guide/) | 具体操作怎么做 | `build.md` |
-| [work/](work/) | 活的工程产物（特性交付物 / 追溯矩阵） | `traceability.md` |
-| [archive/](archive/) | 历史归档（设计 spec / 实施 plan，按日期沉淀） | —（快照） |
-| [reference/](reference/) | 参考资料（硬件原理图/BOM/数据手册；旧固件逆向需求参考） | `hardware/__00_readme.md` |
-| [templates/](templates/) | 可复制的产出骨架 | `README.md` |
-| `Doxyfile` | doxygen 工具配置（生成 API 文档，留 `docs/` 根） | — |
+| 你要找 | 入口 | 说明 |
+|---|---|---|
+| 项目总约定 | [../CLAUDE.md](../CLAUDE.md) | 工具、流程、质量门的最终约定入口 |
+| 架构与设计原则 | [concept/](concept/) | Why / What，只写稳定原则 |
+| 开发流程 | [process/workflow.md](process/workflow.md) | How，一个特性从需求到合并怎么走 |
+| 工程规范 | [standard/](standard/) | 代码布局、接口、编码规则 |
+| 质量门禁 | [quality/gates.md](quality/gates.md) | CI job、阈值、阻断条件等易变事实 |
+| 构建测试命令 | [guide/build.md](guide/build.md) | 本地构建、测试、覆盖率 |
+| 活交付物 | [work/](work/) | 当前特性、追溯矩阵、测试证据 |
+| 参考资料 | [reference/](reference/) | 硬件资料、旧需求、datasheet |
 
-## 两个权威锚点
+## 文档分层
 
-- **[../CLAUDE.md](../CLAUDE.md)** —— 项目约定**唯一来源**（工具/CI 为质量门禁最终权威）。
-- **[concept/methodology.md](concept/methodology.md)** —— 方法论**根基/母文档**（安全案例驱动的敏捷+V）；一切下游流程由它衍生。
-
-## 关系图（谁依据谁）
-
-```
-../CLAUDE.md               约定唯一来源（被所有文档回指）
-      |
-concept/methodology.md     方法论根基（Why）— 以下由它衍生
-      |
-      ├─ concept/    architecture ★ · runtime-model · data-model · diagnostics-fault-model · configuration-calibration · hardware-abstraction · safety · documentation-system
-      ├─ standard/   module-interface · code-layout · coding-style
-      ├─ process/    workflow ☆ · git · design-review · agents · small-v-workflow
-      ├─ quality/    gates ● · ci-checklist · integration-test-strategy · management
-      └─ guide/      build
-
-产物 / 参考（非常青规范，不在上面的派生链里）：
-   work/      features/<slug> · traceability
-   archive/   specs · plans（YYYY-MM-DD 快照）
-   templates/ 可复制骨架        reference/ 硬件资料 · legacy-requirements（S16100B 逆向）
-
-★ architecture = 软件架构基线；runtime-model/data-model/diagnostics-fault-model/configuration-calibration/hardware-abstraction/safety 与 standard/module-interface 细化它
-☆ workflow = 流程单一事实源(SSOT)；git/design-review/agents/small-v-workflow 细化或落地它
-● gates = 门与阈值唯一事实源；quality/management 仅总览，不抢权威
+```text
+CLAUDE.md
+  └─ docs/
+      ├─ concept/    稳定概念和架构契约
+      ├─ process/    工作流和协作规则
+      ├─ standard/   必须遵守的工程规范
+      ├─ quality/    门禁、质量证据和风险边界
+      ├─ guide/      可执行操作手册
+      ├─ work/       当前正在交付的工程证据
+      └─ reference/  外部输入和历史参考
 ```
 
-## 「查哪份」速查
+## 写文档规则
 
-- 为什么这么做 → **concept/methodology**；系统怎么设计 → **concept/architecture**；运行时/任务/调度/看门狗 → **concept/runtime-model**；诊断/故障/severity/锁存 → **concept/diagnostics-fault-model**；参数/标定/阈值治理 → **concept/configuration-calibration**；硬件 wrapper/AFE/CAN/GPIO 边界 → **concept/hardware-abstraction**；DB 数据契约 → **concept/data-model**；危害/安全目标/失效安全 → **concept/safety**；文档体系怎么理解 → **concept/documentation-system**。
-- 怎么走流程 → **process/workflow**（Git 细节 → **process/git**）；用 agent/workflow 开发特性 → **process/agents** · **process/small-v-workflow**；设计评审 → **process/design-review**。
-- 模块接口怎么写 → **standard/module-interface**；代码按层怎么放 → **standard/code-layout**；编码风格 → **standard/coding-style**。
-- 门禁与阈值 → **quality/gates**；质量现状全景 → **quality/management**；集成测试怎么补 → **quality/integration-test-strategy**；CI 借鉴清单 → **quality/ci-checklist**。
-- 怎么编译/跑（含 WSL native_sim）→ **guide/build**。
-- 需求验证到哪 → **work/traceability**；某特性证据链 → **work/features/<slug>**（如 `engine-core-architecture`）；旧固件 S16100B 逆向参考需求 → **reference/legacy-requirements**。
-- 历史设计/实施计划 → **archive/specs** · **archive/plans**。
-- 硬件资料 → **reference/hardware**；文档模板 → **templates/**。
+- **一个事实只维护一处**：CI 阈值在 `quality/gates.md`，追溯在 `work/traceability.md`，命令在 `guide/build.md`。
+- **主文档短，细节下沉**：入口页只放导航和判断规则；大段解释放到专题文档或归档。
+- **活文档优先**：`work/` 是当前交付证据；`reference/legacy-requirements/` 不能直接当作现行需求。
+- **文档要能支持评审**：新增需求、架构、测试或安全改动时，同步更新对应追溯和证据位置。
+
+## 常用路径
+
+- 新特性流程：`docs/work/features/<slug>/`
+- 需求追溯：`docs/work/traceability.md`
+- 当前质量门：`docs/quality/gates.md`
+- 本地预检：`scripts/check.ps1`
+- API 文档配置：`docs/Doxyfile`

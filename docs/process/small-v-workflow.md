@@ -3,8 +3,6 @@
 一条调用自动跑完一个特性的敏捷-V 小 V（编排→需求→架构→详细设计→TDD→CICD→评审→追溯校验）。
 脚本：[`.claude/workflows/bms-small-v.js`](../../.claude/workflows/bms-small-v.js)。
 
-- 设计依据：[docs/archive/specs/2026-06-30-bms-small-v-workflow-design.md](../archive/specs/2026-06-30-bms-small-v-workflow-design.md)
-- 实施计划：[docs/archive/plans/2026-06-30-bms-small-v-workflow.md](../archive/plans/2026-06-30-bms-small-v-workflow.md)
 - 借鉴来源：`agency-agents` 的"编排者 agent + QA 门 + 重试"——这里把"编排者"实现为 **Workflow 脚本本身**（绕开 Claude Code subagent 不能嵌套），QA门+重试=tester↔coder 真值门循环，跨阶段交接=`docs/work/features/<slug>/` 文件（非 MCP memory）。
 - 与手动方式的关系：本工作流是 [agents.md](agents.md) §3.2「方案 A 主会话手动派发」的**自动化版本**；二者产物布局一致。
 
