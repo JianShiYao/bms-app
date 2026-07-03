@@ -1,6 +1,6 @@
 <!--
   需求规格：comm 模块 CAN 上报周期 Kconfig 可配。
-  套用模板：docs/templates/requirements-template.md（EARS 句式，验收标准可度量）。
+  结构参考现有 `docs/work/features/<slug>/01-requirements.md` 的写法（EARS 句式，验收标准可度量）。
   本阶段（敏捷-V 左腿①需求）只定义「做什么 / 如何验收」，不含实现或架构决策。
   追溯链见同目录 traceability.md。
 -->

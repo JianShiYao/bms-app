@@ -1,6 +1,6 @@
 <!--
   详细设计：comm 模块 CAN 上报周期 Kconfig 可配。
-  套用模板：docs/templates/design-spec-template.md。
+  结构参考现有 `docs/work/features/<slug>/03-design.md` 的写法。
   阶段：敏捷-V 左腿第③层 —— 详细设计（bms-designer）。
   输入：02-architecture.md（ADR-COMM-01~08）、01-requirements.md（REQ-COMM-001~007）。
   本文把架构 ADR 细化到可直接编码：函数签名/契约/错误码、状态机、Kconfig/dts、纯逻辑单测目标。

@@ -22,7 +22,7 @@
 | `process/` | 研发活动怎么走、门在哪里 | `workflow.md`、`git.md`、`design-review.md` |
 | `guide/` | 某个操作怎么做 | `build.md` |
 | `standard/` | 必须遵守的工程契约 | `module-interface.md`、`code-layout.md`、`coding-style.md` |
-| `quality/` | 如何证明做得够好 | `gates.md`、`ci-checklist.md`、`integration-test-strategy.md`、`management.md` |
+| `quality/` | 如何证明做得够好 | `gates.md`、`integration-test-strategy.md`、`management.md` |
 
 判断一个新文档该进哪个目录：
 
